@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://falconteams-2bdbf6dec657.herokuapp.com'),
 
     /*
     |--------------------------------------------------------------------------
