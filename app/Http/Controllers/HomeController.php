@@ -43,6 +43,6 @@ class HomeController extends Controller
             ]
         ];
 
-        return view('registration-dashboard', compact('registrationCards'));
+        return view('home', compact('registrationCards'));
     }
 }
