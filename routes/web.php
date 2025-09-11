@@ -20,4 +20,19 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/registration-dashboard', [RegistrationDashboardController::class, 'index'])->name('registration-dashboard');
 
+Route::get('/youth-sports-registration', function () {
+    return view('registrations.youth-sports');
+})->name('youth-sports-registration');
+
+Route::get('/adult-fitness-registration', function () {
+    return view('registrations.adult-fitness');
+})->name('adult-fitness-registration');
+
+Route::get('/team-registration', function () {
+    return view('registrations.team');
+})->name('team-registration');
+
+Route::get('/coach-application', function () {
+    return view('registrations.coach-application');
+})->name('coach-application');
 require __DIR__.'/auth.php';
