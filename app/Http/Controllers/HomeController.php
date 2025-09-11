@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class RegistrationDashboardController extends Controller
+class HomeController extends Controller
 {
     /**
      * Display the registration dashboard with clickable cards

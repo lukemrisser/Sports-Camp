@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\RegistrationDashboardController;
+use App\Http\Controllers\HomeController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,7 +18,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/registration-dashboard', [RegistrationDashboardController::class, 'index'])->name('registration-dashboard');
+Route::get('/registration-dashboard', [HomeController::class, 'index'])->name('registration-dashboard');
 
 Route::get('/youth-sports-registration', function () {
     return view('registrations.youth-sports');

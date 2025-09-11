@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Registration Dashboard</h1>
+            <h1>Falcon Teams</h1>
             <p>Choose a registration option below to get started</p>
         </header>
 
