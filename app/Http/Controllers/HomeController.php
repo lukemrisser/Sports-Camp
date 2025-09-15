@@ -17,28 +17,28 @@ class HomeController extends Controller
                 'title' => 'Youth Sports Camp',
                 'description' => 'Register for our youth sports training program (Ages 8-16)',
                 'icon' => '⚽',
-                'route' => 'youth-sports-registration',
+                'route' => 'registration',
                 'color' => 'blue'
             ],
             [
                 'title' => 'Adult Fitness Program',
                 'description' => 'Join our adult fitness and conditioning classes',
                 'icon' => '🏋️',
-                'route' => 'adult-fitness-registration',
+                'route' => 'registration',
                 'color' => 'green'
             ],
             [
                 'title' => 'Team Registration',
                 'description' => 'Register your entire team for league play',
                 'icon' => '👥',
-                'route' => 'team-registration',
+                'route' => 'registration',
                 'color' => 'purple'
             ],
             [
                 'title' => 'Coach Application',
                 'description' => 'Apply to become a coach or volunteer',
                 'icon' => '📋',
-                'route' => 'coach-application',
+                'route' => 'application',
                 'color' => 'orange'
             ]
         ];
