@@ -42,7 +42,7 @@ Route::get('/coach-application', function () {
 })->name('coach-application');
 
 Route::get('/registration', function (){
-    return view('registrations.registration');
+    return view('registration');
 })->name('registration');
 
 require __DIR__.'/auth.php';
