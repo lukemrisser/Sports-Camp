@@ -41,12 +41,12 @@
             box-sizing: border-box;
         }
 
-        body {
+        /* body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #6e84e7 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
-        }
+        } */
 
         header {
             background: #0a3f94;
