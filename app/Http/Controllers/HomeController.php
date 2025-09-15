@@ -14,23 +14,23 @@ class HomeController extends Controller
         // Define the registration options/cards
         $registrationCards = [
             [
-                'title' => 'Youth Sports Camp',
-                'description' => 'Register for our youth sports training program (Ages 8-16)',
+                'title' => 'Youth Soccer',
+                'description' => 'Register for our youth soccer camp',
                 'icon' => '⚽',
                 'route' => 'registration',
                 'color' => 'blue'
             ],
             [
-                'title' => 'Adult Fitness Program',
-                'description' => 'Join our adult fitness and conditioning classes',
-                'icon' => '🏋️',
+                'title' => 'Youth Volleyball',
+                'description' => 'Join our youth volleyball camp',
+                'icon' => '🏐',
                 'route' => 'registration',
                 'color' => 'green'
             ],
             [
-                'title' => 'Team Registration',
-                'description' => 'Register your entire team for league play',
-                'icon' => '👥',
+                'title' => 'Youth Tennis',
+                'description' => 'Register your child for tennis camp',
+                'icon' => '🎾',
                 'route' => 'registration',
                 'color' => 'purple'
             ],
