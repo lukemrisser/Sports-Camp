@@ -18,7 +18,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/registration-dashboard', [HomeController::class, 'index'])->name('registration-dashboard');
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::get('/youth-sports-registration', function () {
     return view('registrations.youth-sports');
