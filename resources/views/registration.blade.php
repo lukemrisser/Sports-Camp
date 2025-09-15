@@ -5,6 +5,106 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sports Camp Registration</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        .form-input-field {
+            margin-top: 0.25rem;
+            display: block;
+            width: 100%;
+            border-radius: 0.375rem;
+            border: 1px solid #D1D5DB;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            padding: 0.5rem 0.75rem;
+        }
+
+        .form-input-field:focus {
+            outline: none;
+            border-color: #6366F1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 768px) {
+            .form-grid-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .form-grid-3 {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 768px) {
+            .form-grid-3 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .radio-group {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .radio-label {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .radio-text {
+            margin-left: 0.5rem;
+        }
+
+        .submit-button {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            background-color: #4F46E5;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .submit-button:hover {
+            background-color: #4338CA;
+        }
+
+        .submit-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.5);
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen py-6 flex flex-col justify-center sm:py-12">
@@ -17,51 +117,51 @@
                             
                             <form class="space-y-6">
                                 <!-- Parent Information -->
-                                <div class="space-y-4">
-                                    <h3 class="text-xl font-semibold">Parent/Guardian Information</h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="form-section">
+                                    <h3 class="form-section-title">Parent/Guardian Information</h3>
+                                    <div class="form-grid-2">
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Parent First Name</label>
-                                            <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Parent First Name</label>
+                                            <input type="text" class="form-input-field">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Parent Last Name</label>
-                                            <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Parent Last Name</label>
+                                            <input type="text" class="form-input-field">
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Camper Information -->
-                                <div class="space-y-4">
-                                    <h3 class="text-xl font-semibold">Camper Information</h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="form-section">
+                                    <h3 class="form-section-title">Camper Information</h3>
+                                    <div class="form-grid-2">
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Camper First Name</label>
-                                            <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Camper First Name</label>
+                                            <input type="text" class="form-input-field">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Camper Last Name</label>
-                                            <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Camper Last Name</label>
+                                            <input type="text" class="form-input-field">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Gender</label>
-                                            <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Gender</label>
+                                            <select class="form-input-field">
                                                 <option value="">Select Gender</option>
                                                 <option value="male">Male</option>
                                                 <option value="female">Female</option>
                                             </select>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Birth Date</label>
-                                            <input type="date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Birth Date</label>
+                                            <input type="date" class="form-input-field">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Age</label>
-                                            <input type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Age</label>
+                                            <input type="number" class="form-input-field">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Shirt Size</label>
-                                            <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Shirt Size</label>
+                                            <select class="form-input-field">
                                                 <option value="">Select Size</option>
                                                 <option value="ys">Youth Small</option>
                                                 <option value="ym">Youth Medium</option>
@@ -75,90 +175,90 @@
                                 </div>
 
                                 <!-- Contact Information -->
-                                <div class="space-y-4">
-                                    <h3 class="text-xl font-semibold">Contact Information</h3>
+                                <div class="form-section">
+                                    <h3 class="form-section-title">Contact Information</h3>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700">Address</label>
-                                        <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                        <label class="form-label">Address</label>
+                                        <input type="text" class="form-input-field">
                                     </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="form-grid-3">
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">City</label>
-                                            <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">City</label>
+                                            <input type="text" class="form-input-field">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">State</label>
-                                            <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">State</label>
+                                            <input type="text" class="form-input-field">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">ZIP Code</label>
-                                            <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">ZIP Code</label>
+                                            <input type="text" class="form-input-field">
                                         </div>
                                     </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="form-grid-2">
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Email</label>
-                                            <input type="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-input-field">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Phone</label>
-                                            <input type="tel" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Phone</label>
+                                            <input type="tel" class="form-input-field">
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Medical Information -->
-                                <div class="space-y-4">
-                                    <h3 class="text-xl font-semibold">Medical Information</h3>
-                                    <div class="space-y-4">
+                                <div class="form-section">
+                                    <h3 class="form-section-title">Medical Information</h3>
+                                    <div class="form-section">
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Allergies</label>
-                                            <textarea class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" rows="3"></textarea>
+                                            <label class="form-label">Allergies</label>
+                                            <textarea class="form-input-field" rows="3"></textarea>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Does the camper have asthma?</label>
-                                            <div class="mt-2 space-x-4">
-                                                <label class="inline-flex items-center">
+                                            <label class="form-label">Does the camper have asthma?</label>
+                                            <div class="radio-group">
+                                                <label class="radio-label">
                                                     <input type="radio" name="asthma" value="yes" class="form-radio">
-                                                    <span class="ml-2">Yes</span>
+                                                    <span class="radio-text">Yes</span>
                                                 </label>
-                                                <label class="inline-flex items-center">
+                                                <label class="radio-label">
                                                     <input type="radio" name="asthma" value="no" class="form-radio">
-                                                    <span class="ml-2">No</span>
+                                                    <span class="radio-text">No</span>
                                                 </label>
                                             </div>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Is the camper on any medications?</label>
-                                            <div class="mt-2 space-x-4">
-                                                <label class="inline-flex items-center">
+                                            <label class="form-label">Is the camper on any medications?</label>
+                                            <div class="radio-group">
+                                                <label class="radio-label">
                                                     <input type="radio" name="medication" value="yes" class="form-radio">
-                                                    <span class="ml-2">Yes</span>
+                                                    <span class="radio-text">Yes</span>
                                                 </label>
-                                                <label class="inline-flex items-center">
+                                                <label class="radio-label">
                                                     <input type="radio" name="medication" value="no" class="form-radio">
-                                                    <span class="ml-2">No</span>
+                                                    <span class="radio-text">No</span>
                                                 </label>
                                             </div>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Recent Injuries or Health Concerns</label>
-                                            <textarea class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" rows="3"></textarea>
+                                            <label class="form-label">Recent Injuries or Health Concerns</label>
+                                            <textarea class="form-input-field" rows="3"></textarea>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Church Information -->
-                                <div class="space-y-4">
-                                    <h3 class="text-xl font-semibold">Church Information</h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="form-section">
+                                    <h3 class="form-section-title">Church Information</h3>
+                                    <div class="form-grid-2">
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Church Name</label>
-                                            <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Church Name</label>
+                                            <input type="text" class="form-input-field">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700">Church Attendance</label>
-                                            <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <label class="form-label">Church Attendance</label>
+                                            <select class="form-input-field">
                                                 <option value="">Select Frequency</option>
                                                 <option value="weekly">Weekly</option>
                                                 <option value="monthly">Monthly</option>
@@ -172,7 +272,7 @@
 
                                 <!-- Submit Button -->
                                 <div class="pt-5">
-                                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <button type="submit" class="submit-button">
                                         Submit Registration
                                     </button>
                                 </div>
