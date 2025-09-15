@@ -7,12 +7,13 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Falcon Teams</h1>
-            <p>Choose a registration option below to get started</p>
-        </header>
 
+    <header>
+        <h1>Falcon Teams</h1>
+        <p>Choose a registration option below to get started</p>
+    </header>
+
+    <div class="container">
         <div class="cards-grid">
             @foreach($registrationCards as $card)
                 <div class="registration-card {{ $card['color'] }}">
