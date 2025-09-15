@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -36,8 +37,8 @@ Route::get('/coach-application', function () {
     return view('registrations.coach-application');
 })->name('coach-application');
 
-// Route::get('/registration', function (): View{
-//     return view('registrations.registration');
-// })->name('registration');
+Route::get('/registration', function (){
+    return view('registrations.registration');
+})->name('registration');
 
 require __DIR__.'/auth.php';
