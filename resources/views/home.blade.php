@@ -48,9 +48,6 @@
             padding: 20px;
         } */
 
-        header {
-            background: #0a3f94;
-        }
 
         .container {
             max-width: 1200px;
@@ -59,8 +56,12 @@
 
         header {
             text-align: center;
-            margin-bottom: 40px;
+            margin: 0 0 40px 0;
             color: white;
+            background: #0a3f94;
+            width: 100%;
+            padding: 20px 0;
+            box-sizing: border-box;
         }
 
         header h1 {
