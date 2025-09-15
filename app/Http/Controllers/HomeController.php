@@ -34,13 +34,7 @@ class HomeController extends Controller
                 'route' => 'registration',
                 'color' => 'purple'
             ],
-            [
-                'title' => 'Coach Application',
-                'description' => 'Apply to become a coach or volunteer',
-                'icon' => '📋',
-                'route' => 'application',
-                'color' => 'orange'
-            ]
+
         ];
 
         return view('home', compact('registrationCards'));
