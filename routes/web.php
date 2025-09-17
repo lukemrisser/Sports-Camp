@@ -45,4 +45,8 @@ Route::get('/registration', function (){
     return view('registration');
 })->name('registration');
 
+Route::get('/organize-teams', function (){
+    return view('coach.organize-teams');
+})->name('organize-teams');
+
 require __DIR__.'/auth.php';
