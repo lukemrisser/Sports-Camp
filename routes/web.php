@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CoachController;
 
 
 Route::get('/', function () {
@@ -48,5 +49,7 @@ Route::get('/registration', function (){
 Route::get('/organize-teams', function (){
     return view('coach.organize-teams');
 })->name('organize-teams');
+
+Route::post('/coach/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('coach.uploadSpreadsheet');
 
 require __DIR__.'/auth.php';

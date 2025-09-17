@@ -10,14 +10,32 @@
 
     <header>
         <h1>Falcon Teams</h1>
-        <p>Upload a spreadsheet or select a camp to generate teams for</p>
+        <p>Upload a spreadsheet or select a camp to generate teams</p>
     </header>
 
     <div class="container">
         <div class="upload">
+            <h2>Upload Spreadsheet</h2>
+            <form action="{{ route('coach.uploadSpreadsheet') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="file" name="spreadsheet" accept=".xlsx, .xls" required>
+                <button type="submit">Upload and Generate</button>
+            </form>
         </div>
+{{--         
         <div class="select_camp">
-        </div>
+            <h2>Select Camp</h2>
+            <form action="{{ route('coach.select-camp') }}" method="POST">
+                @csrf
+                <select name="camp_id" required>
+                    <option value="">Choose a camp</option>
+                    @foreach($camps as $camp)
+                        <option value="{{ $camp->id }}">{{ $camp->name }}</option>
+                    @endforeach
+                </select>
+                <button type="submit">Select and generate teams</button>
+            </form>
+        </div> --}}
 
         <div class="navigation">
             <a href="{{ url('/') }}">← Back to Home</a>
@@ -63,102 +81,50 @@
             font-weight: 700;
         }
 
+        /* Upload Spreadsheet Styles */
+        .upload {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 32px 24px;
+            max-width: 420px;
+            margin: 40px auto 0 auto;
+            box-shadow: 0 4px 24px rgba(10, 63, 148, 0.08);
+            text-align: center;
+        }
+
+        .upload h2 {
+            color: #0a3f94;
+            margin-bottom: 18px;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .upload input[type="file"] {
+            margin-bottom: 18px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .upload button[type="submit"] {
+            background: #0a3f94;
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .upload button[type="submit"]:hover {
+            background: #1857c1;
+        }
+
         header p {
             font-size: 1.2rem;
             opacity: 0.9;
-        }
-
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .registration-card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .registration-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--card-color), var(--card-color-light));
-        }
-
-        .registration-card.blue {
-            --card-color: #3b82f6;
-            --card-color-light: #60a5fa;
-        }
-
-        .registration-card.green {
-            --card-color: #10b981;
-            --card-color-light: #34d399;
-        }
-
-        .registration-card.purple {
-            --card-color: #8b5cf6;
-            --card-color-light: #a78bfa;
-        }
-
-        .registration-card.orange {
-            --card-color: #f59e0b;
-            --card-color-light: #fbbf24;
-        }
-
-        .registration-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .registration-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: #1f2937;
-            font-weight: 600;
-        }
-
-        .registration-card p {
-            color: #6b7280;
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-
-        .card-button {
-            display: inline-block;
-            background: var(--card-color);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-button:hover {
-            background: var(--card-color-light);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
         }
 
         .navigation {
@@ -190,15 +156,6 @@
 
             header h1 {
                 font-size: 2rem;
-            }
-
-            .cards-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .registration-card {
-                padding: 20px;
             }
 
             .navigation a {
