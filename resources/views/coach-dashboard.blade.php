@@ -14,7 +14,7 @@
 
         <main>
             <section>
-                <p>This page is coming soon.</p>
+                <p>Page coming soon!</p>
             </section>
         </main>
     </body>
