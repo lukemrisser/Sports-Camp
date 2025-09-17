@@ -45,8 +45,8 @@ Route::get('/registration', function (){
     return view('registration');
 })->name('registration');
 
-Route::get('/coachdashboard', function (){
-    return view('coachdashboard');
-})->name('coachdashboard');
+Route::get('/coach-dashboard', function (){
+    return view('coach-dashboard');
+})->name('coach-dashboard');
 
 require __DIR__.'/auth.php';
