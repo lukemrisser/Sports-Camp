@@ -50,7 +50,7 @@
     <div class="container">
         <header>
             <h1>Coach Dashboard</h1>
-            <p>Welcome, {{ $user->name }}!</p>
+
 
             <div style="margin-top: 20px;">
                 <a href="{{ route('home') }}" style="color: white; margin-right: 15px;">← Back to Home</a>
