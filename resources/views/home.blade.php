@@ -30,7 +30,7 @@
         <div class="navigation">
             <a href="{{ url('/') }}">← Back to Home</a>
             @auth
-                <a href="{{ route('dashboard') }}">My Dashboard</a>
+                <a href="{{ route('coach-dashboard') }}">My Dashboard</a>
             @endauth
         </div>
     </div>

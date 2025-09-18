@@ -12,8 +12,10 @@ Route::get('/registration', function (){
     return view('registration');
 })->name('registration');
 
+Route::get('/coach-dashboard', [CoachController::class, 'dashboard'])->name('coach-dashboard');
+
 Route::middleware('auth')->group(function () {
-    Route::get('/coach-dashboard', [CoachController::class, 'dashboard'])->name('coach-dashboard');
+
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
