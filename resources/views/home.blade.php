@@ -9,8 +9,25 @@
 <body>
 
     <header>
-        <h1>Falcon Teams</h1>
-        <p>Choose a registration option below to get started</p>
+        <div class="header-container">
+            <div class="header-content">
+                <h1>Falcon Teams</h1>
+                <p>Choose a registration option below to get started</p>
+            </div>
+
+            <div class="header-buttons">
+                @guest
+                    <a href="{{ route('login') }}" class="header-btn login-btn">Login</a>
+                    <a href="{{ route('register') }}" class="header-btn register-btn">Register</a>
+                @else
+                    <span class="welcome-text">Welcome, {{ Auth::user()->name }}!</span>
+                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="header-btn logout-btn">Logout</button>
+                    </form>
+                @endguest
+            </div>
+        </div>
     </header>
 
     <div class="container">
@@ -49,38 +66,103 @@
             padding: 20px;
         } */
 
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
         }
 
         header {
-            text-align: center;
-            margin: 0 0 40px 0;
-            color: white;
             background: #0a3f94;
             width: 100%;
             padding: 20px 0;
             box-sizing: border-box;
+            color: white;
         }
 
-        header h1 {
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .header-content {
+            text-align: left;
+        }
+
+        .header-content h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
             font-weight: 700;
         }
 
-        header p {
+        .header-content p {
             font-size: 1.2rem;
             opacity: 0.9;
+        }
+
+        .header-buttons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .login-btn {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .login-btn:hover {
+            background: white;
+            color: #0a3f94;
+            transform: translateY(-2px);
+        }
+
+        .register-btn {
+            background: #fbbf24;
+            color: #0a3f94;
+        }
+
+        .register-btn:hover {
+            background: #f59e0b;
+            transform: translateY(-2px);
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .welcome-text {
+            color: white;
+            font-weight: 500;
+            margin-right: 10px;
         }
 
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
-            margin-bottom: 40px;
+            margin: 40px 0;
         }
 
         .registration-card {
@@ -196,8 +278,20 @@
                 padding: 10px;
             }
 
-            header h1 {
+            .header-container {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+                padding: 0 10px;
+            }
+
+            .header-content h1 {
                 font-size: 2rem;
+            }
+
+            .header-buttons {
+                justify-content: center;
+                flex-wrap: wrap;
             }
 
             .cards-grid {
