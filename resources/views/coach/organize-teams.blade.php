@@ -22,20 +22,21 @@
                 <button type="submit">Upload and Generate</button>
             </form>
         </div>
-{{--         
+       
         <div class="select_camp">
             <h2>Select Camp</h2>
-            <form action="{{ route('coach.select-camp') }}" method="POST">
+            <form action="{{ route('coach.selectCamp') }}" method="POST">
                 @csrf
-                <select name="camp_id" required>
-                    <option value="">Choose a camp</option>
+                <select name="camp_id">
                     @foreach($camps as $camp)
-                        <option value="{{ $camp->id }}">{{ $camp->name }}</option>
+                        <option value="{{ $camp->camp_id }}">
+                            {{ $camp->camp_name }} ({{ $camp->start_date }} - {{ $camp->end_date }})
+                        </option>
                     @endforeach
                 </select>
                 <button type="submit">Select and generate teams</button>
             </form>
-        </div> --}}
+        </div>
 
         <div class="navigation">
             <a href="{{ url('/') }}">← Back to Home</a>
