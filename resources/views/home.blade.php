@@ -21,6 +21,7 @@
                     <a href="{{ route('register') }}" class="header-btn register-btn">Register</a>
                 @else
                     <span class="welcome-text">Welcome, {{ Auth::user()->name }}!</span>
+                    <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
                     <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                         @csrf
                         <button type="submit" class="header-btn logout-btn">Logout</button>
@@ -139,6 +140,16 @@
 
         .register-btn:hover {
             background: #f59e0b;
+            transform: translateY(-2px);
+        }
+
+        .dashboard-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .dashboard-btn:hover {
+            background: #059669;
             transform: translateY(-2px);
         }
 
