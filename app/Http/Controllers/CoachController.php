@@ -7,7 +7,6 @@ use App\Models\Coach;
 use App\Models\Camp;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
 
 
 class CoachController extends Controller
@@ -57,7 +56,7 @@ class CoachController extends Controller
         return redirect()->route('home');
     }
 
-    public function getCampsForCoach($coachId)
+    public function getCampsForCoach()
     {
         $user = Auth::user();
         $coach = $user->coach; // assumes User hasOne Coach

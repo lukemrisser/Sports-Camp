@@ -12,6 +12,9 @@ class Player extends Model
     // Set custom primary key
     protected $primaryKey = 'player_id';
 
+    // Specify the table name to match the database
+    protected $table = 'Players';
+
     // Allow mass assignment for these fields
     protected $fillable = [
         'Division_Name',
@@ -39,6 +42,6 @@ class Player extends Model
 	// A player can belong to many camps
 	public function camps()
 	{
-		return $this->belongsToMany(Camp::class, 'player_camp');
+		return $this->belongsToMany(Camp::class, 'Player_Camp');
 	}
 }

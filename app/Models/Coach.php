@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Coach extends Model
 {
+	// Specify the table name to match the database
+	protected $table = 'Coaches';
 	use HasFactory;
 
 	// Set custom primary key
@@ -17,6 +19,6 @@ class Coach extends Model
 	// A coach can have many camps
 	public function camps()
 	{
-		return $this->belongsToMany(Camp::class, 'coach_camp');
+		return $this->belongsToMany(Camp::class, 'Coach_Camp');
 	}
 }
