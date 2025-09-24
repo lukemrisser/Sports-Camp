@@ -37,7 +37,7 @@ class CoachController extends Controller
 
     public function sortTeams($players, $numTeams)
     {
-        return view('home');
+        return redirect()->route('home');
     }
 
     public function getCampsForCoach($coachId)
