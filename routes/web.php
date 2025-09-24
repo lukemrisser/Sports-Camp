@@ -13,6 +13,8 @@ Route::get('/registration', function (){
 })->name('registration');
 
 Route::get('/coach-dashboard', [CoachController::class, 'dashboard'])->name('coach-dashboard');
+Route::post('/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('upload-spreadsheet');
+Route::post('/select-camp', [CoachController::class, 'selectCamp'])->name('select-camp');
 
 Route::middleware('auth')->group(function () {
 
