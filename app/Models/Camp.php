@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Camp extends Model
+{
+	use HasFactory;
+
+	// Set custom primary key
+	protected $primaryKey = 'camp_id';
+
+	// Allow mass assignment for these fields
+	protected $fillable = ['camp_name', 'start_date', 'end_date'];
+
+	// Cast start_date and end_date as dates
+	protected $casts = [
+		'start_date' => 'date',
+		'end_date' => 'date',
+	];
+
+	// A camp can have many players
+	public function players()
+	{
+		return $this->belongsToMany(Player::class, 'player_camp');
+	}
+    
+	public function coaches()
+	{
+		return $this->belongsToMany(Coach::class, 'coach_camp');
+	}
+}

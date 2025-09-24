@@ -23,4 +23,10 @@ Route::middleware('auth')->group(function () {
 });
 
 
+Route::get('/organize-teams', function (){
+    return view('coach.organize-teams');
+})->name('organize-teams');
+
+Route::post('/home', [CoachController::class, 'uploadSpreadsheet'])->name('coach.uploadSpreadsheet');
+Route::post('/coach/select-camp', [CoachController::class, 'selectCamp'])->name('coach.selectCamp');
 require __DIR__.'/auth.php';
