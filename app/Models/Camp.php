@@ -12,6 +12,9 @@ class Camp extends Model
 	// Set custom primary key
 	protected $primaryKey = 'camp_id';
 
+    // Specify the table name to match the database
+    protected $table = 'Camps';
+
 	// Allow mass assignment for these fields
 	protected $fillable = ['camp_name', 'start_date', 'end_date'];
 
@@ -24,11 +27,11 @@ class Camp extends Model
 	// A camp can have many players
 	public function players()
 	{
-		return $this->belongsToMany(Player::class, 'player_camp');
+		return $this->belongsToMany(Player::class, 'Player_Camp');
 	}
     
 	public function coaches()
 	{
-		return $this->belongsToMany(Coach::class, 'coach_camp');
+		return $this->belongsToMany(Coach::class, 'Coach_Camp');
 	}
 }

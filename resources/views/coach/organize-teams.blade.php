@@ -23,7 +23,7 @@
             </form>
         </div>
        
-        {{-- <div class="select_camp">
+        <div class="select_camp">
             <h2>Select Camp</h2>
             <form action="{{ route('coach.selectCamp') }}" method="POST">
                 @csrf
@@ -36,12 +36,12 @@
                 </select>
                 <button type="submit">Select and generate teams</button>
             </form>
-        </div> --}}
+        </div>
 
         <div class="navigation">
             <a href="{{ url('/') }}">← Back to Home</a>
             @auth
-                <a href="{{ route('dashboard') }}">My Dashboard</a>
+                <a href="{{ route('coach-dashboard') }}">My Dashboard</a>
             @endauth
         </div>
     </div>

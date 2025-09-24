@@ -49,7 +49,7 @@ class CoachController extends Controller
         return redirect()->route('home');
     }
 
-    public function getCampsForCoach($coachId)
+    public function getCampsForCoach()
     {
         $user = auth()->user();
         $coach = $user->coach; // assumes User hasOne Coach
