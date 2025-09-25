@@ -12,7 +12,7 @@
         <div class="header-container">
             <div class="header-content">
                 <h1>Coach Dashboard</h1>
-                <p>Welcome back, {{ $user->name }}!</p>
+                {!! $user ? '<p>Welcome back, ' . $user->name . '!</p>' : '' !!}
             </div>
 
             <div class="header-buttons">
