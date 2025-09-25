@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PlayerController;
 
 
 Route::get('/', function () {
@@ -12,6 +13,8 @@ Route::get('/', function () {
 Route::get('/registration', function () {
     return view('registration');
 })->name('registration');
+
+Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
