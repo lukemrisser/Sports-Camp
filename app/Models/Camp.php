@@ -21,7 +21,6 @@ class Camp extends Model
         return $this->belongsToMany(Player::class, 'Player_Camp', 'Camp_ID', 'Player_ID');
     }
 }
-<?php
 
 namespace App\Models;
 
