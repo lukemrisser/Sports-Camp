@@ -10,18 +10,18 @@ class Camp extends Model
 	use HasFactory;
 
 	// Set custom primary key
-	protected $primaryKey = 'camp_id';
+	protected $primaryKey = 'Camp_ID';
 
     // Specify the table name to match the database
     protected $table = 'Camps';
 
 	// Allow mass assignment for these fields
-	protected $fillable = ['camp_name', 'start_date', 'end_date'];
+	protected $fillable = ['Camp_Name', 'Start_Date', 'End_Date'];
 
 	// Cast start_date and end_date as dates
 	protected $casts = [
-		'start_date' => 'date',
-		'end_date' => 'date',
+		'Start_Date' => 'date',
+		'End_Date' => 'date',
 	];
 
 	// A camp can have many players
@@ -32,6 +32,11 @@ class Camp extends Model
     
 	public function coaches()
 	{
-		return $this->belongsToMany(Coach::class, 'Coach_Camp');
+		return $this->belongsToMany(
+			Coach::class,
+			'Coach_Camp',   // Pivot table name
+			'Camp_ID',      // Foreign key on pivot table for this model
+			'Coach_ID'      // Foreign key on pivot table for the related model
+		);
 	}
 }
