@@ -6,16 +6,18 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-    "php": "^8.2",
-    "laravel/framework": "^12.0",
-    "laravel/tinker": "^2.10.1",
-    "ext-pdo": "*",
-    "ext-mbstring": "*",
-    "ext-ctype": "*",
-    "ext-json": "*",
-    "ext-tokenizer": "*"
+        "php": "^8.2",
+        "ext-ctype": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-pdo": "*",
+        "ext-tokenizer": "*",
+        "laravel/framework": "^12.0",
+        "laravel/tinker": "^2.10.1",
+        "maatwebsite/excel": "^3.1"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.6",
         "fakerphp/faker": "^1.23",
         "laravel/breeze": "^2.3",
         "laravel/pail": "^1.2.2",
