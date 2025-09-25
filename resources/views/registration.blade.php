@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sports Camp Registration</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         .page-title {
             font-size: 2.5rem;
@@ -55,6 +54,12 @@
             outline: none;
             border-color: #6366F1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        
+        textarea.form-input-field {
+            height: auto;
+            min-height: 100px;
+            resize: vertical;
         }
 
         .form-label {
