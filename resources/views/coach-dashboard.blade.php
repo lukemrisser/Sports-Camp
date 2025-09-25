@@ -6,7 +6,7 @@
     <title>Coach Dashboard - {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="gradient-bg">
+<body>
 
     <header class="main-header">
         <div class="header-container">
@@ -89,19 +89,8 @@
                 <a href="#" class="card-button">Organize Teams</a>
             </div>
         </div>
-
-        <!-- Coming Soon Section -->
-        <div class="coming-soon-card">
-            <h2 class="coming-soon-title">Coming Soon Features:</h2>
-            <div class="coming-soon-content">
-                <ul class="coming-soon-list">
-                    <li>Filter registrations by specific camps</li>
-                    <li>Export registration data to Excel/CSV</li>
-                    <li>Contact information management for parents</li>
-                    <li>Team balance analysis and reporting</li>
-                    <li>Email communication tools</li>
-                </ul>
-            </div>
+        <div class=navigation>
+            <a href="{{ url('/') }}">← Back to Home</a>
         </div>
     </div>
 
