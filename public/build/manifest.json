@@ -1,16 +1,24 @@
 {
-    "resources/css/app.css": {
-      "file": "assets/app-HWlFZfeI.css",
-      "src": "resources/css/app.css",
-      "isEntry": true,
-      "names": [
-        "app.css"
-      ]
-    },
-    "resources/js/app.js": {
-      "file": "assets/app-DtCVKgHt.js",
-      "name": "app",
-      "src": "resources/js/app.js",
-      "isEntry": true
-    }
+  "resources/css/app.css": {
+    "file": "assets/app-I7BJ38yu.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/css/coach-dashboard.css": {
+    "file": "assets/coach-dashboard-DNrX4i_c.css",
+    "src": "resources/css/coach-dashboard.css",
+    "isEntry": true,
+    "names": [
+      "coach-dashboard.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-DtCVKgHt.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
   }
+}
