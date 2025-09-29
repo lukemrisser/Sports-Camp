@@ -630,13 +630,13 @@ body {
 .registration-title {
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--primary-blue);
+    color: #0a3f94;
     text-align: center;
     margin-bottom: 2rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding-bottom: 1rem;
-    border-bottom: 4px solid var(--primary-blue);
+    border-bottom: 4px solid #0a3f94;
     display: inline-block;
 }
 
@@ -649,10 +649,14 @@ body {
 .section-title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--gray-700);
+    color: #374151;
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--gray-200);
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
 }
 
 .form-grid-2 {
@@ -693,13 +697,13 @@ body {
 
 .radio-text {
     font-size: 0.875rem;
-    color: var(--gray-700);
+    color: #374151;
 }
 
 .submit-section {
     padding-top: 1.25rem;
     margin-top: 1.5rem;
-    border-top: 1px solid var(--gray-200);
+    border-top: 1px solid #e5e7eb;
 }
 
 .submit-button {
@@ -709,7 +713,7 @@ body {
     padding: 0.75rem 1rem;
     border: none;
     border-radius: 0.5rem;
-    background-color: var(--primary-blue);
+    background-color: #0a3f94;
     color: white;
     font-size: 1rem;
     font-weight: 600;
@@ -719,7 +723,7 @@ body {
 }
 
 .submit-button:hover {
-    background-color: var(--primary-blue-hover);
+    background-color: #083570;
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(10, 63, 148, 0.4);
 }
@@ -731,8 +735,11 @@ body {
 
 .alert-success {
     background: #d1fae5;
-    border: 1px solid var(--success-green);
+    border: 1px solid #10b981;
     color: #065f46;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .error-list {
@@ -744,7 +751,6 @@ body {
     margin-bottom: 0.25rem;
 }
 
-/* Responsive Design for Registration Form */
 @media (min-width: 768px) {
     .registration-form-wrapper {
         margin: 0;
