@@ -11,14 +11,14 @@ class Coach extends Model
 	use HasFactory;
 
 	// Set custom primary key
-	protected $primaryKey = 'coach_id';
+	protected $primaryKey = 'Coach_ID';
 
 	// Allow mass assignment for these fields
-	protected $fillable = ['coach_firstname', 'coach_lastname'];
+	protected $fillable = ['Coach_FirstName', 'Coach_LastName'];
 
 	// A coach can have many camps
 	public function camps()
 	{
-		return $this->belongsToMany(Camp::class, 'Coach_Camp');
+		return $this->belongsToMany(Camp::class, 'Coach_Camp', 'Coach_ID', 'Camp_ID');
 	}
 }

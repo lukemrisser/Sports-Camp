@@ -8,10 +8,13 @@ use App\Models\Camp;
 
 class CoachDashboardController extends Controller
 {
-    public function index(Request $request) {
+    public function coachDashboard(Request $request) {
+
+        $coach = \App\Models\Coach::first();
+
 
         // getting camps for the drop-down menu
-        $camps = Camp::all();
+        $camps = $coach->camps;
 
         // If a specific camp was selected
         $selectedCampId = $request->input('camp_id');
@@ -19,7 +22,7 @@ class CoachDashboardController extends Controller
         $players = collect();
 
         if($selectedCampId) {
-            $camp = Camp::find($selectedCampId);
+            $camp = $camps->where('Camp_ID', $selectedCampId)->first();
 
             if($camp) {
                 $players = $camp->players; // Pull the players linked to  that specific camp

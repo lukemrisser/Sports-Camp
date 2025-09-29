@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CoachController;
+use App\Http\Controllers\CoachDashboardController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -12,7 +13,7 @@ Route::get('/registration', function (){
     return view('registration');
 })->name('registration');
 
-Route::get('/coach-dashboard', [CoachController::class, 'dashboard'])->name('coach-dashboard');
+Route::get('/coach-dashboard', [CoachDashboardController::class, 'coachDashboard'])->name('coach-dashboard');
 Route::post('/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('upload-spreadsheet');
 Route::post('/select-camp', [CoachController::class, 'selectCamp'])->name('select-camp');
 
