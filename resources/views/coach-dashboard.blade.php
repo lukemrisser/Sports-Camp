@@ -10,7 +10,7 @@
     <body>
         <header>
             <h1>Coach Dashboard</h1>
-            <a href="#" class="btn-organize">Organize Teams</a>
+            <a href="{{ route('organize-teams') }}" class="btn-organize">Organize Teams</a>
         </header>
 
         <main>
