@@ -19,6 +19,7 @@
             <form action="{{ route('coach.uploadSpreadsheet') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="file" name="spreadsheet" accept=".xlsx, .xls" required>
+                <input type="number" name="num_teams" min="1" placeholder="Number of teams" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 18px; font-size: 1rem;" />
                 <button type="submit">Upload and Generate</button>
             </form>
         </div>
@@ -35,7 +36,8 @@
                         </option>
                     @endforeach
                 </select>
-                <button type="submit">Select and generate teams</button>
+                <input type="number" name="num_teams" min="1" placeholder="Number of teams" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 18px; font-size: 1rem;" />
+                <button type="submit">Select and generate</button>
             </form>
         </div>
 
