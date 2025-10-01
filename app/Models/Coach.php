@@ -19,6 +19,6 @@ class Coach extends Model
 	// A coach can have many camps
 	public function camps()
 	{
-		return $this->belongsToMany(Camp::class, 'Coach_Camp', 'Coach_ID', 'Camp_ID');
+		return $this->belongsToMany(Camp::class, 'Coach_Camp');
 	}
 }

@@ -3,8 +3,9 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\CoachController;
-use App\Http\Controllers\CoachDashboardController;
+
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -13,12 +14,17 @@ Route::get('/registration', function (){
     return view('registration');
 })->name('registration');
 
-Route::get('/coach-dashboard', [CoachDashboardController::class, 'coachDashboard'])
-    //->middleware('auth')
-    ->name('coach-dashboard');
-    
+
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
+Route::get('/coach-dashboard', [CoachController::class, 'dashboard'])->name('coach-dashboard');
 Route::post('/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('upload-spreadsheet');
 Route::post('/select-camp', [CoachController::class, 'selectCamp'])->name('select-camp');
+
 
 Route::middleware('auth')->group(function () {
 
@@ -30,7 +36,7 @@ Route::middleware('auth')->group(function () {
 
 
 Route::get('/organize-teams', [CoachController::class, 'getCampsForCoach'])
-    //->middleware('auth')
+    ->middleware('auth')
     ->name('organize-teams');
 
 Route::post('/home', [CoachController::class, 'uploadSpreadsheet'])->name('coach.uploadSpreadsheet');

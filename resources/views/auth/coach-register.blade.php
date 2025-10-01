@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - {{ config('app.name') }}</title>
+    <title>Coach Register - {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <div class="auth-container">
         <header class="auth-header">
             <h1>Falcon Teams</h1>
-            <p>Create your account</p>
+            <p>Create your coach account</p>
         </header>
 
         <div class="auth-card">
-            <form method="POST" action="{{ route('register') }}">
+            <!-- Update the action to your coach registration route -->
+            <form method="POST" action="{{ route('coach-register') }}">
                 @csrf
+                <!-- Hidden field to identify this as a coach registration -->
+                <input type="hidden" name="role" value="coach" />
 
                 <!-- Name -->
                 <div class="form-group">
@@ -42,6 +45,42 @@
                            required
                            autocomplete="username" />
                     <x-input-error :messages="$errors->get('email')" class="form-error" />
+                </div>
+
+                <!-- Team/Camp Selection -->
+                <div class="form-group">
+                    <label for="team" class="form-label">Team/Camp</label>
+                    <select id="team"
+                            class="form-input form-select"
+                            name="team"
+                            required>
+                        <option value="" disabled {{ old('team') ? '' : 'selected' }}>Select your team or camp</option>
+                        <optgroup label="Sports Teams">
+                            <option value="soccer" {{ old('team') == 'soccer' ? 'selected' : '' }}>Soccer</option>
+                            <option value="basketball" {{ old('team') == 'basketball' ? 'selected' : '' }}>Basketball</option>
+                            <option value="baseball" {{ old('team') == 'baseball' ? 'selected' : '' }}>Baseball</option>
+                            <option value="softball" {{ old('team') == 'softball' ? 'selected' : '' }}>Softball</option>
+                            <option value="volleyball" {{ old('team') == 'volleyball' ? 'selected' : '' }}>Volleyball</option>
+                            <option value="tennis" {{ old('team') == 'tennis' ? 'selected' : '' }}>Tennis</option>
+                            <option value="track" {{ old('team') == 'track' ? 'selected' : '' }}>Track & Field</option>
+                            <option value="swimming" {{ old('team') == 'swimming' ? 'selected' : '' }}>Swimming</option>
+                            <option value="football" {{ old('team') == 'football' ? 'selected' : '' }}>Football</option>
+                            <option value="lacrosse" {{ old('team') == 'lacrosse' ? 'selected' : '' }}>Lacrosse</option>
+                        </optgroup>
+                        <optgroup label="Summer Camps">
+                            <option value="all_sports_camp" {{ old('team') == 'all_sports_camp' ? 'selected' : '' }}>All Sports Camp</option>
+                            <option value="soccer_camp" {{ old('team') == 'soccer_camp' ? 'selected' : '' }}>Soccer Camp</option>
+                            <option value="basketball_camp" {{ old('team') == 'basketball_camp' ? 'selected' : '' }}>Basketball Camp</option>
+                            <option value="volleyball_camp" {{ old('team') == 'volleyball_camp' ? 'selected' : '' }}>Volleyball Camp</option>
+                            <option value="tennis_camp" {{ old('team') == 'tennis_camp' ? 'selected' : '' }}>Tennis Camp</option>
+                            <option value="stem_sports_camp" {{ old('team') == 'stem_sports_camp' ? 'selected' : '' }}>STEM & Sports Camp</option>
+                        </optgroup>
+                        <optgroup label="Other">
+                            <option value="administration" {{ old('team') == 'administration' ? 'selected' : '' }}>Administration</option>
+                            <option value="multiple" {{ old('team') == 'multiple' ? 'selected' : '' }}>Multiple Teams/Camps</option>
+                        </optgroup>
+                    </select>
+                    <x-input-error :messages="$errors->get('team')" class="form-error" />
                 </div>
 
                 <!-- Password -->
@@ -73,17 +112,17 @@
                         Already registered?
                     </a>
 
-                    <a class="login-link" href="{{ route('coach-register') }}">
-                        Register as a coach
+                    <a class="login-link" href="{{ route('register') }}">
+                        Register as a player
                     </a>
 
                     <button type="submit" class="register-button">
-                        Register
+                        Register as Coach
                     </button>
                 </div>
 
                 <div class="auth-footer">
-                    <p>By registering, you agree to our terms and conditions</p>
+                    <p>By registering as a coach, you agree to our terms and conditions</p>
                 </div>
             </form>
         </div>
@@ -102,7 +141,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #6e84e7 0%, #764ba2 100%);
+            /* Different gradient for coach registration to distinguish it */
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -159,6 +199,25 @@
             font-size: 16px;
             transition: all 0.3s ease;
             background: #f9fafb;
+        }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 20px;
+            padding-right: 40px;
+        }
+
+        .form-select option[disabled] {
+            color: #9ca3af;
+        }
+
+        .form-select optgroup {
+            font-weight: 600;
+            color: #374151;
         }
 
         .form-input:focus {

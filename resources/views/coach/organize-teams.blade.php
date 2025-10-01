@@ -19,22 +19,25 @@
             <form action="{{ route('coach.uploadSpreadsheet') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="file" name="spreadsheet" accept=".xlsx, .xls" required>
+                <input type="number" name="num_teams" min="1" placeholder="Number of teams" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 18px; font-size: 1rem;" />
                 <button type="submit">Upload and Generate</button>
             </form>
         </div>
+        <div class="or" style="text-align: center; margin: 20px 0; font-weight: 600; color: #555;">OR</div>
        
-        <div class="select_camp">
+        <div class="upload">
             <h2>Select Camp</h2>
-            <form action="{{ route('coach.selectCamp') }}" method="POST">
+            <form action="{{ route('coach.selectCamp') }}" method="POST" style="text-align: center; background: #f8fafc; border-radius: 12px; padding: 32px 24px; max-width: 420px; margin: 40px auto 0 auto; box-shadow: 0 4px 24px rgba(10, 63, 148, 0.08);">
                 @csrf
                 <select name="camp_id">
                     @foreach($camps as $camp)
-                        <option value="{{ $camp->camp_id }}">
-                            {{ $camp->camp_name }} ({{ $camp->start_date }} - {{ $camp->end_date }})
+                        <option value="{{ $camp->Camp_ID }}">
+                            {{ $camp->Camp_Name }} ({{ \Carbon\Carbon::parse($camp->Start_Date)->format('m/d/y') }} - {{ \Carbon\Carbon::parse($camp->End_Date)->format('m/d/y') }})
                         </option>
                     @endforeach
                 </select>
-                <button type="submit">Select and generate teams</button>
+                <input type="number" name="num_teams" min="1" placeholder="Number of teams" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 18px; font-size: 1rem;" />
+                <button type="submit">Select and generate</button>
             </form>
         </div>
 

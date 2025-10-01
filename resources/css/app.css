@@ -15,8 +15,9 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.6;
-    color: #333;
+    background-color: white;
+    margin: 0;
+    padding: 0;
 }
 
 /* ============================================
@@ -453,7 +454,7 @@ body {
 
 .navigation a {
     margin: 0 15px;
-    color: white;
+    color: var(--primary-blue);
     text-decoration: none;
     font-weight: 500;
     padding: 10px 20px;
@@ -474,7 +475,7 @@ body {
 }
 
 .back-link a {
-    color: white;
+    color: var(--primary-blue);
     text-decoration: none;
     font-weight: 500;
     padding: 8px 16px;
@@ -592,26 +593,190 @@ body {
     color: #991b1b;
 }
 
-.coming-soon-card {
+/* ============================================
+   REGISTRATION FORM STYLES
+   ============================================ */
+
+   .registration-page {
+    min-height: 100vh;
+    padding: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: #f3f4f6;
+}
+
+.registration-container {
+    position: relative;
+    padding: 0.75rem;
+    max-width: 64rem;
+    margin: 0 auto;
+}
+
+.registration-form-wrapper {
+    position: relative;
+    padding: 2.5rem;
     background: white;
-    border-radius: 16px;
-    padding: 30px;
-    margin-top: 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin: 0 2rem;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    border-radius: 1.5rem;
 }
 
-.coming-soon-title {
-    color: var(--gray-900);
-    margin-bottom: 20px;
+.registration-header {
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
-.coming-soon-content {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
+.registration-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #0a3f94;
+    text-align: center;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-bottom: 1rem;
+    border-bottom: 4px solid #0a3f94;
+    display: inline-block;
 }
 
-.coming-soon-list {
-    color: var(--gray-600);
-    line-height: 1.8;
+.registration-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+}
+
+.form-grid-2 {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+}
+
+.form-grid-3 {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+}
+
+.form-textarea {
+    min-height: 4rem;
+    resize: vertical;
+    padding: 0.75rem;
+}
+
+.radio-group {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.radio-label {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.radio-input {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+
+.radio-text {
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.submit-section {
+    padding-top: 1.25rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.submit-button {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    background-color: #0a3f94;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(10, 63, 148, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #083570;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(10, 63, 148, 0.4);
+}
+
+.submit-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(10, 63, 148, 0.3);
+}
+
+.alert-success {
+    background: #d1fae5;
+    border: 1px solid #10b981;
+    color: #065f46;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.error-list {
+    margin: 0;
+    padding-left: 1rem;
+}
+
+.error-list li {
+    margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+    .registration-form-wrapper {
+        margin: 0;
+        padding: 2.5rem;
+    }
+
+    .form-grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .form-grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .registration-container {
+        padding: 0.5rem;
+    }
+
+    .registration-form-wrapper {
+        margin: 0;
+        padding: 1.5rem;
+    }
+
+    .registration-title {
+        font-size: 2rem;
+    }
 }

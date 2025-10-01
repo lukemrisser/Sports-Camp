@@ -7,28 +7,30 @@ use App\Models\Player;
 
 class Camp extends Model
 {
-    protected $table = 'Camps';
-    protected $primaryKey = 'Camp_ID';
-    public $timestamps = false;
+	use HasFactory;
 
-    protected $fillable = [
-        'Camp_Name',
-        'Start_Date',
-        'End_Date'
-    ];
+	// Set custom primary key
+	protected $primaryKey = 'camp_id';
+
+    // Specify the table name to match the database
+    protected $table = 'Camps';
+
+	// Allow mass assignment for these fields
+	protected $fillable = ['camp_name', 'start_date', 'end_date'];
 
 	protected $casts = [
-		'Start_Date' => 'date',
-		'End_Date' => 'date'
+		'start_date' => 'date',
+		'end_date' => 'date',
 	];
-    
-	// Many-to-many relationship with players
-    public function players() {
-        return $this->belongsToMany(Player::class, 'Player_Camp', 'Camp_ID', 'Player_ID');
-    }
 
-	// Many-to-many relationship with coaches
-	public function coaches() {
-		return $this->belongsToMany(Coach::class, 'Coach_Camp', 'Camp_ID', 'Coach_ID');
+	// A camp can have many players
+	public function players()
+	{
+		return $this->belongsToMany(Player::class, 'Player_Camp');
+	}
+    
+	public function coaches()
+	{
+		return $this->belongsToMany(Coach::class, 'Coach_Camp');
 	}
 }
