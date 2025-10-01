@@ -108,6 +108,29 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Teammate Requests -->
+                    <div class="form-section">
+                        <h3 class="section-title">Teammate Requests (optional)</h3>
+                        <p class="text-sm text-gray-600 mb-3">If you'd like to request teammates, enter their names below. You can add multiple requests.</p>
+                        <div id="teammate-requests">
+                            <div class="teammate-request form-grid-2 relative">
+                                <div class="form-group">
+                                    <label class="form-label">Teammate First Name</label>
+                                    <input type="text" name="teammate_first[]" class="form-input" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Teammate Last Name</label>
+                                    <input type="text" name="teammate_last[]" class="form-input" />
+                                </div>
+                                <button type="button" class="remove-teammate absolute right-0 bottom-0 mb-2 px-3 text-red-500 hover:text-red-700" title="Remove teammate request">&times;</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="button" id="add-teammate" class="submit-button" style="width: auto;">Add another teammate request</button>
+                        </div>
+                    </div>
 
                     <!-- Contact Information -->
                     <div class="form-section">
@@ -231,6 +254,36 @@
                 value = '(' + value;
             }
             e.target.value = value;
+        });
+
+        // Handle adding and removing teammate request fields
+        document.getElementById('add-teammate').addEventListener('click', function() {
+            const container = document.getElementById('teammate-requests');
+            const newRequest = document.createElement('div');
+            newRequest.classList.add('teammate-request', 'form-grid-2', 'relative');
+            newRequest.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Teammate First Name</label>
+                    <input type="text" name="teammate_first[]" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teammate Last Name</label>
+                    <input type="text" name="teammate_last[]" class="form-input" />
+                </div>
+                <button type="button" class="remove-teammate absolute right-0 bottom-0 mb-2 px-3 text-red-500 hover:text-red-700" title="Remove teammate request">&times;</button>
+            `;
+            container.appendChild(newRequest);
+
+            const removeButton = newRequest.querySelector('.remove-teammate');
+            removeButton.addEventListener('click', function() {
+                newRequest.remove();
+            });
+        });
+
+        document.querySelectorAll('.remove-teammate').forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.teammate-request').remove();
+            });
         });
     </script>
 </body>
