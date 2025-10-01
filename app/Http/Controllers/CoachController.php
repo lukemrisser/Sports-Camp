@@ -116,10 +116,10 @@ class CoachController extends Controller
             $cluster = $this->collectCluster($player->Player_ID, $requestMap, $visited);
             $clusters[] = $cluster;
         }
-        
+
         // Calculate max team size
         $totalPlayers = count($players);
-        $maxTeamSize = ceil($totalPlayers / $numTeams) + 1;
+        $maxTeamSize = ceil($totalPlayers / $numTeams);
 
         // Calculate average age for each cluster
         $clusterAges = [];
