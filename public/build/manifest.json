@@ -7,6 +7,14 @@
       "app.css"
     ]
   },
+  "resources/css/coach-dashboard.css": {
+    "file": "assets/coach-dashboard-Cdt-VSbc.css",
+    "src": "resources/css/coach-dashboard.css",
+    "isEntry": true,
+    "names": [
+      "coach-dashboard.css"
+    ]
+  },
   "resources/js/app.js": {
     "file": "assets/app-CQzja3Mz.js",
     "name": "app",
