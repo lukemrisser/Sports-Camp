@@ -3,285 +3,288 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sports Camp Registration</title>
+    <title>Sports Camp Registration - {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        .form-input-field {
-            margin-top: 0.25rem;
-            display: block;
-            width: 100%;
-            border-radius: 0.375rem;
-            border: 1px solid #D1D5DB;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            padding: 0.5rem 0.75rem;
-        }
-
-        .form-input-field:focus {
-            outline: none;
-            border-color: #6366F1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 0.25rem;
-        }
-
-        .form-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 1rem;
-        }
-
-        .form-grid-2 {
-            display: grid;
-            gap: 1rem;
-            grid-template-columns: 1fr;
-        }
-
-        @media (min-width: 768px) {
-            .form-grid-2 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        .form-grid-3 {
-            display: grid;
-            gap: 1rem;
-            grid-template-columns: 1fr;
-        }
-
-        @media (min-width: 768px) {
-            .form-grid-3 {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        .radio-group {
-            margin-top: 0.5rem;
-            display: flex;
-            gap: 1rem;
-        }
-
-        .radio-label {
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .radio-text {
-            margin-left: 0.5rem;
-        }
-
-        .submit-button {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            padding: 0.75rem 1rem;
-            border: none;
-            border-radius: 0.375rem;
-            background-color: #4F46E5;
-            color: white;
-            font-size: 0.875rem;
-            font-weight: 500;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .submit-button:hover {
-            background-color: #4338CA;
-        }
-
-        .submit-button:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.5);
-        }
-    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="min-h-screen py-6 flex flex-col justify-center sm:py-12">
-        <div class="relative py-3 sm:max-w-xl md:max-w-4xl mx-auto">
-            <div class="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
-                <div class="max-w-md mx-auto">
-                    <div class="divide-y divide-gray-200">
-                        <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-                            <h2 class="text-3xl font-bold text-center mb-8">Falcon Teams</h2>
-                            
-                            <form class="space-y-6">
-                                <!-- Parent Information -->
-                                <div class="form-section">
-                                    <h3 class="form-section-title">Parent/Guardian Information</h3>
-                                    <div class="form-grid-2">
-                                        <div>
-                                            <label class="form-label">Parent First Name</label>
-                                            <input type="text" class="form-input-field">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Parent Last Name</label>
-                                            <input type="text" class="form-input-field">
-                                        </div>
-                                    </div>
-                                </div>
+<body>
+    <div class="registration-page">
+        <div class="registration-container">
+            <div class="registration-form-wrapper">
+                <div class="registration-header">
+                    <h2 class="registration-title">Falcon Teams Registration</h2>
+                </div>
 
-                                <!-- Camper Information -->
-                                <div class="form-section">
-                                    <h3 class="form-section-title">Camper Information</h3>
-                                    <div class="form-grid-2">
-                                        <div>
-                                            <label class="form-label">Camper First Name</label>
-                                            <input type="text" class="form-input-field">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Camper Last Name</label>
-                                            <input type="text" class="form-input-field">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Gender</label>
-                                            <select class="form-input-field">
-                                                <option value="">Select Gender</option>
-                                                <option value="male">Male</option>
-                                                <option value="female">Female</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Birth Date</label>
-                                            <input type="date" class="form-input-field">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Age</label>
-                                            <input type="number" class="form-input-field">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Shirt Size</label>
-                                            <select class="form-input-field">
-                                                <option value="">Select Size</option>
-                                                <option value="ys">Youth Small</option>
-                                                <option value="ym">Youth Medium</option>
-                                                <option value="yl">Youth Large</option>
-                                                <option value="as">Adult Small</option>
-                                                <option value="am">Adult Medium</option>
-                                                <option value="al">Adult Large</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
+                @if(session('success'))
+                    <div class="alert alert-success">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
-                                <!-- Contact Information -->
-                                <div class="form-section">
-                                    <h3 class="form-section-title">Contact Information</h3>
-                                    <div>
-                                        <label class="form-label">Address</label>
-                                        <input type="text" class="form-input-field">
-                                    </div>
-                                    <div class="form-grid-3">
-                                        <div>
-                                            <label class="form-label">City</label>
-                                            <input type="text" class="form-input-field">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">State</label>
-                                            <input type="text" class="form-input-field">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">ZIP Code</label>
-                                            <input type="text" class="form-input-field">
-                                        </div>
-                                    </div>
-                                    <div class="form-grid-2">
-                                        <div>
-                                            <label class="form-label">Email</label>
-                                            <input type="email" class="form-input-field">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Phone</label>
-                                            <input type="tel" class="form-input-field">
-                                        </div>
-                                    </div>
-                                </div>
+                @if(session('error'))
+                    <div class="alert alert-error">
+                        {{ session('error') }}
+                    </div>
+                @endif
 
-                                <!-- Medical Information -->
-                                <div class="form-section">
-                                    <h3 class="form-section-title">Medical Information</h3>
-                                    <div class="form-section">
-                                        <div>
-                                            <label class="form-label">Allergies</label>
-                                            <textarea class="form-input-field" rows="3"></textarea>
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Does the camper have asthma?</label>
-                                            <div class="radio-group">
-                                                <label class="radio-label">
-                                                    <input type="radio" name="asthma" value="yes" class="form-radio">
-                                                    <span class="radio-text">Yes</span>
-                                                </label>
-                                                <label class="radio-label">
-                                                    <input type="radio" name="asthma" value="no" class="form-radio">
-                                                    <span class="radio-text">No</span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Is the camper on any medications?</label>
-                                            <div class="radio-group">
-                                                <label class="radio-label">
-                                                    <input type="radio" name="medication" value="yes" class="form-radio">
-                                                    <span class="radio-text">Yes</span>
-                                                </label>
-                                                <label class="radio-label">
-                                                    <input type="radio" name="medication" value="no" class="form-radio">
-                                                    <span class="radio-text">No</span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Recent Injuries or Health Concerns</label>
-                                            <textarea class="form-input-field" rows="3"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
+                @if($errors->any())
+                    <div class="alert alert-error">
+                        <ul class="error-list">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-                                <!-- Church Information -->
-                                <div class="form-section">
-                                    <h3 class="form-section-title">Church Information</h3>
-                                    <div class="form-grid-2">
-                                        <div>
-                                            <label class="form-label">Church Name</label>
-                                            <input type="text" class="form-input-field">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Church Attendance</label>
-                                            <select class="form-input-field">
-                                                <option value="">Select Frequency</option>
-                                                <option value="weekly">Weekly</option>
-                                                <option value="monthly">Monthly</option>
-                                                <option value="occasionally">Occasionally</option>
-                                                <option value="rarely">Rarely</option>
-                                                <option value="never">Never</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
+                <form method="POST" action="{{ route('players.store') }}" class="registration-form">
+                    @csrf
 
-                                <!-- Submit Button -->
-                                <div class="pt-5">
-                                    <button type="submit" class="submit-button">
-                                        Submit Registration
-                                    </button>
-                                </div>
-                            </form>
+                    <!-- Camp Selection -->
+                    <div class="form-section">
+                        <h3 class="section-title">Camp Selection</h3>
+                        <div class="form-group">
+                            <label class="form-label">Select Camp</label>
+                            <select name="Division_Name" class="form-input" required>
+                                <option value="">Select Camp</option>
+                                <option value="Aroma">Aroma All Sports Camp</option>
+                            </select>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Parent Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">Parent/Guardian Information</h3>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Parent First Name</label>
+                                <input type="text" name="Parent_FirstName" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Parent Last Name</label>
+                                <input type="text" name="Parent_LastName" class="form-input" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Camper Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">Camper Information</h3>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Camper First Name</label>
+                                <input type="text" name="Camper_FirstName" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Camper Last Name</label>
+                                <input type="text" name="Camper_LastName" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Gender</label>
+                                <select name="Gender" class="form-input" required>
+                                    <option value="">Select Gender</option>
+                                    <option value="M">Male</option>
+                                    <option value="F">Female</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Birth Date</label>
+                                <input type="date" name="Birth_Date" class="form-input" required max="{{ date('Y-m-d') }}" min="{{ date('Y-m-d', strtotime('-100 years')) }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Age</label>
+                                <input type="number" name="Age" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Shirt Size</label>
+                                <select name="Shirt_Size" class="form-input" required>
+                                    <option value="">Select Size</option>
+                                    <option value="YS">Youth Small</option>
+                                    <option value="YM">Youth Medium</option>
+                                    <option value="YL">Youth Large</option>
+                                    <option value="AS">Adult Small</option>
+                                    <option value="AM">Adult Medium</option>
+                                    <option value="AL">Adult Large</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Teammate Requests -->
+                    <div class="form-section">
+                        <h3 class="section-title">Teammate Requests (optional)</h3>
+                        <p class="text-sm text-gray-600 mb-3">If you'd like to request teammates, enter their names below. You can add multiple requests.</p>
+                        <div id="teammate-requests">
+                            <div class="teammate-request form-grid-2 relative">
+                                <div class="form-group">
+                                    <label class="form-label">Teammate First Name</label>
+                                    <input type="text" name="teammate_first[]" class="form-input" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Teammate Last Name</label>
+                                    <input type="text" name="teammate_last[]" class="form-input" />
+                                </div>
+                                <button type="button" class="remove-teammate absolute right-0 bottom-0 mb-2 px-3 text-red-500 hover:text-red-700" title="Remove teammate request">&times;</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="button" id="add-teammate" class="submit-button" style="width: auto;">Add another teammate request</button>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">Contact Information</h3>
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <input type="text" name="Address" class="form-input" required>
+                        </div>
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label class="form-label">City</label>
+                                <input type="text" name="City" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">State</label>
+                                <input type="text" name="State" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ZIP Code</label>
+                                <input type="text" name="Postal_Code" class="form-input" required>
+                            </div>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="Email" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="tel"
+                                    class="form-input"
+                                    id="phone"
+                                    name="Phone"
+                                    placeholder="(123) 456-7890"
+                                    maxlength="14"
+                                    required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">Medical Information</h3>
+                        <div class="form-group">
+                            <label class="form-label">Allergies</label>
+                            <textarea name="Allergies" class="form-input form-textarea" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Does the camper have asthma?</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="Asthma" value="1" class="radio-input" required>
+                                    <span class="radio-text">Yes</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="Asthma" value="0" class="radio-input" required>
+                                    <span class="radio-text">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Is the camper on any medications?</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="Medication_Status" value="1" class="radio-input" required>
+                                    <span class="radio-text">Yes</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="Medication_Status" value="0" class="radio-input" required>
+                                    <span class="radio-text">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Recent Injuries or Health Concerns</label>
+                            <textarea name="Injuries" class="form-input form-textarea" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Church Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">Church Information</h3>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Church Name</label>
+                                <input type="text" name="Church_Name" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Church Attendance</label>
+                                <select name="Church_Attendance" class="form-input">
+                                    <option value="">Select Frequency</option>
+                                    <option value="Weekly">Weekly</option>
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="Occasionally">Occasionally</option>
+                                    <option value="Rarely">Rarely</option>
+                                    <option value="Never">Never</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="submit-section">
+                        <button type="submit" class="submit-button">
+                            Submit Registration
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '').substring(0, 10);
+            if (value.length >= 6) {
+                value = '(' + value.substring(0, 3) + ') ' + value.substring(3, 6) + '-' + value.substring(6);
+            } else if (value.length >= 3) {
+                value = '(' + value.substring(0, 3) + ') ' + value.substring(3);
+            } else if (value.length > 0) {
+                value = '(' + value;
+            }
+            e.target.value = value;
+        });
+
+        // Handle adding and removing teammate request fields
+        document.getElementById('add-teammate').addEventListener('click', function() {
+            const container = document.getElementById('teammate-requests');
+            const newRequest = document.createElement('div');
+            newRequest.classList.add('teammate-request', 'form-grid-2', 'relative');
+            newRequest.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Teammate First Name</label>
+                    <input type="text" name="teammate_first[]" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teammate Last Name</label>
+                    <input type="text" name="teammate_last[]" class="form-input" />
+                </div>
+                <button type="button" class="remove-teammate absolute right-0 bottom-0 mb-2 px-3 text-red-500 hover:text-red-700" title="Remove teammate request">&times;</button>
+            `;
+            container.appendChild(newRequest);
+
+            const removeButton = newRequest.querySelector('.remove-teammate');
+            removeButton.addEventListener('click', function() {
+                newRequest.remove();
+            });
+        });
+
+        document.querySelectorAll('.remove-teammate').forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.teammate-request').remove();
+            });
+        });
+    </script>
 </body>
 </html>

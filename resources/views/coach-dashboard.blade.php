@@ -3,79 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coach Dashboard - Falcon Camps</title>
-    <style>
-        /* Add your existing styles here */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #6e84e7 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            background: #0a3f94;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .dashboard-content {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .logout-btn {
-            background: #dc3545;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-    </style>
+    <title>Coach Dashboard - {{ config('app.name') }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Coach Dashboard</h1>
 
+    <header class="main-header">
+        <div class="header-container">
+            <div class="header-content">
+                <h1>Coach Dashboard</h1>
+                {!! $user ? '<p>Welcome back, ' . $user->name . '!</p>' : '' !!}
+            </div>
 
-            <div style="margin-top: 20px;">
-                <a href="{{ route('home') }}" style="color: white; margin-right: 15px;">← Back to Home</a>
-                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+            <div class="header-buttons">
+                <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
+                <form method="POST" action="{{ route('logout') }}" class="logout-form">
                     @csrf
-                    <button type="submit" class="logout-btn">Logout</button>
+                    <button type="submit" class="header-btn logout-btn">Logout</button>
                 </form>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <div class="dashboard-content">
-            <h2>Camp Registrations</h2>
-            <p><em>Registration data will appear here once you implement the database storage.</em></p>
+    <div class="container">
+        <!-- Success/Error Messages -->
+        @if(session('success'))
+            <div class="session-status">
+                {{ session('success') }}
+            </div>
+        @endif
 
-            <!-- Placeholder for future registration data -->
-            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-                <h3>Coming Soon:</h3>
-                <ul>
-                    <li>View all camp registrations</li>
-                    <li>Filter by specific camps</li>
-                    <li>Export registration data</li>
-                    <li>Contact information for parents</li>
-                </ul>
+        @if(session('error'))
+            <div class="alert alert-error">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <div class="cards-grid">
+            <!-- Camp Registrations Card -->
+            <div class="registration-card blue">
+                <div class="card-icon">📋</div>
+                <h3>Camp Registrations</h3>
+                <p>View and manage all registrations for your camps</p>
+                <a href="#" class="card-button">View Registrations</a>
+            </div>
+
+            <!-- Upload Spreadsheet Card -->
+            <div class="registration-card green">
+                <div class="card-icon">📊</div>
+                <h3>Upload Spreadsheet</h3>
+                <p>Upload a spreadsheet with player information to organize into teams</p>
+                <form action="{{ route('upload-spreadsheet') }}" method="POST" enctype="multipart/form-data" class="card-form">
+                    @csrf
+                    <div class="form-group">
+                        <input type="file" name="spreadsheet" accept=".xlsx,.xls,.csv" required class="form-input">
+                    </div>
+                    <button type="submit" class="card-button">Upload File</button>
+                </form>
+            </div>
+
+            <!-- Select Camp Card -->
+            <div class="registration-card purple">
+                <div class="card-icon">🏕️</div>
+                <h3>Select Camp</h3>
+                <p>Choose which camp you want to organize teams for</p>
+                <form action="{{ route('select-camp') }}" method="POST" class="card-form">
+                    @csrf
+                    <div class="form-group">
+                        <select name="camp_id" required class="form-input">
+                            <option value="">Choose a camp...</option>
+                            <!-- You'll need to populate this with actual camps -->
+                            <option value="1">Summer Camp 2024</option>
+                            <option value="2">Spring Training 2024</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="card-button">Select Camp</button>
+                </form>
+            </div>
+
+            <!-- Organize Teams Card -->
+            <div class="registration-card orange">
+                <div class="card-icon">👥</div>
+                <h3>Organize Teams</h3>
+                <p>Create balanced teams from your uploaded player data</p>
+                <a href="#" class="card-button">Organize Teams</a>
             </div>
         </div>
+        <div class=navigation>
+            <a href="{{ url('/') }}">← Back to Home</a>
+        </div>
     </div>
+
 </body>
 </html>

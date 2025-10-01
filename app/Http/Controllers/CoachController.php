@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Http\Request;
 use App\Models\Coach;
 use App\Models\Camp;
 use App\Models\User;
@@ -14,6 +13,7 @@ use Maatwebsite\Excel\Excel as ExcelWriter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Response;
 
+
 class CoachController extends Controller
 {
     public function dashboard()
@@ -22,10 +22,8 @@ class CoachController extends Controller
 
         // For now, just show a simple dashboard
         // Later you can add logic to get registrations for this coach's camps
-
         return view('coach-dashboard', compact('user'));
     }
-
 
     public function uploadSpreadsheet(Request $request)
     {
@@ -217,5 +215,4 @@ class CoachController extends Controller
         $camps = $coach ? $coach->camps : collect();
         return view('coach.organize-teams', compact('camps'));
     }
-
 }
