@@ -10,7 +10,7 @@ class Player extends Model
 	use HasFactory;
 
     // Set custom primary key
-    protected $primaryKey = 'player_id';
+    protected $primaryKey = 'Player_ID';
 
     // Specify the table name to match the database
     protected $table = 'Players';
@@ -42,6 +42,6 @@ class Player extends Model
 	// A player can belong to many camps
 	public function camps()
 	{
-		return $this->belongsToMany(Camp::class, 'Player_Camp');
+		return $this->belongsToMany(Camp::class, 'Player_Camp', 'Player_ID', 'Camp_ID');
 	}
 }
