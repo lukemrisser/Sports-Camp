@@ -10,7 +10,8 @@ class CoachDashboardController extends Controller
 {
     public function coachDashboard(Request $request) {
 
-        $coach = auth()->user()->coach;
+        // $coach = auth()->user()->coach;
+        $coach = \App\Models\Coach::first();
 
 
         // getting camps for the drop-down menu
@@ -29,6 +30,6 @@ class CoachDashboardController extends Controller
             }
         }
 
-        return view('coach-dashboard', compact('camps', 'players', 'selectedCampId'));
+        return view('coach.coach-dashboard', compact('camps', 'players', 'selectedCampId'));
     }
 }

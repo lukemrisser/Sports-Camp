@@ -59,7 +59,8 @@ class CoachController extends Controller
     public function getCampsForCoach()
     {
         $user = Auth::user();
-        $coach = $user->coach; // assumes User hasOne Coach
+        // $coach = $user->coach; // assumes User hasOne Coach
+        $coach = $user?->coach;
         $camps = $coach ? $coach->camps : collect(); // Collection of Camp models or empty
 
         return view('coach.organize-teams', compact('camps'));

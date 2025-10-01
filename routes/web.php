@@ -14,7 +14,7 @@ Route::get('/registration', function (){
 })->name('registration');
 
 Route::get('/coach-dashboard', [CoachDashboardController::class, 'coachDashboard'])
-    ->middleware('auth')
+    //->middleware('auth')
     ->name('coach-dashboard');
     
 Route::post('/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('upload-spreadsheet');
@@ -30,7 +30,7 @@ Route::middleware('auth')->group(function () {
 
 
 Route::get('/organize-teams', [CoachController::class, 'getCampsForCoach'])
-    ->middleware('auth')
+    //->middleware('auth')
     ->name('organize-teams');
 
 Route::post('/home', [CoachController::class, 'uploadSpreadsheet'])->name('coach.uploadSpreadsheet');
