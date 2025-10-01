@@ -20,8 +20,8 @@
                 <select name="camp_id" id="camp" onchange="this.form.submit()">
                     <option value="">-- Choose a camp --</option>
                     @foreach($camps as $camp)
-                        <option value="{{ $camp->Camp_ID }}" {{ $selectedCampId == $camp->Camp_ID ? 'selected' : '' }}>
-                            {{ $camp->Camp_Name }}
+                        <option value="{{ $camp->camp_id }}" {{ $selectedCampId == $camp->camp_id ? 'selected' : '' }}>
+                            {{ $camp->camp_name }}
                         </option>
                     @endforeach
                 </select>
@@ -44,10 +44,10 @@
                     <tbody>
                         @foreach($players as $player)
                             <tr>
-                                <td>{{ $player->Division_Name }}</td>
-                                <td>{{ $player->Camper_FirstName }}</td>
-                                <td>{{ $player->Camper_LastName }}</td>
-                                <td>{{ $player->Gender }}</td>
+                                <td>{{ $player->division_name }}</td>
+                                <td>{{ $player->camper_first_name }}</td>
+                                <td>{{ $player->camper_last_name }}</td>
+                                <td>{{ $player->gender }}</td>
                             </tr>
                         @endforeach
                     </tbody>
