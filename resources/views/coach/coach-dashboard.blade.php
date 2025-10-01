@@ -29,6 +29,8 @@
 
             {{-- Players Table --}}
             @if($players->isNotEmpty())
+
+                <h3>Total Players: {{ $players->count() }}</h3>
                 <table>
                     <thead>
                         <tr>
