@@ -20,8 +20,9 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/coach-dashboard', [CoachDashboardController::class, 'coachDashboard'])->name('coach-dashboard');
+
 Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
-Route::get('/coach-dashboard', [CoachController::class, 'dashboard'])->name('coach-dashboard');
 Route::post('/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('upload-spreadsheet');
 Route::post('/select-camp', [CoachController::class, 'selectCamp'])->name('select-camp');
 
