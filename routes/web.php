@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\CoachController;
+use App\Http\Controllers\CoachDashBoardController;
+
 
 
 
