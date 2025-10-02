@@ -11,8 +11,12 @@
     <header class="main-header">
         <div class="header-container">
             <div class="header-content">
-                <h1>Coach Dashboard</h1>
-                {!! $user ? '<p>Welcome back, ' . $user->name . '!</p>' : '' !!}
+                <h1 class="welcome-text">
+                    Welcome, {{ Auth::user()->coach->Coach_FirstName }}!
+                    @if(Auth::user()->isCoachAdmin())
+                        <span class="admin-badge">Admin</span>
+                    @endif
+                </h1>
             </div>
 
             <div class="header-buttons">

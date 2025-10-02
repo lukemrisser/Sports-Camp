@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Coach;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -21,7 +22,7 @@ class RegisteredUserController extends Controller
     public function create(): View
     {
         // Check if this is the coach registration route
-        if (Route::currentRouteName() === 'coach-register') {
+        if (request()->is('coach-register')) {
             return view('auth.coach-register');
         }
 
@@ -34,80 +35,136 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-
-
     public function store(Request $request): RedirectResponse
     {
         // Check if this is coming from the coach registration route
         $isCoachRegistration = $request->is('coach-register');
 
-        // Base validation rules
-        $rules = [
-            'name' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ];
-
-        // Add email validation based on registration type
         if ($isCoachRegistration) {
-            // Coach must use @messiah.edu email and select a team
-            $rules['email'] = [
+            return $this->storeCoach($request);
+        }
+
+        // Regular user registration (parents/players)
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
                 'required',
                 'string',
                 'lowercase',
                 'email',
                 'max:255',
-                'unique:'.User::class,
-                'regex:/^[a-zA-Z0-9._%+-]+@messiah\.edu$/i'
-            ];
-            $rules['team'] = ['required', 'string', 'in:soccer,basketball,baseball,softball,volleyball,tennis,track,swimming,football,lacrosse,all_sports_camp,soccer_camp,basketball_camp,volleyball_camp,tennis_camp,stem_sports_camp,administration,multiple'];
-        } else {
-            // Parent/player validation...
-            $rules['email'] = [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                'unique:'.User::class,
+                'unique:users',
                 function ($attribute, $value, $fail) {
                     if (preg_match('/@messiah\.edu$/i', $value)) {
                         $fail('Please use the coach registration form for @messiah.edu email addresses.');
                     }
                 }
-            ];
-        }
+            ],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
 
-        // Custom error messages
-        $messages = [
-            'email.regex' => 'Coach registration requires a valid @messiah.edu email address.',
-            'team.required' => 'Please select the team or camp you are associated with.',
-            'team.in' => 'Please select a valid team or camp from the list.',
-        ];
-
-        $request->validate($rules, $messages);
-
-        // Create the user - you'll need to add 'team' to your users table
-        $userData = [
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-        ];
-
-        // Only add team if it's a coach registration
-        if ($isCoachRegistration) {
-            $userData['team'] = $request->team;
-        }
-
-        $user = User::create($userData);
+        ]);
 
         event(new Registered($user));
         Auth::login($user);
 
-        // Redirect based on email domain
-        if (preg_match('/@messiah\.edu$/i', $request->email)) {
-            return redirect()->route('coach-dashboard');
-        }
-
         return redirect()->route('dashboard');
+    }
+
+    /**
+     * Handle coach registration.
+     */
+    private function storeCoach(Request $request): RedirectResponse
+    {
+        // Validation rules for coach registration
+        $request->validate([
+            'coach_firstname' => ['required', 'string', 'max:255'],
+            'coach_lastname' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                'regex:/^[a-zA-Z0-9._%+-]+@messiah\.edu$/i',
+                function ($attribute, $value, $fail) {
+                    // Check if email exists in users table
+                    $userExists = User::where('email', $value)->exists();
+
+                    // Check if email exists via coach relationships
+                    $coachExists = Coach::whereHas('user', function ($query) use ($value) {
+                        $query->where('email', $value);
+                    })->exists();
+
+                    if ($userExists || $coachExists) {
+                        $fail('This email address is already registered.');
+                    }
+                }
+            ],
+            'sport' => [
+                'required',
+                'string',
+                'in:soccer,basketball,baseball,softball,volleyball,tennis,track,swimming,football,lacrosse,all_sports_camp,soccer_camp,basketball_camp,volleyball_camp,tennis_camp,stem_sports_camp,administration,multiple'
+            ],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'admin' => ['nullable', 'boolean'],
+        ], [
+            'email.regex' => 'Coach registration requires a valid @messiah.edu email address.',
+            'sport.required' => 'Please select the sport or camp you are associated with.',
+            'sport.in' => 'Please select a valid sport or camp from the list.',
+            'coach_firstname.required' => 'First name is required.',
+            'coach_lastname.required' => 'Last name is required.',
+        ]);
+
+        // Use database transaction to ensure both records are created
+        DB::beginTransaction();
+
+        try {
+            // Create user record for authentication
+            $user = User::create([
+                'name' => $request->coach_firstname . ' ' . $request->coach_lastname,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
+
+            // Get admin value from checkbox
+            $isAdmin = $request->has('admin') && $request->admin == '1';
+
+            // Create coach record
+            Coach::create([
+                'Coach_FirstName' => $request->coach_firstname,  // Changed from coach_firstname
+                'Coach_LastName' => $request->coach_lastname,    // Changed from coach_lastname
+                'user_id' => $user->id,
+                'admin' => $isAdmin,
+                'sport' => $request->sport,
+            ]);
+
+            DB::commit();
+
+            event(new Registered($user));
+            Auth::login($user);
+
+            // Redirect based on admin status
+            if ($isAdmin) {
+                // Create an admin-dashboard route if you want different dashboard for admins
+                return redirect()->route('coach-dashboard'); // Or 'admin-dashboard' if you have one
+            }
+
+            return redirect()->route('coach-dashboard');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            // Log the error if needed
+            \Log::error('Coach registration failed: ' . $e->getMessage());
+
+            return back()
+                ->withErrors(['email' => 'Registration failed. Please try again.'])
+                ->withInput();
+        }
     }
 }

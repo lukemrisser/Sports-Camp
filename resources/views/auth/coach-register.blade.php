@@ -17,21 +17,32 @@
             <!-- Update the action to your coach registration route -->
             <form method="POST" action="{{ route('coach-register') }}">
                 @csrf
-                <!-- Hidden field to identify this as a coach registration -->
-                <input type="hidden" name="role" value="coach" />
 
-                <!-- Name -->
+                <!-- First Name -->
                 <div class="form-group">
-                    <label for="name" class="form-label">Name</label>
-                    <input id="name"
+                    <label for="coach_firstname" class="form-label">First Name</label>
+                    <input id="coach_firstname"
                            class="form-input"
                            type="text"
-                           name="name"
-                           value="{{ old('name') }}"
+                           name="coach_firstname"
+                           value="{{ old('coach_firstname') }}"
                            required
                            autofocus
-                           autocomplete="name" />
-                    <x-input-error :messages="$errors->get('name')" class="form-error" />
+                           autocomplete="given-name" />
+                    <x-input-error :messages="$errors->get('coach_firstname')" class="form-error" />
+                </div>
+
+                <!-- Last Name -->
+                <div class="form-group">
+                    <label for="coach_lastname" class="form-label">Last Name</label>
+                    <input id="coach_lastname"
+                           class="form-input"
+                           type="text"
+                           name="coach_lastname"
+                           value="{{ old('coach_lastname') }}"
+                           required
+                           autocomplete="family-name" />
+                    <x-input-error :messages="$errors->get('coach_lastname')" class="form-error" />
                 </div>
 
                 <!-- Email Address -->
@@ -47,40 +58,57 @@
                     <x-input-error :messages="$errors->get('email')" class="form-error" />
                 </div>
 
-                <!-- Team/Camp Selection -->
+                <!-- Sport Selection -->
                 <div class="form-group">
-                    <label for="team" class="form-label">Team/Camp</label>
-                    <select id="team"
+                    <label for="sport" class="form-label">Sport/Camp</label>
+                    <select id="sport"
                             class="form-input form-select"
-                            name="team"
+                            name="sport"
                             required>
-                        <option value="" disabled {{ old('team') ? '' : 'selected' }}>Select your team or camp</option>
+                        <option value="" disabled {{ old('sport') ? '' : 'selected' }}>Select your sport or camp</option>
                         <optgroup label="Sports Teams">
-                            <option value="soccer" {{ old('team') == 'soccer' ? 'selected' : '' }}>Soccer</option>
-                            <option value="basketball" {{ old('team') == 'basketball' ? 'selected' : '' }}>Basketball</option>
-                            <option value="baseball" {{ old('team') == 'baseball' ? 'selected' : '' }}>Baseball</option>
-                            <option value="softball" {{ old('team') == 'softball' ? 'selected' : '' }}>Softball</option>
-                            <option value="volleyball" {{ old('team') == 'volleyball' ? 'selected' : '' }}>Volleyball</option>
-                            <option value="tennis" {{ old('team') == 'tennis' ? 'selected' : '' }}>Tennis</option>
-                            <option value="track" {{ old('team') == 'track' ? 'selected' : '' }}>Track & Field</option>
-                            <option value="swimming" {{ old('team') == 'swimming' ? 'selected' : '' }}>Swimming</option>
-                            <option value="football" {{ old('team') == 'football' ? 'selected' : '' }}>Football</option>
-                            <option value="lacrosse" {{ old('team') == 'lacrosse' ? 'selected' : '' }}>Lacrosse</option>
+                            <option value="soccer" {{ old('sport') == 'soccer' ? 'selected' : '' }}>Soccer</option>
+                            <option value="basketball" {{ old('sport') == 'basketball' ? 'selected' : '' }}>Basketball</option>
+                            <option value="baseball" {{ old('sport') == 'baseball' ? 'selected' : '' }}>Baseball</option>
+                            <option value="softball" {{ old('sport') == 'softball' ? 'selected' : '' }}>Softball</option>
+                            <option value="volleyball" {{ old('sport') == 'volleyball' ? 'selected' : '' }}>Volleyball</option>
+                            <option value="tennis" {{ old('sport') == 'tennis' ? 'selected' : '' }}>Tennis</option>
+                            <option value="track" {{ old('sport') == 'track' ? 'selected' : '' }}>Track & Field</option>
+                            <option value="swimming" {{ old('sport') == 'swimming' ? 'selected' : '' }}>Swimming</option>
+                            <option value="football" {{ old('sport') == 'football' ? 'selected' : '' }}>Football</option>
+                            <option value="lacrosse" {{ old('sport') == 'lacrosse' ? 'selected' : '' }}>Lacrosse</option>
                         </optgroup>
                         <optgroup label="Summer Camps">
-                            <option value="all_sports_camp" {{ old('team') == 'all_sports_camp' ? 'selected' : '' }}>All Sports Camp</option>
-                            <option value="soccer_camp" {{ old('team') == 'soccer_camp' ? 'selected' : '' }}>Soccer Camp</option>
-                            <option value="basketball_camp" {{ old('team') == 'basketball_camp' ? 'selected' : '' }}>Basketball Camp</option>
-                            <option value="volleyball_camp" {{ old('team') == 'volleyball_camp' ? 'selected' : '' }}>Volleyball Camp</option>
-                            <option value="tennis_camp" {{ old('team') == 'tennis_camp' ? 'selected' : '' }}>Tennis Camp</option>
-                            <option value="stem_sports_camp" {{ old('team') == 'stem_sports_camp' ? 'selected' : '' }}>STEM & Sports Camp</option>
+                            <option value="all_sports_camp" {{ old('sport') == 'all_sports_camp' ? 'selected' : '' }}>All Sports Camp</option>
+                            <option value="soccer_camp" {{ old('sport') == 'soccer_camp' ? 'selected' : '' }}>Soccer Camp</option>
+                            <option value="basketball_camp" {{ old('sport') == 'basketball_camp' ? 'selected' : '' }}>Basketball Camp</option>
+                            <option value="volleyball_camp" {{ old('sport') == 'volleyball_camp' ? 'selected' : '' }}>Volleyball Camp</option>
+                            <option value="tennis_camp" {{ old('sport') == 'tennis_camp' ? 'selected' : '' }}>Tennis Camp</option>
+                            <option value="stem_sports_camp" {{ old('sport') == 'stem_sports_camp' ? 'selected' : '' }}>STEM & Sports Camp</option>
                         </optgroup>
                         <optgroup label="Other">
-                            <option value="administration" {{ old('team') == 'administration' ? 'selected' : '' }}>Administration</option>
-                            <option value="multiple" {{ old('team') == 'multiple' ? 'selected' : '' }}>Multiple Teams/Camps</option>
+                            <option value="administration" {{ old('sport') == 'administration' ? 'selected' : '' }}>Administration</option>
+                            <option value="multiple" {{ old('sport') == 'multiple' ? 'selected' : '' }}>Multiple Teams/Camps</option>
                         </optgroup>
                     </select>
-                    <x-input-error :messages="$errors->get('team')" class="form-error" />
+                    <x-input-error :messages="$errors->get('sport')" class="form-error" />
+                </div>
+
+                <!-- Admin Checkbox -->
+                <div class="form-group">
+                    <div class="checkbox-container">
+                        <input id="admin"
+                               type="checkbox"
+                               name="admin"
+                               value="1"
+                               {{ old('admin') ? 'checked' : '' }}
+                               class="form-checkbox" />
+                        <label for="admin" class="checkbox-label">
+                            Register as Administrator
+                            <span class="checkbox-description">Check this box if you have administrative privileges for managing teams and camps</span>
+                        </label>
+                    </div>
+                    <x-input-error :messages="$errors->get('admin')" class="form-error" />
                 </div>
 
                 <!-- Password -->
@@ -113,7 +141,7 @@
                     </a>
 
                     <a class="login-link" href="{{ route('register') }}">
-                        Register as a player
+                        Register as a parent
                     </a>
 
                     <button type="submit" class="register-button">
@@ -231,6 +259,45 @@
             color: #ef4444;
             font-size: 14px;
             margin-top: 6px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .form-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            border: 2px solid #e5e7eb;
+            border-radius: 4px;
+            cursor: pointer;
+            flex-shrink: 0;
+            accent-color: #0a3f94;
+        }
+
+        .form-checkbox:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(10, 63, 148, 0.1);
+        }
+
+        .checkbox-label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .checkbox-description {
+            font-weight: 400;
+            color: #6b7280;
+            font-size: 12px;
+            line-height: 1.4;
         }
 
         .form-actions {

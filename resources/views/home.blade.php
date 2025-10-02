@@ -21,7 +21,9 @@
                     <a href="{{ route('register') }}" class="header-btn register-btn">Register</a>
                 @else
                     <span class="welcome-text">Welcome, {{ Auth::user()->name }}!</span>
+                    @if(Auth::user()->isCoach())
                     <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
+                    @endif
                     <form method="POST" action="{{ route('logout') }}" class="logout-form">
                         @csrf
                         <button type="submit" class="header-btn logout-btn">Logout</button>

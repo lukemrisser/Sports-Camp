@@ -48,6 +48,16 @@ class User extends Authenticatable
 
     public function coach()
     {
-        return $this->hasOne(Coach::class);
+        return $this->hasOne(Coach::class, 'user_id');
+    }
+
+    public function isCoach()
+    {
+        return $this->coach()->exists();
+    }
+
+    public function isCoachAdmin()
+    {
+        return $this->coach && $this->coach->admin;
     }
 }
