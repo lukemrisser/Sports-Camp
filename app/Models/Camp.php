@@ -9,11 +9,11 @@ class Camp extends Model
 {
 	use HasFactory;
 
-	// Set custom primary key
 	protected $primaryKey = 'Camp_ID';
 
-    // Specify the table name to match the database
     protected $table = 'Camps';
+
+	public $timestamps = false;
 
 	// Allow mass assignment for these fields
 	protected $fillable = ['Camp_Name', 'Start_Date', 'End_Date'];

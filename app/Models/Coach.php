@@ -9,12 +9,13 @@ class Coach extends Model
 	// Specify the table name to match the database
 	protected $table = 'Coaches';
 	use HasFactory;
-
-	// Set custom primary key
 	protected $primaryKey = 'Coach_ID';
-
-	// Allow mass assignment for these fields
 	protected $fillable = ['Coach_FirstName', 'Coach_LastName'];
+
+    protected $casts = [
+        'admin' => 'boolean',
+        'user_id' => 'integer',
+    ];
 
 	// A coach can have many camps
 	public function camps()
@@ -26,4 +27,14 @@ class Coach extends Model
 			'Camp_ID'       // Foreign key on pivot table for the related model
 		);
 	}
+	
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function getFullNameAttribute()
+    {
+        return $this->coach_firstname . ' ' . $this->coach_lastname;
+    }
 }
