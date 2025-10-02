@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -6,11 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Coach extends Model
 {
-	// Specify the table name to match the database
-	protected $table = 'Coaches';
-	use HasFactory;
-	protected $primaryKey = 'Coach_ID';
-	protected $fillable = ['Coach_FirstName', 'Coach_LastName'];
+    use HasFactory;
+
+    protected $table = 'Coaches';
+    protected $primaryKey = 'Coach_ID';
+    public $incrementing = true;
+    public $timestamps = false;
+
+    protected $fillable = [
+        'Coach_FirstName',
+        'Coach_LastName',
+        'user_id',
+        'admin',
+        'sport'
+    ];
 
     protected $casts = [
         'admin' => 'boolean',

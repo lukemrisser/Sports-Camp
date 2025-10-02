@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Player;
+use App\Models\Coach;
 
 class Camp extends Model
 {
-	use HasFactory;
+    use HasFactory;
 
 	protected $primaryKey = 'Camp_ID';
 

@@ -5,7 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\CoachController;
+use App\Http\Controllers\CoachDashBoardController;
 
+use App\Http\Controllers\Auth\RegisteredUserController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -14,21 +16,42 @@ Route::get('/registration', function (){
     return view('registration');
 })->name('registration');
 
+Route::get('coach-register', [RegisteredUserController::class, 'create'])
+    ->name('coach-register')
+    ->middleware('guest');
+
+Route::post('coach-register', [RegisteredUserController::class, 'store'])
+    ->middleware('guest');
 
 
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/coach-dashboard', [CoachDashboardController::class, 'coachDashboard'])->name('coach-dashboard');
+
 Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
-Route::get('/coach-dashboard', [CoachController::class, 'dashboard'])->name('coach-dashboard');
+
 Route::post('/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('upload-spreadsheet');
 Route::post('/select-camp', [CoachController::class, 'selectCamp'])->name('select-camp');
 
 
-Route::middleware('auth')->group(function () {
+// Protected routes for coaches only
+Route::middleware(['auth', 'coach'])->group(function () {
+    Route::get('/coach-dashboard', function () {
+        return view('coach-dashboard');
+    })->name('coach-dashboard');
 
+    // Add any other coach-only routes here
+});
 
+// Regular authenticated user routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
+    // Add profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
