@@ -9,11 +9,9 @@ class Player extends Model
 {
 	use HasFactory;
 
-    // Set custom primary key
     protected $primaryKey = 'Player_ID';
-
-    // Specify the table name to match the database
     protected $table = 'Players';
+    public $timestamps = false;
 
     // Allow mass assignment for these fields
     protected $fillable = [
