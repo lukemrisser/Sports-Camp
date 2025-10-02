@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\CoachController;
+use App\Http\Controllers\CoachDashBoardController;
+
 use App\Http\Controllers\Auth\RegisteredUserController;
 
 
@@ -20,6 +22,13 @@ Route::get('coach-register', [RegisteredUserController::class, 'create'])
 
 Route::post('coach-register', [RegisteredUserController::class, 'store'])
     ->middleware('guest');
+
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/coach-dashboard', [CoachDashboardController::class, 'coachDashboard'])->name('coach-dashboard');
 
 Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
 
