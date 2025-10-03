@@ -572,7 +572,7 @@ body {
    COACH DASHBOARD SPECIFIC STYLES
    ============================================ */
 
-   .card-form {
+.card-form {
     margin-top: 15px;
 }
 
@@ -597,7 +597,7 @@ body {
    REGISTRATION FORM STYLES
    ============================================ */
 
-   .registration-page {
+.registration-page {
     min-height: 100vh;
     padding: 1.5rem 0;
     display: flex;
@@ -780,6 +780,7 @@ body {
         font-size: 2rem;
     }
 }
+
 /* ============================================
    DASHBOARD STYLES
    ============================================ */
@@ -1003,7 +1004,13 @@ body {
 }
 
 /* Reset any default margins */
-h1, h2, h3, h4, h5, h6, p {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
     margin-top: 0;
 }
 
@@ -1053,5 +1060,113 @@ h1, h2, h3, h4, h5, h6, p {
         font-size: 2rem;
         width: 50px;
         height: 50px;
+    }
+}
+
+/* ============================================
+   Camp Registrations Page Styles
+   ============================================ */
+
+.camp-selection-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.camp-selection-card h2 {
+    color: #0a3f94;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.camp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #0a3f94;
+    box-shadow: 0 0 0 3px rgba(10, 63, 148, 0.1);
+}
+
+.players-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.players-title {
+    color: #0a3f94;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.players-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.players-table thead {
+    background: linear-gradient(135deg, #6e84e7 0%, #764ba2 100%);
+    color: white;
+}
+
+.players-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.players-table tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.players-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.players-table td {
+    padding: 1rem;
+    color: #374151;
+}
+
+.no-players-message {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    color: #6b7280;
+    margin-top: 2rem;
+}
+
+/* Responsive tables */
+@media (max-width: 768px) {
+    .players-table {
+        font-size: 0.875rem;
+    }
+
+    .players-table th,
+    .players-table td {
+        padding: 0.5rem;
     }
 }

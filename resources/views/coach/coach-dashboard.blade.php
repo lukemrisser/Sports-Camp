@@ -1,61 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        @vite(['resources/css/coach-dashboard.css'])
-        <title>Coach Dashboard - Falcon Camps</title>
-    </head>
 
-    <body>
-        <header>
-            <h1>Coach Dashboard</h1>
-            <a href="{{ route('organize-teams') }}" class="btn-organize">Organize Teams</a>
-        </header>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Dashboard - {{ config('app.name', 'Falcon Camps') }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
 
-        <main>
-            {{-- Camps Drop-down Menu --}}
-            <form action="{{ route('coach-dashboard') }}" method="get">
-                <label for="camp">Select Camp:</label>
-                <select name="camp_id" id="camp" onchange="this.form.submit()">
-                    <option value="">-- Choose a camp --</option>
-                    @foreach($camps as $camp)
-                        <option value="{{ $camp->camp_id }}" {{ $selectedCampId == $camp->camp_id ? 'selected' : '' }}>
-                            {{ $camp->camp_name }}
-                        </option>
-                    @endforeach
-                </select>
-            </form>
+<body>
 
-            {{-- Players Table --}}
-            @if($players->isNotEmpty())
+    <header class="main-header">
+        <div class="header-container">
+            <div class="header-content">
+                <h1 class="welcome-text">
+                    Welcome, {{ Auth::user()->coach->Coach_FirstName }}!
+                    @if (Auth::user()->isCoachAdmin())
+                        <span class="admin-badge">Admin</span>
+                    @endif
+                </h1>
+            </div>
 
-                <h3>Total Players: {{ $players->count() }}</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Division Name</th>
-                            <th>Player First Name</th>
-                            <th>Player Last Name</th>
-                            <th>Player Gender</th>
-                        </tr>
-                    </thead>
+            <div class="header-buttons">
+                <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
+                <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                    @csrf
+                    <button type="submit" class="header-btn logout-btn">Logout</button>
+                </form>
+            </div>
+        </div>
+    </header>
 
-                    <tbody>
-                        @foreach($players as $player)
-                            <tr>
-                                <td>{{ $player->division_name }}</td>
-                                <td>{{ $player->camper_first_name }}</td>
-                                <td>{{ $player->camper_last_name }}</td>
-                                <td>{{ $player->gender }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+    <div class="container">
+        <!-- Success/Error Messages -->
+        @if (session('success'))
+            <div class="session-status">
+                {{ session('success') }}
+            </div>
+        @endif
 
-            @elseif($selectedCampId)
-                <p>No players registered for this camp yet.</p>
+        @if (session('error'))
+            <div class="alert alert-error">
+                {{ session('error') }}
+            </div>
+        @endif
+
+
+        <!-- Action Cards Grid -->
+        <div class="cards-grid">
+            <!-- Camp Registrations Card -->
+            <div class="registration-card blue">
+                <div class="card-icon">📋</div>
+                <h3>Camp Registrations</h3>
+                <p>View and manage all registrations for your camps</p>
+                <a href="{{ route('camp-registrations') }}" class="card-button">View Registrations</a>
+            </div>
+
+            <!-- Upload Spreadsheet Card -->
+            <div class="registration-card green">
+                <div class="card-icon">📊</div>
+                <h3>Upload Spreadsheet</h3>
+                <p>Upload a spreadsheet with player information to organize into teams</p>
+                <form action="{{ route('upload-spreadsheet') }}" method="POST" enctype="multipart/form-data"
+                    class="card-form">
+                    @csrf
+                    <div class="form-group">
+                        <input type="file" name="spreadsheet" accept=".xlsx,.xls,.csv" required class="form-input">
+                    </div>
+                    <button type="submit" class="card-button">Upload File</button>
+                </form>
+            </div>
+
+            <!-- Organize Teams Card -->
+            <div class="registration-card orange">
+                <div class="card-icon">👥</div>
+                <h3>Organize Teams</h3>
+                <p>Create balanced teams from your uploaded player data</p>
+                <a href="{{ route('organize-teams') }}" class="card-button">Organize Teams</a>
+            </div>
+
+            <!-- Admin Functions (if admin) -->
+            @if (Auth::user()->isCoachAdmin())
+                <div class="registration-card purple">
+                    <div class="card-icon">⚙️</div>
+                    <h3>Admin Functions</h3>
+                    <p>Access administrative tools and settings</p>
+                    <a href="#" class="card-button">Admin Panel</a>
+                </div>
             @endif
-        </main>
-    </body>
+        </div>
+
+        <div class="navigation">
+            <a href="{{ url('/') }}">← Back to Home</a>
+        </div>
+    </div>
+
+</body>
+
 </html>
