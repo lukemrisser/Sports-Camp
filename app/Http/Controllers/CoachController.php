@@ -6,6 +6,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Coach;
 use App\Models\Camp;
 use App\Models\User;
+use App\Models\Player;
 use App\Imports\PlayersImport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,56 @@ class CoachController extends Controller
 
         $players = $data[0];
 
-        $this->sortTeamsSpreadsheet($players, $numTeams);
+        $importedPlayers = $data[0];
+        $camp = Camp::create([
+            'Camp_Name' => 'Spreadsheet Camp',
+        ]);
+        $campId = $camp->Camp_ID;
+
+        foreach ($importedPlayers as $row) {
+            $player = Player::create([
+                'Camper_FirstName' => $row['Player First Name'],
+                'Camper_LastName' => $row['Player Last Name'],
+                'Age' => isset($row['age']) ? (int)$row['Player Age'] : null,
+            ]);
+            // Attach player to the camp
+            $player->camps()->attach($campId);
+
+            // Handle teammate requests
+            if (!empty($row['Teammate Request'])) {
+                // Normalize separators to comma
+                $normalized = str_replace([';', '.', '|', ' and '], ',', $row['Teammate Request']);
+                $requests = array_filter(array_map('trim', explode(',', $normalized)));
+
+                foreach ($requests as $requestName) {
+                    // Try to split into first and last name
+                    $nameParts = preg_split('/\s+/', $requestName);
+                    if (count($nameParts) >= 2) {
+                        $firstName = $nameParts[0];
+                        $lastName = $nameParts[1];
+                    } else {
+                        $firstName = $nameParts[0];
+                        $lastName = '';
+                    }
+                    DB::table('Teammate_Request')->insert([
+                        'Player_ID' => $player->Player_ID,
+                        'Requested_FirstName' => $firstName,
+                        'Requested_LastName' => $lastName,
+                        'Camp_ID' => $campId,
+                    ]);
+                }
+            }
+        }
+
+        $teams = $this->sortTeamsDatabase($importedPlayers, $numTeams, $campId);
+
+        DB::table('Teammate_Request')->where('Camp_ID', $campId)->delete();
+        $playerIds = DB::table('Camp_Player')->where('Camp_ID', $campId)->pluck('Player_ID');
+        Player::whereIn('Player_ID', $playerIds)->delete();
+        DB::table('Camp_Player')->where('Camp_ID', $campId)->delete();
+        Camp::where('Camp_ID', $campId)->delete();
+
+        return $this->exportTeamsToExcel($teams);
     }
 
     public function selectCamp(Request $request)
@@ -46,7 +96,7 @@ class CoachController extends Controller
         $exportData = [];
         foreach ($teams as $teamIndex => $team) {
             foreach ($team as $playerId) {
-                $player = \App\Models\Player::find($playerId);
+                $player = Player::find($playerId);
                 $exportData[] = [
                     'Team' => 'Team ' . ($teamIndex + 1),
                     'Player Name' => $player ? ($player->Camper_FirstName . ' ' . $player->Camper_LastName) : 'Unknown',

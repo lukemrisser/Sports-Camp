@@ -11,34 +11,34 @@ class Camp extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'Camp_id';
+	protected $primaryKey = 'Camp_ID';
+
     protected $table = 'Camps';
-    protected $fillable = ['camp_name', 'start_date', 'end_date'];
 
-    protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-    ];
+	public $timestamps = false;
 
-    // A camp can have many players
-    public function players()
-    {
-         return $this->belongsToMany(
-			Player::class,
-			'Player_Camp',
-			'Camp_ID',    // foreign key for Camp in Player_Camp
-			'Player_ID'   // foreign key for Player in Player_Camp
-    	);
-    }
+	// Allow mass assignment for these fields
+	protected $fillable = ['Camp_Name', 'Start_Date', 'End_Date'];
 
-    // A camp can have many coaches
-    public function coaches()
-    {
-        return $this->belongsToMany(
-            Coach::class,
-            'Coach_Camp',
-            'camp_id',      // foreign key for Camp
-            'coach_id'      // foreign key for Coach
-        );
-    }
+	// Cast start_date and end_date as dates
+	protected $casts = [
+		'Start_Date' => 'date',
+		'End_Date' => 'date',
+	];
+
+	// A camp can have many players
+	public function players()
+	{
+		return $this->belongsToMany(Player::class, 'Player_Camp', 'Camp_ID', 'Player_ID');
+	}
+    
+	public function coaches()
+	{
+		return $this->belongsToMany(
+			Coach::class,
+			'Coach_Camp',   // Pivot table name
+			'Camp_ID',      // Foreign key on pivot table for this model
+			'Coach_ID'      // Foreign key on pivot table for the related model
+		);
+	}
 }
