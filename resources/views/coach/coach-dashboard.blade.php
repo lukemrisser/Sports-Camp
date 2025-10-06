@@ -23,6 +23,7 @@
 
             <div class="header-buttons">
                 <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
+                <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
                 <form method="POST" action="{{ route('logout') }}" class="logout-form">
                     @csrf
                     <button type="submit" class="header-btn logout-btn">Logout</button>
@@ -78,16 +79,6 @@
                 <p>Create balanced teams from your uploaded player data</p>
                 <a href="{{ route('organize-teams') }}" class="card-button">Organize Teams</a>
             </div>
-
-            <!-- Admin Functions (if admin) -->
-            @if (Auth::user()->isCoachAdmin())
-                <div class="registration-card purple">
-                    <div class="card-icon">⚙️</div>
-                    <h3>Admin Functions</h3>
-                    <p>Access administrative tools and settings</p>
-                    <a href="#" class="card-button">Admin Panel</a>
-                </div>
-            @endif
         </div>
 
         <div class="navigation">

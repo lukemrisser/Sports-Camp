@@ -53,13 +53,15 @@
                 <label for="camp" class="form-label">Choose a camp:</label>
                 <select name="camp_id" id="camp" onchange="this.form.submit()" class="form-select">
                     <option value="">-- Choose a camp --</option>
-                    @if (isset($camps))
+                    @if (isset($camps) && count($camps) > 0)
                         @foreach ($camps as $camp)
-                            <option value="{{ $camp->camp_id }}"
-                                {{ isset($selectedCampId) && $selectedCampId == $camp->camp_id ? 'selected' : '' }}>
-                                {{ $camp->camp_name }}
+                            <option value="{{ $camp->Camp_ID }}"
+                                {{ isset($selectedCampId) && $selectedCampId == $camp->Camp_ID ? 'selected' : '' }}>
+                                {{ $camp->Camp_Name }}
                             </option>
                         @endforeach
+                    @else
+                        <option value="" disabled>No camps available</option>
                     @endif
                 </select>
             </form>
