@@ -91,10 +91,6 @@
                                 <input type="date" name="Birth_Date" class="form-input" required max="{{ date('Y-m-d') }}" min="{{ date('Y-m-d', strtotime('-100 years')) }}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Age</label>
-                                <input type="number" name="Age" class="form-input" required>
-                            </div>
-                            <div class="form-group">
                                 <label class="form-label">Shirt Size</label>
                                 <select name="Shirt_Size" class="form-input" required>
                                     <option value="">Select Size</option>
@@ -123,7 +119,7 @@
                                     <label class="form-label">Teammate Last Name</label>
                                     <input type="text" name="teammate_last[]" class="form-input" />
                                 </div>
-                                <button type="button" class="remove-teammate absolute right-0 bottom-0 mb-2 px-3 text-red-500 hover:text-red-700" title="Remove teammate request">&times;</button>
+                                <button type="button" class="remove-teammate absolute right-0 top-8 px-3 text-red-500 hover:text-red-700" title="Remove teammate request">&times;</button>
                             </div>
                         </div>
 
@@ -134,7 +130,7 @@
 
                     <!-- Contact Information -->
                     <div class="form-section">
-                        <h3 class="section-title">Contact Information</h3>
+                        <h3 class="section-title">Parent Contact Information</h3>
                         <div class="form-group">
                             <label class="form-label">Address</label>
                             <input type="text" name="Address" class="form-input" required>
@@ -270,7 +266,7 @@
                     <label class="form-label">Teammate Last Name</label>
                     <input type="text" name="teammate_last[]" class="form-input" />
                 </div>
-                <button type="button" class="remove-teammate absolute right-0 bottom-0 mb-2 px-3 text-red-500 hover:text-red-700" title="Remove teammate request">&times;</button>
+                <button type="button" class="remove-teammate absolute right-0 top-8 px-3 text-red-500 hover:text-red-700" title="Remove teammate request">&times;</button>
             `;
             container.appendChild(newRequest);
 
