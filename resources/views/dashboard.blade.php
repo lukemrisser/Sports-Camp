@@ -17,7 +17,9 @@
 
         <div class="header-buttons">
             <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
-            <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
+            @if (Auth::user()->isCoach())
+                <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
+            @endif
             <form method="POST" action="{{ route('logout') }}" class="logout-form">
                 @csrf
                 <button type="submit" class="header-btn logout-btn">Logout</button>
