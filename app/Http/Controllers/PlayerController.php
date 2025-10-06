@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\ParentModel;
 
 class PlayerController extends Controller
 {
@@ -23,7 +24,6 @@ class PlayerController extends Controller
             'Postal_Code' => 'required|string|max:10',
             'Email' => 'required|email|max:255',
             'Phone' => 'required|string|max:20',
-            'Age' => 'required|integer',
             'Shirt_Size' => 'required|string',
             'Allergies' => 'nullable|string',
             'Asthma' => 'required|boolean',
@@ -38,28 +38,37 @@ class PlayerController extends Controller
         try {
             $phoneNumber = preg_replace('/[^0-9]/', '', $validatedData['Phone']);
             
+            // First create or find the parent
+            $parent = ParentModel::firstOrCreate(
+                [
+                    'Email' => $validatedData['Email'],
+                    'Phone' => $phoneNumber
+                ],
+                [
+                    'Parent_FirstName' => $validatedData['Parent_FirstName'],
+                    'Parent_LastName' => $validatedData['Parent_LastName'],
+                    'Address' => $validatedData['Address'],
+                    'City' => $validatedData['City'],
+                    'State' => $validatedData['State'],
+                    'Postal_Code' => $validatedData['Postal_Code'],
+                    'Church_Name' => $validatedData['Church_Name'],
+                    'Church_Attendance' => $validatedData['Church_Attendance']
+                ]
+            );
+
+            // Then create the player record
             $playerId = DB::table('Players')->insertGetId([
+                'Parent_ID' => $parent->id,
                 'Division_Name' => $validatedData['Division_Name'],
-                'Parent_FirstName' => $validatedData['Parent_FirstName'],
-                'Parent_LastName' => $validatedData['Parent_LastName'],
                 'Camper_FirstName' => $validatedData['Camper_FirstName'],
                 'Camper_LastName' => $validatedData['Camper_LastName'],
                 'Gender' => $validatedData['Gender'],
                 'Birth_Date' => $validatedData['Birth_Date'],
-                'Address' => $validatedData['Address'],
-                'City' => $validatedData['City'],
-                'State' => $validatedData['State'],
-                'Postal_Code' => $validatedData['Postal_Code'],
-                'Email' => $validatedData['Email'],
-                'Phone' => $phoneNumber,
-                'Age' => $validatedData['Age'],
                 'Shirt_Size' => $validatedData['Shirt_Size'],
                 'Allergies' => $validatedData['Allergies'],
                 'Asthma' => $validatedData['Asthma'],
                 'Medication_Status' => $validatedData['Medication_Status'],
-                'Injuries' => $validatedData['Injuries'],
-                'Church_Name' => $validatedData['Church_Name'],
-                'Church_Attendance' => $validatedData['Church_Attendance']
+                'Injuries' => $validatedData['Injuries']
             ]);
 
             // Handle teammate requests (if any)

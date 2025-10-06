@@ -15,31 +15,34 @@ class Player extends Model
 
     // Allow mass assignment for these fields
     protected $fillable = [
+        'Parent_ID',
         'Division_Name',
-        'Parent_FirstName',
-        'Parent_LastName',
         'Camper_FirstName',
         'Camper_LastName',
         'Gender',
         'Birth_Date',
-        'Address',
-        'City',
-        'State',
-        'Postal_Code',
-        'Email',
-        'Phone',
-        'Age',
         'Shirt_Size',
         'Allergies',
         'Asthma',
         'Medication_Status',
-        'Injuries',
-        'Church_Attendance'
+        'Injuries'
     ];
 
-	// A player can belong to many camps
-	public function camps()
-	{
-		return $this->belongsToMany(Camp::class, 'Player_Camp', 'Player_ID', 'Camp_ID');
-	}
+    // Relationship with Parent model
+    public function parent()
+    {
+        return $this->belongsTo(ParentModel::class, 'Parent_ID', 'id');
+    }
+
+    // A player can belong to many camps
+    public function camps()
+    {
+        return $this->belongsToMany(Camp::class, 'Player_Camp', 'Player_ID', 'Camp_ID');
+    }
+
+    // Relationship with teammate requests
+    public function teammateRequests()
+    {
+        return $this->hasMany(TeammateRequest::class, 'player_id', 'Player_ID');
+    }
 }
