@@ -62,8 +62,10 @@ class CoachDashboardController extends Controller
             return redirect('/dashboard')->with('error', 'Coach record not found.');
         }
 
-        // Get all camps
+        // Get all camps - add debugging
         $camps = Camp::all();
+        \Log::info('Camps found: ' . $camps->count());
+        \Log::info('Camps data: ' . $camps->toJson());
 
         // Get selected camp ID from request
         $selectedCampId = $request->input('camp_id');
@@ -72,8 +74,12 @@ class CoachDashboardController extends Controller
         $players = collect();
 
         if ($selectedCampId) {
-            // Get players for the selected camp
-            $players = Player::where('Camp_ID', $selectedCampId)->get();
+            // Get the camp with its players through the many-to-many relationship
+            $camp = Camp::find($selectedCampId);
+            if ($camp) {
+                // Use the relationship to get players for this camp
+                $players = $camp->players;
+            }
         }
 
         // Return the camp-registrations view
