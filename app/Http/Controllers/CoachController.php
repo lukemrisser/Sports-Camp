@@ -214,12 +214,30 @@ class CoachController extends Controller
 
                 // Assign chunk to best team
                 foreach ($chunk as $playerId) {
-                    $teams[$bestTeam][] = $playerId;
+                    // If best team is full, pick a random team with space
+                    if (count($teams[$bestTeam]) >= $maxTeamSize) {
+                        $availableTeams = [];
+                        for ($j = 0; $j < $numTeams; $j++) {
+                            if (count($teams[$j]) < $maxTeamSize) {
+                                $availableTeams[] = $j;
+                            }
+                        }
+                        if (!empty($availableTeams)) {
+                            $randomTeam = $availableTeams[array_rand($availableTeams)];
+                        } else {
+                            // All teams are full, just use bestTeam
+                            $randomTeam = $bestTeam;
+                        }
+                        $targetTeam = $randomTeam;
+                    } else {
+                        $targetTeam = $bestTeam;
+                    }
+                    $teams[$targetTeam][] = $playerId;
                     $player = $players->where('Player_ID', $playerId)->first();
                     if ($player && isset($player->Age)) {
-                        $teamAges[$bestTeam] += $player->Age;
+                        $teamAges[$targetTeam] += $player->Age;
                     }
-                    $teamCounts[$bestTeam]++;
+                    $teamCounts[$targetTeam]++;
                 }
             }
         }
