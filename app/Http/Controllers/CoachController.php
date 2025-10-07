@@ -189,11 +189,14 @@ class CoachController extends Controller
         $teamAges = array_fill(0, $numTeams, 0);
         $teamCounts = array_fill(0, $numTeams, 0);
 
+        // Collect all chunks from all clusters
+        $allChunks = [];
+        $allChunkAges = [];
         foreach ($clusters as $cluster) {
-            // Split cluster if it's too large
             $chunks = array_chunk($cluster, $maxTeamSize);
             foreach ($chunks as $chunk) {
-                // Calculate chunk average age
+                $allChunks[] = $chunk;
+                // Calculate chunk average age for sorting/assignment
                 $chunkAges = [];
                 foreach ($chunk as $playerId) {
                     $player = $players->where('Player_ID', $playerId)->first();
@@ -201,51 +204,59 @@ class CoachController extends Controller
                         $chunkAges[] = $player->Age;
                     }
                 }
-                $chunkAvgAge = count($chunkAges) ? array_sum($chunkAges) / count($chunkAges) : 0;
+                $allChunkAges[] = count($chunkAges) ? array_sum($chunkAges) / count($chunkAges) : 0;
+            }
+        }
 
-                // Find the team with closest average age (or empty)
-                $bestTeam = 0;
-                $bestDiff = PHP_INT_MAX;
-                for ($i = 0; $i < $numTeams; $i++) {
-                    if ($teamCounts[$i] == 0) {
-                        $bestTeam = $i;
-                        break;
-                    }
-                    $teamAvgAge = $teamCounts[$i] ? $teamAges[$i] / $teamCounts[$i] : 0;
-                    $diff = abs($teamAvgAge - $chunkAvgAge);
-                    if ($diff < $bestDiff && ($teamCounts[$i] + count($chunk) <= $maxTeamSize)) {
-                        $bestDiff = $diff;
-                        $bestTeam = $i;
-                    }
+        // Sort all chunks by size descending (biggest chunks first)
+        $chunkSizes = array_map('count', $allChunks);
+        array_multisort($chunkSizes, SORT_DESC, $allChunks, $allChunkAges);
+
+        // Assign chunks to teams
+        foreach ($allChunks as $chunkIdx => $chunk) {
+            $chunkAvgAge = $allChunkAges[$chunkIdx];
+            // Find the team with closest average age (or empty)
+            $bestTeam = 0;
+            $bestDiff = PHP_INT_MAX;
+            for ($i = 0; $i < $numTeams; $i++) {
+                if ($teamCounts[$i] == 0) {
+                    $bestTeam = $i;
+                    break;
                 }
+                $teamAvgAge = $teamCounts[$i] ? $teamAges[$i] / $teamCounts[$i] : 0;
+                $diff = abs($teamAvgAge - $chunkAvgAge);
+                if ($diff < $bestDiff && ($teamCounts[$i] + count($chunk) <= $maxTeamSize)) {
+                    $bestDiff = $diff;
+                    $bestTeam = $i;
+                }
+            }
 
-                // Assign chunk to best team
-                foreach ($chunk as $playerId) {
-                    // If best team is full, pick a random team with space
-                    if (count($teams[$bestTeam]) >= $maxTeamSize) {
-                        $availableTeams = [];
-                        for ($j = 0; $j < $numTeams; $j++) {
-                            if (count($teams[$j]) < $maxTeamSize) {
-                                $availableTeams[] = $j;
-                            }
+            // Assign chunk to best team
+            foreach ($chunk as $playerId) {
+                // If best team is full, pick a random team with space
+                if (count($teams[$bestTeam]) >= $maxTeamSize) {
+                    $availableTeams = [];
+                    for ($j = 0; $j < $numTeams; $j++) {
+                        if (count($teams[$j]) < $maxTeamSize) {
+                            $availableTeams[] = $j;
                         }
-                        if (!empty($availableTeams)) {
-                            $randomTeam = $availableTeams[array_rand($availableTeams)];
-                        } else {
-                            // All teams are full, just use bestTeam
-                            $randomTeam = $bestTeam;
-                        }
-                        $targetTeam = $randomTeam;
+                    }
+                    if (!empty($availableTeams)) {
+                        $randomTeam = $availableTeams[array_rand($availableTeams)];
                     } else {
-                        $targetTeam = $bestTeam;
+                        // All teams are full, just use bestTeam
+                        $randomTeam = $bestTeam;
                     }
-                    $teams[$targetTeam][] = $playerId;
-                    $player = $players->where('Player_ID', $playerId)->first();
-                    if ($player && isset($player->Age)) {
-                        $teamAges[$targetTeam] += $player->Age;
-                    }
-                    $teamCounts[$targetTeam]++;
+                    $targetTeam = $randomTeam;
+                } else {
+                    $targetTeam = $bestTeam;
                 }
+                $teams[$targetTeam][] = $playerId;
+                $player = $players->where('Player_ID', $playerId)->first();
+                if ($player && isset($player->Age)) {
+                    $teamAges[$targetTeam] += $player->Age;
+                }
+                $teamCounts[$targetTeam]++;
             }
         }
 
