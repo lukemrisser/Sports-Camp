@@ -19,15 +19,6 @@ use Illuminate\Support\Facades\Log;
 
 class CoachController extends Controller
 {
-    public function dashboard()
-    {
-        $user = Auth::user();
-
-        // For now, just show a simple dashboard
-        // Later you can add logic to get registrations for this coach's camps
-        return view('coach-dashboard', compact('user'));
-    }
-
     public function uploadSpreadsheet(Request $request)
     {
         $request->validate([
@@ -287,6 +278,13 @@ class CoachController extends Controller
             }
         }
         return $cluster;
+    }
+
+
+
+    public function sortTeamsSpreadsheet($players, $numTeams)
+    {
+        return;
     }
 
     public function getCampsForCoach()

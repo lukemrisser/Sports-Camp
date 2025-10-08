@@ -1,11 +1,26 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sports Camp Registration - {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
+<header class="main-header">
+    <div class=header-container>
+        <div class="header-content">
+            <h1>Falcon Teams</h1>
+            <p>Complete the registration form to sign up</p>
+        </div>
+
+        <div class="header-buttons">
+            <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
+        </div>
+    </div>
+</header>
+
 <body>
     <div class="registration-page">
         <div class="registration-container">
@@ -14,22 +29,22 @@
                     <h2 class="registration-title">Falcon Teams Registration</h2>
                 </div>
 
-                @if(session('success'))
+                @if (session('success'))
                     <div class="alert alert-success">
                         {{ session('success') }}
                     </div>
                 @endif
 
-                @if(session('error'))
+                @if (session('error'))
                     <div class="alert alert-error">
                         {{ session('error') }}
                     </div>
                 @endif
 
-                @if($errors->any())
+                @if ($errors->any())
                     <div class="alert alert-error">
                         <ul class="error-list">
-                            @foreach($errors->all() as $error)
+                            @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
@@ -88,11 +103,8 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Birth Date</label>
-                                <input type="date" name="Birth_Date" class="form-input" required max="{{ date('Y-m-d') }}" min="{{ date('Y-m-d', strtotime('-100 years')) }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Age</label>
-                                <input type="number" name="Age" class="form-input" required>
+                                <input type="date" name="Birth_Date" class="form-input" required
+                                    max="{{ date('Y-m-d') }}" min="{{ date('Y-m-d', strtotime('-100 years')) }}">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Shirt Size</label>
@@ -108,11 +120,12 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Teammate Requests -->
                     <div class="form-section">
                         <h3 class="section-title">Teammate Requests (optional)</h3>
-                        <p class="text-sm text-gray-600 mb-3">If you'd like to request teammates, enter their names below. You can add multiple requests.</p>
+                        <p class="text-sm text-gray-600 mb-3">If you'd like to request teammates, enter their names
+                            below. You can add multiple requests.</p>
                         <div id="teammate-requests">
                             <div class="teammate-request form-grid-2 relative">
                                 <div class="form-group">
@@ -123,18 +136,21 @@
                                     <label class="form-label">Teammate Last Name</label>
                                     <input type="text" name="teammate_last[]" class="form-input" />
                                 </div>
-                                <button type="button" class="remove-teammate absolute right-0 bottom-0 mb-2 px-3 text-red-500 hover:text-red-700" title="Remove teammate request">&times;</button>
+                                <button type="button"
+                                    class="remove-teammate absolute right-0 top-8 px-3 text-red-500 hover:text-red-700"
+                                    title="Remove teammate request">&times;</button>
                             </div>
                         </div>
 
                         <div class="mt-3">
-                            <button type="button" id="add-teammate" class="submit-button" style="width: auto;">Add another teammate request</button>
+                            <button type="button" id="add-teammate" class="submit-button" style="width: auto;">Add
+                                another teammate request</button>
                         </div>
                     </div>
 
                     <!-- Contact Information -->
                     <div class="form-section">
-                        <h3 class="section-title">Contact Information</h3>
+                        <h3 class="section-title">Parent Contact Information</h3>
                         <div class="form-group">
                             <label class="form-label">Address</label>
                             <input type="text" name="Address" class="form-input" required>
@@ -160,13 +176,8 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Phone</label>
-                                <input type="tel"
-                                    class="form-input"
-                                    id="phone"
-                                    name="Phone"
-                                    placeholder="(123) 456-7890"
-                                    maxlength="14"
-                                    required>
+                                <input type="tel" class="form-input" id="phone" name="Phone"
+                                    placeholder="(123) 456-7890" maxlength="14" required>
                             </div>
                         </div>
                     </div>
@@ -182,11 +193,13 @@
                             <label class="form-label">Does the camper have asthma?</label>
                             <div class="radio-group">
                                 <label class="radio-label">
-                                    <input type="radio" name="Asthma" value="1" class="radio-input" required>
+                                    <input type="radio" name="Asthma" value="1" class="radio-input"
+                                        required>
                                     <span class="radio-text">Yes</span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="Asthma" value="0" class="radio-input" required>
+                                    <input type="radio" name="Asthma" value="0" class="radio-input"
+                                        required>
                                     <span class="radio-text">No</span>
                                 </label>
                             </div>
@@ -195,11 +208,13 @@
                             <label class="form-label">Is the camper on any medications?</label>
                             <div class="radio-group">
                                 <label class="radio-label">
-                                    <input type="radio" name="Medication_Status" value="1" class="radio-input" required>
+                                    <input type="radio" name="Medication_Status" value="1"
+                                        class="radio-input" required>
                                     <span class="radio-text">Yes</span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="Medication_Status" value="0" class="radio-input" required>
+                                    <input type="radio" name="Medication_Status" value="0"
+                                        class="radio-input" required>
                                     <span class="radio-text">No</span>
                                 </label>
                             </div>
@@ -270,7 +285,7 @@
                     <label class="form-label">Teammate Last Name</label>
                     <input type="text" name="teammate_last[]" class="form-input" />
                 </div>
-                <button type="button" class="remove-teammate absolute right-0 bottom-0 mb-2 px-3 text-red-500 hover:text-red-700" title="Remove teammate request">&times;</button>
+                <button type="button" class="remove-teammate absolute right-0 top-8 px-3 text-red-500 hover:text-red-700" title="Remove teammate request">&times;</button>
             `;
             container.appendChild(newRequest);
 
@@ -287,4 +302,5 @@
         });
     </script>
 </body>
+
 </html>

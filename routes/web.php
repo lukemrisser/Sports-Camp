@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\CoachController;
-use App\Http\Controllers\CoachDashBoardController;
+use App\Http\Controllers\CoachDashboardController;
 
 use App\Http\Controllers\Auth\RegisteredUserController;
 
@@ -28,7 +28,7 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/coach-dashboard', [CoachDashboardController::class, 'coachDashboard'])->name('coach-dashboard');
+Route::get('/coach_dashboard', [CoachDashboardController::class, 'coachDashboard'])->name('coach_dashboard');
 
 Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
 
@@ -38,11 +38,22 @@ Route::post('/select-camp', [CoachController::class, 'selectCamp'])->name('selec
 
 // Protected routes for coaches only
 Route::middleware(['auth', 'coach'])->group(function () {
-    Route::get('/coach-dashboard', function () {
-        return view('coach-dashboard');
-    })->name('coach-dashboard');
+    // Main coach dashboard with optional camp_id parameter
+    Route::get('/coach-dashboard', [CoachDashboardController::class, 'dashboard'])
+        ->name('coach-dashboard');
 
-    // Add any other coach-only routes here
+    // Other coach routes
+    Route::get('/organize-teams', [CoachController::class, 'getCampsForCoach'])
+        ->name('organize-teams');
+
+    Route::post('/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])
+        ->name('upload-spreadsheet');
+
+    Route::post('/select-camp', [CoachController::class, 'selectCamp'])
+        ->name('select-camp');
+
+    Route::get('/camp-registrations', [CoachDashboardController::class, 'campRegistrations'])
+        ->name('camp-registrations');
 });
 
 // Regular authenticated user routes
