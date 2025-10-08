@@ -62,6 +62,7 @@ Route::get('/organize-teams', [CoachController::class, 'getCampsForCoach'])
     ->middleware('auth')
     ->name('organize-teams');
 
-Route::post('/home', [CoachController::class, 'uploadSpreadsheet'])->name('coach.uploadSpreadsheet');
-Route::post('/coach/organize-teams', [CoachController::class, 'selectCamp'])->name('coach.selectCamp');
+// Routes used by the organize-teams view forms
+Route::post('/coach/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('coach.uploadSpreadsheet');
+Route::post('/coach/select-camp', [CoachController::class, 'selectCamp'])->name('coach.selectCamp');
 require __DIR__.'/auth.php';
