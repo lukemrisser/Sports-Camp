@@ -58,7 +58,7 @@ class PlayerController extends Controller
 
             // Then create the player record
             $playerId = DB::table('Players')->insertGetId([
-                'Parent_ID' => $parent->id,
+                'Parent_ID' => $parent->Parent_ID,
                 'Division_Name' => $validatedData['Division_Name'],
                 'Camper_FirstName' => $validatedData['Camper_FirstName'],
                 'Camper_LastName' => $validatedData['Camper_LastName'],
@@ -100,7 +100,23 @@ class PlayerController extends Controller
                 DB::table('Teammate_Request')->insert($requestsToInsert);
             }
 
-            return redirect()->back()->with('success', 'Registration submitted successfully!');
+            // Store registration data in session for payment page
+            session([
+                'registration_data' => [
+                    'camper_name' => $validatedData['Camper_FirstName'] . ' ' . $validatedData['Camper_LastName'],
+                    'division_name' => $validatedData['Division_Name'],
+                    'parent_name' => $validatedData['Parent_FirstName'] . ' ' . $validatedData['Parent_LastName'],
+                    'email' => $validatedData['Email'],
+                    'address' => $validatedData['Address'],
+                    'city' => $validatedData['City'],
+                    'state' => $validatedData['State'],
+                    'postal_code' => $validatedData['Postal_Code'],
+                ]
+            ]);
+
+            // Redirect to payment page instead of back to registration
+            return redirect()->route('payment.show', ['player' => $playerId])
+                ->with('success', 'Registration completed! Please proceed with payment.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

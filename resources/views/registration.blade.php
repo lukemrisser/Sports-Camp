@@ -250,7 +250,7 @@
                     <!-- Submit Button -->
                     <div class="submit-section">
                         <button type="submit" class="submit-button">
-                            Submit Registration
+                            Continue to Payment →
                         </button>
                     </div>
                 </form>

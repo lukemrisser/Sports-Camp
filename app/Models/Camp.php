@@ -41,4 +41,36 @@ class Camp extends Model
 			'Coach_ID'      // Foreign key on pivot table for the related model
 		);
 	}
+
+	// A camp can have many discounts
+	public function discounts()
+	{
+		return $this->hasMany(CampDiscount::class, 'Camp_ID', 'Camp_ID');
+	}
+
+	// Get active discounts for this camp
+	public function activeDiscounts()
+	{
+		return $this->discounts()->active();
+	}
+
+	// Get the best available discount for this camp
+	public function getBestDiscount()
+	{
+		return $this->activeDiscounts()
+					->orderBy('Discount_Amount', 'desc')
+					->first();
+	}
+
+	// Calculate discounted price for this camp
+	public function getDiscountedPrice($originalPrice)
+	{
+		$discount = $this->getBestDiscount();
+		
+		if (!$discount) {
+			return $originalPrice;
+		}
+
+		return $discount->applyDiscount($originalPrice);
+	}
 }

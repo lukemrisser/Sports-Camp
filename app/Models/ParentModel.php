@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ParentModel extends Model
 {
     protected $table = 'Parents';
+    protected $primaryKey = 'Parent_ID';
     public $timestamps = false;
 
     protected $fillable = [
@@ -24,6 +25,6 @@ class ParentModel extends Model
 
     public function players()
     {
-        return $this->hasMany(Player::class, 'Parent_ID');
+        return $this->hasMany(Player::class, 'Parent_ID', 'Parent_ID');
     }
 }

@@ -39,7 +39,7 @@ class PaymentController extends Controller
             $registration = session('registration_data', [
                 'camper_name' => $player->Camper_FirstName . ' ' . $player->Camper_LastName,
                 'division_name' => $player->Division_Name ?? 'Camp Registration',
-                'parent_name' => $player->parent ? $player->parent->First_Name . ' ' . $player->parent->Last_Name : '',
+                'parent_name' => $player->parent ? $player->parent->Parent_FirstName . ' ' . $player->parent->Parent_LastName : '',
                 'email' => $player->parent->Email ?? '',
                 'address' => $player->parent->Address ?? '',
                 'city' => $player->parent->City ?? '',
