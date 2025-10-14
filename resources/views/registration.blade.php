@@ -57,12 +57,33 @@
                     <!-- Camp Selection -->
                     <div class="form-section">
                         <h3 class="section-title">Camp Selection</h3>
-                        <div class="form-group">
-                            <label class="form-label">Select Camp</label>
-                            <select name="Division_Name" class="form-input" required>
-                                <option value="">Select Camp</option>
-                                <option value="Aroma">Aroma All Sports Camp</option>
-                            </select>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Select Camp</label>
+                                @php
+                                    $availableCamps = \App\Models\Camp::getAvailableForRegistration();
+                                @endphp
+                                
+                                @if($availableCamps->count() > 0)
+                                    <select name="Camp_ID" class="form-input" required>
+                                        <option value="">Select Camp</option>
+                                        @foreach($availableCamps as $camp)
+                                            <option value="{{ $camp->Camp_ID }}">{{ $camp->Camp_Name }}</option>
+                                        @endforeach
+                                    </select>
+                                @else
+                                    <div class="alert alert-error">
+                                        <p><strong>No camps are currently accepting registrations.</strong></p>
+                                        <p>Please check back later or contact us for more information.</p>
+                                    </div>
+                                    <input type="hidden" name="Camp_ID" value="">
+                                @endif
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Division Name</label>
+                                <input type="text" name="Division_Name" class="form-input" required 
+                                       placeholder="e.g., Boys 10-12, Girls 8-10">
+                            </div>
                         </div>
                     </div>
 

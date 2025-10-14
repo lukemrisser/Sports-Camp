@@ -10,6 +10,12 @@ class ParentModel extends Model
     protected $primaryKey = 'Parent_ID';
     public $timestamps = false;
 
+    // Tell Laravel to use Parent_ID for route model binding
+    public function getRouteKeyName()
+    {
+        return 'Parent_ID';
+    }
+
     protected $fillable = [
         'Parent_FirstName',
         'Parent_LastName',

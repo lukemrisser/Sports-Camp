@@ -13,6 +13,12 @@ class Player extends Model
     protected $table = 'Players';
     public $timestamps = false;
 
+    // Tell Laravel to use Player_ID for route model binding
+    public function getRouteKeyName()
+    {
+        return 'Player_ID';
+    }
+
     // Allow mass assignment for these fields
     protected $fillable = [
         'Parent_ID',

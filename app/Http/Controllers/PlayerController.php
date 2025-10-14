@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\ParentModel;
+use App\Models\Camp;
 
 class PlayerController extends Controller
 {
@@ -12,6 +14,7 @@ class PlayerController extends Controller
     {
         $validatedData = $request->validate([
             'Division_Name' => 'required|string|max:50',
+            'Camp_ID' => 'required|integer|exists:Camps,Camp_ID',
             'Parent_FirstName' => 'required|string|max:50',
             'Parent_LastName' => 'required|string|max:50',
             'Camper_FirstName' => 'required|string|max:50',
@@ -38,6 +41,9 @@ class PlayerController extends Controller
         try {
             $phoneNumber = preg_replace('/[^0-9]/', '', $validatedData['Phone']);
             
+            Log::info("Starting player registration for {$validatedData['Camper_FirstName']} {$validatedData['Camper_LastName']}");
+            Log::info("Parent email: {$validatedData['Email']}, phone: {$phoneNumber}");
+            
             // First create or find the parent
             $parent = ParentModel::firstOrCreate(
                 [
@@ -55,8 +61,12 @@ class PlayerController extends Controller
                     'Church_Attendance' => $validatedData['Church_Attendance']
                 ]
             );
+            
+            Log::info("Parent found/created with Parent_ID: {$parent->Parent_ID}");
 
             // Then create the player record
+            Log::info("Creating player for Parent_ID: {$parent->Parent_ID}");
+            
             $playerId = DB::table('Players')->insertGetId([
                 'Parent_ID' => $parent->Parent_ID,
                 'Division_Name' => $validatedData['Division_Name'],
@@ -70,6 +80,16 @@ class PlayerController extends Controller
                 'Medication_Status' => $validatedData['Medication_Status'],
                 'Injuries' => $validatedData['Injuries']
             ]);
+            
+            Log::info("Player created successfully with Player_ID: {$playerId}");
+
+            // Create the relationship between player and camp in Player_Camp table
+            DB::table('Player_Camp')->insert([
+                'Player_ID' => $playerId,
+                'Camp_ID' => $validatedData['Camp_ID']
+            ]);
+            
+            Log::info("Player-Camp relationship created: Player_ID {$playerId} -> Camp_ID {$validatedData['Camp_ID']}");
 
             // Handle teammate requests (if any)
             $firstNames = $request->input('teammate_first', []);
@@ -91,6 +111,7 @@ class PlayerController extends Controller
 
                 $requestsToInsert[] = [
                     'Player_ID' => $playerId,
+                    'Camp_ID' => $validatedData['Camp_ID'],
                     'Requested_FirstName' => $first,
                     'Requested_LastName' => $last,
                 ];
@@ -105,6 +126,7 @@ class PlayerController extends Controller
                 'registration_data' => [
                     'camper_name' => $validatedData['Camper_FirstName'] . ' ' . $validatedData['Camper_LastName'],
                     'division_name' => $validatedData['Division_Name'],
+                    'camp_id' => $validatedData['Camp_ID'],
                     'parent_name' => $validatedData['Parent_FirstName'] . ' ' . $validatedData['Parent_LastName'],
                     'email' => $validatedData['Email'],
                     'address' => $validatedData['Address'],
@@ -113,12 +135,14 @@ class PlayerController extends Controller
                     'postal_code' => $validatedData['Postal_Code'],
                 ]
             ]);
-
+            
             // Redirect to payment page instead of back to registration
             return redirect()->route('payment.show', ['player' => $playerId])
                 ->with('success', 'Registration completed! Please proceed with payment.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            Log::error("Exception in PlayerController store method: " . $e->getMessage());
+            Log::error("Stack trace: " . $e->getTraceAsString());
+            return redirect()->back()->with('error', 'Registration failed: ' . $e->getMessage());
         }
     }
 }

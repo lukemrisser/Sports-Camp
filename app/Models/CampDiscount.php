@@ -9,7 +9,7 @@ class CampDiscount extends Model
 {
     use HasFactory;
 
-    protected $table = 'Camp_Discounts';
+    protected $table = 'camp_discount';
     protected $primaryKey = 'Discount_ID';
     public $timestamps = false;
 

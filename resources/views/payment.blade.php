@@ -38,7 +38,7 @@
                             </div>
                             <div class="summary-item">
                                 <span class="label">Camp:</span>
-                                <span class="value">{{ $registration['division_name'] ?? 'N/A' }}</span>
+                                <span class="value">{{ $campName ?? 'N/A' }}</span>
                             </div>
                             <div class="summary-item total">
                                 <span class="label">Total Amount:</span>
