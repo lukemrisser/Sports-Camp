@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Player;
 use App\Models\Camp;
 use App\Models\CampDiscount;
+use App\Models\Order;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use Stripe\Exception\CardException;
@@ -41,9 +42,9 @@ class PaymentController extends Controller
             
             Log::info("Player parent relationship: " . ($player->parent ? "Parent found: {$player->parent->Parent_FirstName}" : "No parent found"));
             
-            // For now, we'll track payment status in session/cache instead of database
-            $paymentStatus = session("payment_status_player_{$playerId}", 'pending');
-            if ($paymentStatus === 'paid') {
+            // Check if there's already a paid order for this player
+            $existingOrder = $this->findOrCreateOrder($player);
+            if ($existingOrder && $existingOrder->isFullyPaid()) {
                 return redirect()->route('payment.success')
                     ->with('success', 'Payment has already been processed for this registration.');
             }
@@ -74,13 +75,17 @@ class PaymentController extends Controller
 
             // Calculate amount (in cents for Stripe)
             $amount = $this->calculateRegistrationAmount($player);
+            
+            // Get or create order for tracking
+            $order = $existingOrder ?: $this->findOrCreateOrder($player);
 
             return view('payment', [
                 'playerId' => $playerId,
                 'amount' => $amount,
                 'registration' => $registration,
                 'player' => $player,
-                'campName' => $campName
+                'campName' => $campName,
+                'order' => $order
             ]);
 
         } catch (\Exception $e) {
@@ -119,9 +124,9 @@ class PaymentController extends Controller
                 ]);
             }
             
-            // Check if already paid
-            $paymentStatus = session("payment_status_player_{$player->Player_ID}", 'pending');
-            if ($paymentStatus === 'paid') {
+            // Check if already paid using Order model
+            $order = $this->findOrCreateOrder($player);
+            if ($order && $order->isFullyPaid()) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Payment has already been processed for this registration.'
@@ -308,11 +313,108 @@ class PaymentController extends Controller
     }
 
     /**
+     * Find existing order or create a new one for the player
+     */
+    private function findOrCreateOrder(Player $player): ?Order
+    {
+        // Get camp_id from session data
+        $registrationData = session('registration_data');
+        $campId = $registrationData['camp_id'] ?? null;
+        
+        if (!$campId) {
+            Log::warning("No camp_id found in session for player {$player->Player_ID}");
+            return null;
+        }
+
+        // Try to find existing order for this specific player and camp
+        $order = Order::where('Player_ID', $player->Player_ID)
+                     ->where('Camp_ID', $campId)
+                     ->first();
+
+        if (!$order) {
+            // Create new order for this specific player
+            $amount = $this->calculateRegistrationAmount($player) / 100; // Convert cents to dollars
+            
+            $order = Order::create([
+                'Player_ID' => $player->Player_ID,
+                'Parent_ID' => $player->Parent_ID,
+                'Camp_ID' => $campId,
+                'Order_Date' => now()->toDateString(),
+                'Item_Amount' => $amount,
+                'Item_Amount_Paid' => 0.00,
+            ]);
+
+            Log::info("Created new order {$order->Order_ID} for player {$player->Player_ID} ({$player->Camper_FirstName} {$player->Camper_LastName}), camp {$campId}, amount: $" . number_format($amount, 2));
+        } else {
+            Log::info("Found existing order {$order->Order_ID} for player {$player->Player_ID} ({$player->Camper_FirstName} {$player->Camper_LastName})");
+        }
+
+        return $order;
+    }
+
+    /**
+     * Get order details for a player
+     */
+    public function getOrderDetails($playerId): ?Order
+    {
+        $player = Player::where('Player_ID', $playerId)->first();
+        if (!$player) {
+            return null;
+        }
+
+        return $this->findOrCreateOrder($player);
+    }
+
+    /**
+     * Show order status for a player (for debugging/admin purposes)
+     */
+    public function showOrderStatus($playerId)
+    {
+        $player = Player::where('Player_ID', $playerId)->first();
+        if (!$player) {
+            return response()->json(['error' => 'Player not found']);
+        }
+
+        $order = $this->findOrCreateOrder($player);
+        if (!$order) {
+            return response()->json(['error' => 'Could not create/find order']);
+        }
+
+        return response()->json([
+            'order_id' => $order->Order_ID,
+            'player_id' => $order->Player_ID,
+            'player_name' => $player->Camper_FirstName . ' ' . $player->Camper_LastName,
+            'parent_id' => $order->Parent_ID,
+            'parent_name' => $player->parent ? $player->parent->Parent_FirstName . ' ' . $player->parent->Parent_LastName : null,
+            'camp_id' => $order->Camp_ID,
+            'camp_name' => $order->camp ? $order->camp->Camp_Name : null,
+            'order_date' => $order->Order_Date,
+            'total_amount' => $order->Item_Amount,
+            'amount_paid' => $order->Item_Amount_Paid,
+            'remaining_amount' => $order->remaining_amount,
+            'payment_status' => $order->payment_status,
+            'is_fully_paid' => $order->isFullyPaid(),
+            'is_partially_paid' => $order->isPartiallyPaid(),
+        ]);
+    }
+
+    /**
      * Update player payment status after successful payment
      */
     private function updatePlayerPaymentStatus($player, $paymentIntent, $request)
     {
-        // Store payment info in session for now (until we add payment table)
+        // Update the Order record with payment
+        $order = $this->findOrCreateOrder($player);
+        
+        if ($order) {
+            // Add payment to the order
+            $paymentAmountDollars = $paymentIntent->amount / 100; // Convert cents to dollars
+            $order->addPayment($paymentAmountDollars);
+
+            Log::info("Updated order {$order->Order_ID} with payment amount: $" . number_format($paymentAmountDollars, 2));
+        }
+
+        // Keep session data for backwards compatibility and additional payment metadata
         session([
             "payment_status_player_{$player->Player_ID}" => 'paid',
             "payment_data_player_{$player->Player_ID}" => [
@@ -325,6 +427,7 @@ class PaymentController extends Controller
                 'billing_state' => $request->billing_state,
                 'billing_zip' => $request->billing_zip,
                 'receipt_email' => $request->receipt_email,
+                'order_id' => $order ? $order->Order_ID : null,
             ]
         ]);
 
@@ -341,14 +444,22 @@ class PaymentController extends Controller
             $playerId = $paymentIntent['metadata']['player_id'];
             $player = Player::where('Player_ID', $playerId)->first();
             
-            $paymentStatus = session("payment_status_player_{$playerId}", 'pending');
-            if ($player && $paymentStatus !== 'paid') {
-                session([
-                    "payment_status_player_{$playerId}" => 'paid',
-                    "payment_webhook_confirmed_{$playerId}" => true
-                ]);
+            if ($player) {
+                $order = $this->findOrCreateOrder($player);
+                
+                if ($order && !$order->isFullyPaid()) {
+                    // Add payment to the order
+                    $paymentAmountDollars = $paymentIntent['amount'] / 100;
+                    $order->addPayment($paymentAmountDollars);
 
-                Log::info("Payment confirmed via webhook for player {$playerId}: {$paymentIntent['id']}");
+                    // Update session for backwards compatibility
+                    session([
+                        "payment_status_player_{$playerId}" => 'paid',
+                        "payment_webhook_confirmed_{$playerId}" => true
+                    ]);
+
+                    Log::info("Payment confirmed via webhook for player {$playerId}: {$paymentIntent['id']}, Order {$order->Order_ID} updated");
+                }
             }
         }
     }
@@ -363,6 +474,8 @@ class PaymentController extends Controller
             $player = Player::where('Player_ID', $playerId)->first();
             
             if ($player) {
+                // Order remains with Item_Amount_Paid = 0 for failed payments
+                // The order was already created in findOrCreateOrder, so no changes needed
                 session([
                     "payment_status_player_{$playerId}" => 'failed',
                     "payment_id_player_{$playerId}" => $paymentIntent['id'],

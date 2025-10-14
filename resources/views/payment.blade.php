@@ -189,20 +189,28 @@
         form.addEventListener('submit', async function(event) {
             event.preventDefault();
 
-            // Disable submit button and show loading
-            submitButton.disabled = true;
-            buttonText.style.display = 'none';
-            spinner.style.display = 'inline-block';
+            // Clear any previous errors
+            clearErrors();
 
-            // Get cardholder name
-            const cardholderName = document.querySelector('input[name="cardholder_name"]').value;
+            // Validate form before processing
+            if (!validateForm()) {
+                return;
+            }
+
+            // Disable submit button and show loading
+            setLoadingState(true);
+
+            // Get cardholder name and billing details
+            const cardholderName = document.querySelector('input[name="cardholder_name"]').value.trim();
             const billingDetails = {
                 name: cardholderName,
+                email: document.querySelector('input[name="receipt_email"]').value.trim(),
                 address: {
-                    line1: document.querySelector('input[name="billing_address"]').value,
-                    city: document.querySelector('input[name="billing_city"]').value,
-                    state: document.querySelector('input[name="billing_state"]').value,
-                    postal_code: document.querySelector('input[name="billing_zip"]').value,
+                    line1: document.querySelector('input[name="billing_address"]').value.trim(),
+                    city: document.querySelector('input[name="billing_city"]').value.trim(),
+                    state: document.querySelector('input[name="billing_state"]').value.trim(),
+                    postal_code: document.querySelector('input[name="billing_zip"]').value.trim(),
+                    country: 'US'
                 }
             };
 
@@ -290,10 +298,83 @@
             errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
+        // Helper functions
+        function validateForm() {
+            const requiredFields = [
+                { name: 'cardholder_name', label: 'Cardholder Name' },
+                { name: 'receipt_email', label: 'Email' },
+                { name: 'billing_address', label: 'Billing Address' },
+                { name: 'billing_city', label: 'City' },
+                { name: 'billing_state', label: 'State' },
+                { name: 'billing_zip', label: 'ZIP Code' }
+            ];
+
+            let isValid = true;
+            for (const field of requiredFields) {
+                const input = document.querySelector(`input[name="${field.name}"]`);
+                if (!input.value.trim()) {
+                    showFieldError(input, `${field.label} is required`);
+                    isValid = false;
+                }
+            }
+
+            // Validate email format
+            const emailInput = document.querySelector('input[name="receipt_email"]');
+            if (emailInput.value && !isValidEmail(emailInput.value)) {
+                showFieldError(emailInput, 'Please enter a valid email address');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function showFieldError(input, message) {
+            input.classList.add('error');
+            let errorDiv = input.parentNode.querySelector('.field-error');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'field-error';
+                input.parentNode.appendChild(errorDiv);
+            }
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function clearErrors() {
+            // Clear card errors
+            const cardErrors = document.getElementById('card-errors');
+            cardErrors.textContent = '';
+            cardErrors.style.display = 'none';
+            document.getElementById('card-element').classList.remove('has-error');
+
+            // Clear field errors
+            document.querySelectorAll('.error').forEach(input => {
+                input.classList.remove('error');
+            });
+            document.querySelectorAll('.field-error').forEach(error => {
+                error.style.display = 'none';
+            });
+        }
+
+        function setLoadingState(loading) {
+            submitButton.disabled = loading;
+            if (loading) {
+                buttonText.textContent = 'Processing...';
+                spinner.style.display = 'inline-block';
+                submitButton.classList.add('loading');
+            } else {
+                buttonText.textContent = `Pay ${{ number_format($amount / 100, 2) }}`;
+                spinner.style.display = 'none';
+                submitButton.classList.remove('loading');
+            }
+        }
+
         function resetButton() {
-            submitButton.disabled = false;
-            buttonText.style.display = 'inline';
-            spinner.style.display = 'none';
+            setLoadingState(false);
         }
 
         // Auto-format ZIP code
@@ -349,11 +430,20 @@
             border: 1px solid #d1d5db;
             border-radius: 6px;
             background: white;
+            transition: all 0.2s ease;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
         }
 
         .stripe-element:focus-within {
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .stripe-element.has-error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
         }
 
         .error-message {
@@ -412,6 +502,68 @@
         .error-list {
             margin: 0;
             padding-left: 1.5rem;
+        }
+
+        /* Form input error states */
+        .form-input.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .field-error {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        /* Submit button states */
+        .submit-button {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .submit-button.loading {
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+
+        .submit-button.card-complete {
+            background-color: #059669;
+            border-color: #059669;
+        }
+
+        .submit-button.card-complete:hover {
+            background-color: #047857;
+            border-color: #047857;
+        }
+
+        /* Form input focus states */
+        .form-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        /* Loading spinner improvements */
+        .spinner {
+            margin-left: 8px;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 640px) {
+            .form-grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-item {
+                font-size: 0.875rem;
+            }
+            
+            .submit-button {
+                padding: 12px 20px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
         }
     </style>
 </body>

@@ -29,6 +29,7 @@ class Order extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
+        'Player_ID',
         'Parent_ID',
         'Camp_ID',
         'Order_Date',
@@ -59,6 +60,14 @@ class Order extends Model
     public function camp(): BelongsTo
     {
         return $this->belongsTo(Camp::class, 'Camp_ID', 'Camp_ID');
+    }
+
+    /**
+     * Get the player that this order is for.
+     */
+    public function player(): BelongsTo
+    {
+        return $this->belongsTo(Player::class, 'Player_ID', 'Player_ID');
     }
 
     /**
@@ -123,5 +132,68 @@ class Order extends Model
     {
         return $query->where('Item_Amount_Paid', '>', 0)
                      ->whereRaw('Item_Amount_Paid < Item_Amount');
+    }
+
+    /**
+     * Add payment to the order
+     */
+    public function addPayment(float $amount): bool
+    {
+        $currentPaid = $this->Item_Amount_Paid ?? 0;
+        $newTotal = $currentPaid + $amount;
+        
+        // Don't allow overpayment
+        if ($newTotal > $this->Item_Amount) {
+            $newTotal = $this->Item_Amount;
+        }
+        
+        return $this->update(['Item_Amount_Paid' => $newTotal]);
+    }
+
+    /**
+     * Get payment history for this order (if you implement a payments table later)
+     */
+    public function getPaymentHistoryAttribute(): array
+    {
+        // For now, return basic info. Later you could relate to a payments table
+        return [
+            'order_id' => $this->Order_ID,
+            'player_id' => $this->Player_ID,
+            'player_name' => $this->player ? $this->player->Camper_FirstName . ' ' . $this->player->Camper_LastName : null,
+            'parent_name' => $this->parent ? $this->parent->Parent_FirstName . ' ' . $this->parent->Parent_LastName : null,
+            'camp_name' => $this->camp ? $this->camp->Camp_Name : null,
+            'total_amount' => $this->Item_Amount,
+            'amount_paid' => $this->Item_Amount_Paid,
+            'remaining_amount' => $this->remaining_amount,
+            'status' => $this->payment_status,
+            'order_date' => $this->Order_Date,
+        ];
+    }
+
+    /**
+     * Get a formatted description of this order
+     */
+    public function getDescriptionAttribute(): string
+    {
+        $playerName = $this->player ? $this->player->Camper_FirstName . ' ' . $this->player->Camper_LastName : 'Unknown Player';
+        $campName = $this->camp ? $this->camp->Camp_Name : 'Unknown Camp';
+        
+        return "Order #{$this->Order_ID} - {$playerName} for {$campName}";
+    }
+
+    /**
+     * Scope to find orders for a specific player
+     */
+    public function scopeForPlayer($query, $playerId)
+    {
+        return $query->where('Player_ID', $playerId);
+    }
+
+    /**
+     * Scope to find orders for a specific camp
+     */
+    public function scopeForCamp($query, $campId)
+    {
+        return $query->where('Camp_ID', $campId);
     }
 }
