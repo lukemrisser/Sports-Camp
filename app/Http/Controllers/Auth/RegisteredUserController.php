@@ -69,10 +69,14 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        // Send verification email
         event(new Registered($user));
+
+        // Log the user in (required for verification routes to work)
         Auth::login($user);
 
-        return redirect()->route('dashboard');
+        // Redirect to verification notice instead of dashboard
+        return redirect()->route('verification.notice');
     }
 
     /**
@@ -136,8 +140,8 @@ class RegisteredUserController extends Controller
 
             // Create coach record
             Coach::create([
-                'Coach_FirstName' => $request->coach_firstname,  // Changed from coach_firstname
-                'Coach_LastName' => $request->coach_lastname,    // Changed from coach_lastname
+                'Coach_FirstName' => $request->coach_firstname,
+                'Coach_LastName' => $request->coach_lastname,
                 'user_id' => $user->id,
                 'admin' => $isAdmin,
                 'sport' => $request->sport,
@@ -145,16 +149,14 @@ class RegisteredUserController extends Controller
 
             DB::commit();
 
+            // Send verification email
             event(new Registered($user));
+
+            // Log the coach in (required for verification routes to work)
             Auth::login($user);
 
-            // Redirect based on admin status
-            if ($isAdmin) {
-                // Create an admin-dashboard route if you want different dashboard for admins
-                return redirect()->route('coach-dashboard'); // Or 'admin-dashboard' if you have one
-            }
-
-            return redirect()->route('coach-dashboard');
+            // Redirect to verification notice instead of dashboard
+            return redirect()->route('verification.notice');
 
         } catch (\Exception $e) {
             DB::rollback();
