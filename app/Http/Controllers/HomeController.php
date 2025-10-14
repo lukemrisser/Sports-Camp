@@ -17,21 +17,21 @@ class HomeController extends Controller
                 'title' => 'Youth Soccer',
                 'description' => 'Register for our youth soccer camp',
                 'icon' => '⚽',
-                'route' => 'registration',
+                'route' => 'registration.form',
                 'color' => 'blue'
             ],
             [
                 'title' => 'Youth Volleyball',
                 'description' => 'Join our youth volleyball camp',
                 'icon' => '🏐',
-                'route' => 'registration',
+                'route' => 'registration.form',
                 'color' => 'green'
             ],
             [
                 'title' => 'Youth Tennis',
                 'description' => 'Register your child for tennis camp',
                 'icon' => '🎾',
-                'route' => 'registration',
+                'route' => 'registration.form',
                 'color' => 'purple'
             ],
 
