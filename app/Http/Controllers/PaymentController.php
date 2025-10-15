@@ -28,20 +28,14 @@ class PaymentController extends Controller
     public function show($playerId)
     {
         try {
-            Log::info("PaymentController show method called with playerId: $playerId");
             
-            // Get player and registration details using Player_ID
             $player = Player::with('parent')->where('Player_ID', $playerId)->first();
-            Log::info("Player lookup result: " . ($player ? "Found player {$player->Camper_FirstName} {$player->Camper_LastName}" : "No player found"));
             
             if (!$player) {
-                Log::error("Player not found with Player_ID: $playerId");
                 return redirect()->route('home')
                     ->with('error', 'Player registration not found.');
             }
-            
-            Log::info("Player parent relationship: " . ($player->parent ? "Parent found: {$player->parent->Parent_FirstName}" : "No parent found"));
-            
+                    
             // Check if there's already a paid order for this player
             $existingOrder = $this->findOrCreateOrder($player);
             if ($existingOrder && $existingOrder->isFullyPaid()) {
@@ -51,11 +45,10 @@ class PaymentController extends Controller
 
             // Get registration data from session or reconstruct from player
             $sessionData = session('registration_data');
-            Log::info("Session registration_data: " . json_encode($sessionData));
             
             $registration = session('registration_data', [
                 'camper_name' => $player->Camper_FirstName . ' ' . $player->Camper_LastName,
-                'division_name' => $player->Division_Name ?? 'Camp Registration',
+                'division_name' => $player->Division_Name,
                 'parent_name' => $player->parent ? $player->parent->Parent_FirstName . ' ' . $player->parent->Parent_LastName : '',
                 'email' => $player->parent->Email ?? '',
                 'address' => $player->parent->Address ?? '',
@@ -211,18 +204,10 @@ class PaymentController extends Controller
             ]);
         }
     }
-
-    /**
-     * Payment success page
-     */
     public function success()
     {
         return view('payment-success');
     }
-
-    /**
-     * Payment cancelled page
-     */
     public function cancelled()
     {
         return view('payment-cancelled');
@@ -271,45 +256,23 @@ class PaymentController extends Controller
      */
     private function calculateRegistrationAmount($player)
     {
-        Log::info("Calculating registration amount for player {$player->Player_ID}");
-        
-        // Default registration fee in cents ($150.00)
-        $baseAmount = 15000;
-
-        // Try to get Camp_ID from session data first
         $registrationData = session('registration_data');
         $camp = null;
-        
-        Log::info("Registration data for calculation: " . json_encode($registrationData));
         
         if ($registrationData && isset($registrationData['camp_id'])) {
             // Use Camp_ID from session (preferred method)
             $camp = Camp::find($registrationData['camp_id']);
-            Log::info("Looking up camp by ID from session: {$registrationData['camp_id']}" . ($camp ? " - Found: {$camp->Camp_Name}" : " - Not found"));
-        } else {
-            Log::warning("No camp_id found in session data for player {$player->Player_ID}");
         }
-        
-        if ($camp) {
-            // Use camp's price if available, otherwise use default
-            if (isset($camp->Price)) {
-                $baseAmount = $camp->Price * 100; // Convert dollars to cents
-                Log::info("Using camp price: $" . $camp->Price . " -> " . $baseAmount . " cents");
-            } else {
-                Log::info("No price set for camp {$camp->Camp_Name}, using default: " . $baseAmount . " cents");
-            }
-            
-            // Apply the best available discount for this camp
-            $discountedAmount = $camp->getDiscountedPrice($baseAmount);
-            
-            Log::info("Camp pricing for {$camp->Camp_Name} (ID: {$camp->Camp_ID}): Base: $" . number_format($baseAmount/100, 2) . 
-                     ", Discounted: $" . number_format($discountedAmount/100, 2));
-            
-            return $discountedAmount;
+        else {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                redirect()->route('home')->with('error', 'Camp information not found. Please start over.')
+            );
         }
 
-        Log::warning("No camp found for player {$player->Player_ID}, using default amount: $" . number_format($baseAmount/100, 2));
-        return $baseAmount;
+        $baseAmount = $camp->Price * 100; // Convert dollars to cents
+        $discountedAmount = $camp->getDiscountedPrice($baseAmount);
+
+        return $discountedAmount;
     }
 
     /**
@@ -322,7 +285,6 @@ class PaymentController extends Controller
         $campId = $registrationData['camp_id'] ?? null;
         
         if (!$campId) {
-            Log::warning("No camp_id found in session for player {$player->Player_ID}");
             return null;
         }
 
@@ -343,10 +305,6 @@ class PaymentController extends Controller
                 'Item_Amount' => $amount,
                 'Item_Amount_Paid' => 0.00,
             ]);
-
-            Log::info("Created new order {$order->Order_ID} for player {$player->Player_ID} ({$player->Camper_FirstName} {$player->Camper_LastName}), camp {$campId}, amount: $" . number_format($amount, 2));
-        } else {
-            Log::info("Found existing order {$order->Order_ID} for player {$player->Player_ID} ({$player->Camper_FirstName} {$player->Camper_LastName})");
         }
 
         return $order;
@@ -363,39 +321,6 @@ class PaymentController extends Controller
         }
 
         return $this->findOrCreateOrder($player);
-    }
-
-    /**
-     * Show order status for a player (for debugging/admin purposes)
-     */
-    public function showOrderStatus($playerId)
-    {
-        $player = Player::where('Player_ID', $playerId)->first();
-        if (!$player) {
-            return response()->json(['error' => 'Player not found']);
-        }
-
-        $order = $this->findOrCreateOrder($player);
-        if (!$order) {
-            return response()->json(['error' => 'Could not create/find order']);
-        }
-
-        return response()->json([
-            'order_id' => $order->Order_ID,
-            'player_id' => $order->Player_ID,
-            'player_name' => $player->Camper_FirstName . ' ' . $player->Camper_LastName,
-            'parent_id' => $order->Parent_ID,
-            'parent_name' => $player->parent ? $player->parent->Parent_FirstName . ' ' . $player->parent->Parent_LastName : null,
-            'camp_id' => $order->Camp_ID,
-            'camp_name' => $order->camp ? $order->camp->Camp_Name : null,
-            'order_date' => $order->Order_Date,
-            'total_amount' => $order->Item_Amount,
-            'amount_paid' => $order->Item_Amount_Paid,
-            'remaining_amount' => $order->remaining_amount,
-            'payment_status' => $order->payment_status,
-            'is_fully_paid' => $order->isFullyPaid(),
-            'is_partially_paid' => $order->isPartiallyPaid(),
-        ]);
     }
 
     /**
@@ -430,9 +355,6 @@ class PaymentController extends Controller
                 'order_id' => $order ? $order->Order_ID : null,
             ]
         ]);
-
-        // You might also want to send confirmation emails here
-        // Mail::to($request->receipt_email)->send(new RegistrationConfirmation($player));
     }
 
     /**
