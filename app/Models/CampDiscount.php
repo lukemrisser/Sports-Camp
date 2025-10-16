@@ -12,7 +12,7 @@ class CampDiscount extends Model
 
     protected $primaryKey = 'Discount_ID';
 
-    protected $table = 'Camp_Discounts';
+    protected $table = 'Camp_Discount';
 
     public $timestamps = false;
 
