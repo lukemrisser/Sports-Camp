@@ -79,6 +79,15 @@
                 <p>Create balanced teams from your uploaded player data</p>
                 <a href="{{ route('organize-teams') }}" class="card-button">Organize Teams</a>
             </div>
+            
+            <!-- Create Camp Card -->
+            <div class="registration-card purple">
+                <div class="card-icon">🏕️</div>
+                <h3>Create New Camp</h3>
+                <p>Set up a new camp session for players to register</p>
+                <a href="{{ route('create-camp') }}" class="card-button">Create Camp</a>
+            </div>
+
         </div>
 
         <div class="navigation">

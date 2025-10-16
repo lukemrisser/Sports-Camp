@@ -4,35 +4,37 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Camp;
 
 class CampDiscount extends Model
 {
     use HasFactory;
 
-    protected $table = 'camp_discount';
     protected $primaryKey = 'Discount_ID';
+
+    protected $table = 'Camp_Discounts';
+
     public $timestamps = false;
 
+    // Allow mass assignment for these fields
     protected $fillable = [
         'Camp_ID',
-        'Discount_Date',
         'Discount_Amount',
-        'Active'
+        'Discount_Date'
     ];
 
+    // Cast Discount_Amount as decimal and Discount_Date as date
     protected $casts = [
-        'Discount_Date' => 'date',
         'Discount_Amount' => 'decimal:2',
-        'Active' => 'boolean'
+        'Discount_Date' => 'date'
     ];
 
-    /**
-     * Get the camp that owns the discount
-     */
+    // A discount belongs to a camp
     public function camp()
     {
         return $this->belongsTo(Camp::class, 'Camp_ID', 'Camp_ID');
     }
+}
 
     /**
      * Check if discount is currently active

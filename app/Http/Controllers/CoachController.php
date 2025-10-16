@@ -14,11 +14,96 @@ use Maatwebsite\Excel\Excel as ExcelWriter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
 
 
 class CoachController extends Controller
 {
+    public function showCreateCampForm()
+    {
+        return view('coach.create-camp');
+    }
+
+    public function storeCamp(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+            'registration_open' => 'required|date',
+            'registration_close' => 'required|date',
+            'price' => 'required|numeric',
+            'gender' => 'required|string',
+            'min_age' => 'required|numeric',
+            'max_age' => 'required|numeric',
+            'discount_amount.*' => 'nullable|numeric',
+            'discount_date.*' => 'nullable|date'
+        ]);
+
+        // if the Camp is created but the discount insertion fails, everything is rolled back.
+        DB::beginTransaction();
+
+        try {
+            $camp = Camp::create([
+                'Camp_Name' => $validated['name'],
+                'Description' => $validated['description'],
+                'Start_Date' => $validated['start_date'],
+                'End_Date' => $validated['end_date'],
+                'Registration_Open' => $validated['registration_open'],
+                'Registration_Close' => $validated['registration_close'],
+                'Price' => $validated['price'],
+                'Camp_Gender' => $validated['gender'],
+                'Age_Min' => $validated['min_age'],
+                'Age_Max' => $validated['max_age']
+            ]);
+
+            $discountAmounts = $request->input('discount_amount', []);
+            $discountDates = $request->input('discount_date', []);
+
+            $requestsToInsert = [];
+            
+            foreach ($discountAmounts as $i => $amount) {
+                $amount = $amount;
+                $date = trim($discountDates[$i] ?? ''); 
+
+                if ($amount == null && $date == null) continue;
+
+                if ($amount == null XOR $date == null) {
+                    throw ValidationException::withMessages([
+                        'discount' => ['Each discount must include both an amount and a date.'],
+                    ]);
+                }
+
+                $requestsToInsert[] = [
+                    'Camp_ID' => $camp->Camp_ID,
+                    'Discount_Date' => $date,
+                    'Discount_Amount' => $amount
+                ];
+            }
+
+            if (!empty($requestsToInsert)) {
+                DB::table('Camp_Discount')->insert($requestsToInsert);
+            }
+            
+            DB::commit(); 
+
+            return redirect()->route('create-camp')
+                ->with('success', 'Camp created successfully!');
+
+        } catch (ValidationException $e) {
+            DB::rollBack(); 
+            return redirect()->back()->withInput()->withErrors($e->errors());
+        } 
+        catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Camp Creation Database Error: ' . $e->getMessage()); 
+
+            return redirect()->back()->withInput()->with('error', 'A critical error occurred while saving camp data. Please try again.');
+        }
+    }
+
     public function uploadSpreadsheet(Request $request)
     {
         $request->validate([
@@ -126,7 +211,6 @@ class CoachController extends Controller
             public function headings(): array { return ['Team', 'Player Name', 'Teammate Requests']; }
         }, $filename);
     }
-
 
     public function sortTeamsDatabase($players, $numTeams, $campId)
     {
@@ -279,8 +363,6 @@ class CoachController extends Controller
         }
         return $cluster;
     }
-
-
 
     public function sortTeamsSpreadsheet($players, $numTeams)
     {

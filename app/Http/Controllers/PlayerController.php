@@ -95,9 +95,9 @@ class PlayerController extends Controller
             $firstNames = $request->input('teammate_first', []);
             $lastNames = $request->input('teammate_last', []);
             
-            // Validate there are the same amout of last and first names
+            // Validate there are the same amount of last and first names
             if (count($firstNames) !== count($lastNames)) {
-                return redirect()->back()->with('error', 'Invalid teammate request data.');
+                return redirect()->back()->withInput()->with('error', 'Invalid teammate request data.');
             }
 
             $requestsToInsert = [];
@@ -129,7 +129,7 @@ class PlayerController extends Controller
         } catch (\Exception $e) {
             Log::error("Exception in PlayerController store method: " . $e->getMessage());
             Log::error("Stack trace: " . $e->getTraceAsString());
-            return redirect()->back()->with('error', 'Registration failed: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Registration failed: ' . $e->getMessage());
         }
     }
 }

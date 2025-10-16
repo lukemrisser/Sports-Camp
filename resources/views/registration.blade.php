@@ -157,9 +157,6 @@
                                     <label class="form-label">Teammate Last Name</label>
                                     <input type="text" name="teammate_last[]" class="form-input" />
                                 </div>
-                                <button type="button"
-                                    class="remove-teammate absolute right-0 top-8 px-3 text-red-500 hover:text-red-700"
-                                    title="Remove teammate request">&times;</button>
                             </div>
                         </div>
 
