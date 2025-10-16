@@ -14,18 +14,12 @@ Route::get('/registration', function (){
     return view('registration');
 })->name('registration.form');
 
-Route::get('coach-register', [RegisteredUserController::class, 'create'])
-    ->name('coach-register')
-    ->middleware('guest');
+// REMOVED coach-register routes - they're in auth.php
 
-Route::post('coach-register', [RegisteredUserController::class, 'store'])
-    ->middleware('guest');
-
+// Temporarily change this:
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::get('/coach_dashboard', [CoachDashboardController::class, 'coachDashboard'])->name('coach_dashboard');
+})->middleware(['auth'])->name('dashboard');  // Removed 'verified' temporarily
 
 Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
 
@@ -36,12 +30,9 @@ Route::get('/payment/success', [PaymentController::class, 'success'])->name('pay
 Route::get('/payment/cancelled', [PaymentController::class, 'cancelled'])->name('payment.cancelled');
 Route::post('/stripe/webhook', [PaymentController::class, 'webhook'])->name('stripe.webhook');
 
-Route::post('/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('upload-spreadsheet');
-Route::post('/select-camp', [CoachController::class, 'selectCamp'])->name('select-camp');
-
 // Protected routes for coaches only
-Route::middleware(['auth', 'verified', 'coach'])->group(function () {
-    // Main coach dashboard with optional camp_id parameter
+Route::middleware(['auth', 'coach'])->group(function () {
+    // Main coach dashboard
     Route::get('/coach-dashboard', [CoachDashboardController::class, 'dashboard'])
         ->name('coach-dashboard');
 
@@ -67,22 +58,14 @@ Route::middleware(['auth', 'verified', 'coach'])->group(function () {
 
 // Regular authenticated user routes
 Route::middleware(['auth'])->group(function () {
-    // Remove duplicate dashboard route - it's already defined above
-
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/organize-teams', [CoachController::class, 'getCampsForCoach'])
-    ->middleware('auth')
-    ->name('organize-teams');
-
 // Routes used by the organize-teams view forms
 Route::post('/coach/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('coach.uploadSpreadsheet');
 Route::post('/coach/select-camp', [CoachController::class, 'selectCamp'])->name('coach.selectCamp');
-
-// Email verification routes are handled in auth.php, so we don't need them here
 
 require __DIR__.'/auth.php';

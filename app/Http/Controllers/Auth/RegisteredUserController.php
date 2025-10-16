@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Coach;
+use App\Models\PendingRegistration;
+use App\Notifications\PendingRegistrationVerification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -21,30 +25,24 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        // Check if this is the coach registration route
         if (request()->is('coach-register')) {
             return view('auth.coach-register');
         }
-
-        // Default to regular registration view
         return view('auth.register');
     }
 
     /**
      * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
-        // Check if this is coming from the coach registration route
         $isCoachRegistration = $request->is('coach-register');
 
         if ($isCoachRegistration) {
-            return $this->storeCoach($request);
+            return $this->storeCoachPending($request);
         }
 
-        // Regular user registration (parents/players)
+        // Regular user (parent/player) validation
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -53,8 +51,18 @@ class RegisteredUserController extends Controller
                 'lowercase',
                 'email',
                 'max:255',
-                'unique:users',
                 function ($attribute, $value, $fail) {
+                    // Check if email exists in users table
+                    if (User::where('email', $value)->exists()) {
+                        $fail('This email is already registered.');
+                    }
+                    // Check if email exists in pending registrations
+                    if (PendingRegistration::where('email', $value)
+                        ->where('expires_at', '>', now())
+                        ->exists()) {
+                        $fail('This email has a pending registration. Please check your email or wait for it to expire.');
+                    }
+                    // Messiah.edu emails should use coach registration
                     if (preg_match('/@messiah\.edu$/i', $value)) {
                         $fail('Please use the coach registration form for @messiah.edu email addresses.');
                     }
@@ -63,28 +71,33 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
+        // Create pending registration
+        $token = Str::random(64);
+        $pendingRegistration = PendingRegistration::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'token' => $token,
+            'expires_at' => now()->addHours(48), // 48 hour expiry
         ]);
 
         // Send verification email
-        event(new Registered($user));
+        Notification::route('mail', $request->email)
+            ->notify(new PendingRegistrationVerification($token, $request->name, false));
 
-        // Log the user in (required for verification routes to work)
-        Auth::login($user);
+        // Store email in session for display
+        session(['pending_email' => $request->email]);
 
-        // Redirect to verification notice instead of dashboard
+        // Redirect to the Laravel verify-email view
         return redirect()->route('verification.notice');
     }
 
     /**
-     * Handle coach registration.
+     * Handle coach registration (pending).
      */
-    private function storeCoach(Request $request): RedirectResponse
+    private function storeCoachPending(Request $request): RedirectResponse
     {
-        // Validation rules for coach registration
+        // Coach validation
         $request->validate([
             'coach_firstname' => ['required', 'string', 'max:255'],
             'coach_lastname' => ['required', 'string', 'max:255'],
@@ -96,15 +109,21 @@ class RegisteredUserController extends Controller
                 'max:255',
                 'regex:/^[a-zA-Z0-9._%+-]+@messiah\.edu$/i',
                 function ($attribute, $value, $fail) {
-                    // Check if email exists in users table
-                    $userExists = User::where('email', $value)->exists();
-
-                    // Check if email exists via coach relationships
+                    // Check users table
+                    if (User::where('email', $value)->exists()) {
+                        $fail('This email is already registered.');
+                    }
+                    // Check pending registrations
+                    if (PendingRegistration::where('email', $value)
+                        ->where('expires_at', '>', now())
+                        ->exists()) {
+                        $fail('This email has a pending registration. Please check your email.');
+                    }
+                    // Check coach relationships
                     $coachExists = Coach::whereHas('user', function ($query) use ($value) {
                         $query->where('email', $value);
                     })->exists();
-
-                    if ($userExists || $coachExists) {
+                    if ($coachExists) {
                         $fail('This email address is already registered.');
                     }
                 }
@@ -118,55 +137,120 @@ class RegisteredUserController extends Controller
             'admin' => ['nullable', 'boolean'],
         ], [
             'email.regex' => 'Coach registration requires a valid @messiah.edu email address.',
-            'sport.required' => 'Please select the sport or camp you are associated with.',
-            'sport.in' => 'Please select a valid sport or camp from the list.',
-            'coach_firstname.required' => 'First name is required.',
-            'coach_lastname.required' => 'Last name is required.',
         ]);
 
-        // Use database transaction to ensure both records are created
+        // Create pending registration with coach data
+        $token = Str::random(64);
+        $fullName = $request->coach_firstname . ' ' . $request->coach_lastname;
+
+        $pendingRegistration = PendingRegistration::create([
+            'name' => $fullName,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'token' => $token,
+            'additional_data' => [
+                'is_coach' => true,
+                'coach_firstname' => $request->coach_firstname,
+                'coach_lastname' => $request->coach_lastname,
+                'sport' => $request->sport,
+                'admin' => $request->has('admin') && $request->admin == '1',
+            ],
+            'expires_at' => now()->addHours(48), // 48 hour expiry
+        ]);
+
+        // Send verification email
+        Notification::route('mail', $request->email)
+            ->notify(new PendingRegistrationVerification($token, $fullName, true));
+
+        // Store email in session for display
+        session(['pending_email' => $request->email]);
+
+        // Redirect to the Laravel verify-email view
+        return redirect()->route('verification.notice');
+    }
+
+    /**
+     * Verify registration and create actual user account
+     */
+    public function verifyRegistration($token): RedirectResponse
+    {
+        // Find pending registration
+        $pendingRegistration = PendingRegistration::where('token', $token)->first();
+
+        if (!$pendingRegistration) {
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Invalid verification link.']);
+        }
+
+        if ($pendingRegistration->hasExpired()) {
+            $pendingRegistration->delete();
+            return redirect()->route('register')
+                ->withErrors(['email' => 'Your verification link has expired. Please register again.']);
+        }
+
         DB::beginTransaction();
 
         try {
-            // Create user record for authentication
+            // Create user with email already verified
             $user = User::create([
-                'name' => $request->coach_firstname . ' ' . $request->coach_lastname,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
+                'name' => $pendingRegistration->name,
+                'email' => $pendingRegistration->email,
+                'password' => $pendingRegistration->password,
+                'email_verified_at' => now(), // This is crucial
             ]);
 
-            // Get admin value from checkbox
-            $isAdmin = $request->has('admin') && $request->admin == '1';
+            // Create coach record if needed
+            $additionalData = $pendingRegistration->additional_data;
+            if ($additionalData && isset($additionalData['is_coach']) && $additionalData['is_coach']) {
+                Coach::create([
+                    'Coach_FirstName' => $additionalData['coach_firstname'],
+                    'Coach_LastName' => $additionalData['coach_lastname'],
+                    'user_id' => $user->id,
+                    'admin' => $additionalData['admin'] ?? false,
+                    'sport' => $additionalData['sport'],
+                ]);
+            }
 
-            // Create coach record
-            Coach::create([
-                'Coach_FirstName' => $request->coach_firstname,
-                'Coach_LastName' => $request->coach_lastname,
-                'user_id' => $user->id,
-                'admin' => $isAdmin,
-                'sport' => $request->sport,
-            ]);
+            // Delete pending registration
+            $pendingRegistration->delete();
 
             DB::commit();
 
-            // Send verification email
-            event(new Registered($user));
-
-            // Log the coach in (required for verification routes to work)
+            // Log the user in
             Auth::login($user);
 
-            // Redirect to verification notice instead of dashboard
-            return redirect()->route('verification.notice');
+            // Debug: Check what Laravel sees
+            \Log::info('User after login:', [
+                'id' => $user->id,
+                'email' => $user->email,
+                'email_verified_at' => $user->email_verified_at,
+                'hasVerifiedEmail' => $user->hasVerifiedEmail(),
+            ]);
+
+            // Force refresh the user instance to ensure all attributes are loaded
+            Auth::user()->refresh();
+
+            // Regenerate session
+            request()->session()->regenerate();
+
+            // Clear any cached user data
+            request()->session()->put('url.intended', null);
+
+            // Redirect based on user type
+            if ($user->isCoach()) {
+                return redirect()->intended('/coach-dashboard')
+                    ->with('success', 'Your account has been successfully created and verified! Welcome to Sports Camp.');
+            }
+
+            return redirect()->intended('/dashboard')
+                ->with('success', 'Your account has been successfully created and verified! You can now register your children for camps.');
 
         } catch (\Exception $e) {
             DB::rollback();
+            \Log::error('Failed to complete registration: ' . $e->getMessage());
 
-            // Log the error if needed
-            \Log::error('Coach registration failed: ' . $e->getMessage());
-
-            return back()
-                ->withErrors(['email' => 'Registration failed. Please try again.'])
-                ->withInput();
+            return redirect()->route('register')
+                ->withErrors(['email' => 'Registration failed. Please try again or contact support.']);
         }
     }
 }

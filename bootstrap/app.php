@@ -18,6 +18,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'coach' => \App\Http\Middleware\EnsureUserIsCoach::class,
         ]);
     })
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(at: '*');
+
+        $middleware->alias([
+            'coach' => \App\Http\Middleware\EnsureUserIsCoach::class,
+            'verified.staged' => \App\Http\Middleware\VerifiedStaged::class,
+        ]);
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
