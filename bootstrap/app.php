@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -11,6 +10,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Trust proxies for Heroku
+        $middleware->trustProxies(at: '*');
+
         // Register your custom middleware alias here
         $middleware->alias([
             'coach' => \App\Http\Middleware\EnsureUserIsCoach::class,

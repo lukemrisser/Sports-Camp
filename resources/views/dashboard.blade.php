@@ -99,7 +99,7 @@
                             Organize Teams
                         </a>
                     @else
-                        <a href="{{ route('registration') }}" class="action-btn btn-primary">
+                        <a href="{{ route('registration.form') }}" class="action-btn btn-primary">
                             Register for Camp
                         </a>
                     @endif

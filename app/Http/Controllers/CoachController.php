@@ -15,6 +15,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
+
 
 class CoachController extends Controller
 {
@@ -110,29 +112,33 @@ class CoachController extends Controller
 
         $file = $request->file('spreadsheet');
         $numTeams = $request->input('num_teams');
-        $data = Excel::toArray(new PlayersImport, $file);
 
-        $players = $data[0];
+        // Use toCollection so the controller receives the rows synchronously
+        $sheets = Excel::toCollection(new PlayersImport(), $file);
+        $importedRows = $sheets->first() ?? collect();
 
-        $importedPlayers = $data[0];
         $camp = Camp::create([
             'Camp_Name' => 'Spreadsheet Camp',
         ]);
         $campId = $camp->Camp_ID;
 
-        foreach ($importedPlayers as $row) {
+        $createdPlayers = collect();
+        foreach ($importedRows as $row) {
+
             $player = Player::create([
-                'Camper_FirstName' => $row['Player First Name'],
-                'Camper_LastName' => $row['Player Last Name'],
-                'Age' => isset($row['age']) ? (int)$row['Player Age'] : null,
+                'Camper_FirstName' => $row['player_first_name'] ?? '',
+                'Camper_LastName' => $row['player_last_name'] ?? '',
+                //'Age' => $age,
             ]);
+
             // Attach player to the camp
             $player->camps()->attach($campId);
+            $createdPlayers->push($player);
 
             // Handle teammate requests
-            if (!empty($row['Teammate Request'])) {
+            if (!empty($row['teammate_request'])) {
                 // Normalize separators to comma
-                $normalized = str_replace([';', '.', '|', ' and '], ',', $row['Teammate Request']);
+                $normalized = str_replace([';', '.', '|', ' and '], ',', $row['teammate_request']);
                 $requests = array_filter(array_map('trim', explode(',', $normalized)));
 
                 foreach ($requests as $requestName) {
@@ -155,15 +161,8 @@ class CoachController extends Controller
             }
         }
 
-        $teams = $this->sortTeamsDatabase($importedPlayers, $numTeams, $campId);
-
-        DB::table('Teammate_Request')->where('Camp_ID', $campId)->delete();
-        $playerIds = DB::table('Camp_Player')->where('Camp_ID', $campId)->pluck('Player_ID');
-        Player::whereIn('Player_ID', $playerIds)->delete();
-        DB::table('Camp_Player')->where('Camp_ID', $campId)->delete();
-        Camp::where('Camp_ID', $campId)->delete();
-
-        return $this->exportTeamsToExcel($teams);
+        $teams = $this->sortTeamsDatabase($createdPlayers, $numTeams, $campId);
+        return $this->exportTeamsToExcel($teams, true, $campId);
     }
 
     public function selectCamp(Request $request)
@@ -175,7 +174,7 @@ class CoachController extends Controller
         return $this->exportTeamsToExcel($teams);
     }
 
-    public function exportTeamsToExcel($teams)
+    public function exportTeamsToExcel($teams, $delete = false, $campId = null)
     {
         $exportData = [];
         foreach ($teams as $teamIndex => $team) {
@@ -184,12 +183,22 @@ class CoachController extends Controller
                 $exportData[] = [
                     'Team' => 'Team ' . ($teamIndex + 1),
                     'Player Name' => $player ? ($player->Camper_FirstName . ' ' . $player->Camper_LastName) : 'Unknown',
-                    'Age' => $player ? $player->Age : '',
+                    //'Age' => $player ? $player->Age : '',
                     'Teammate Requests' => DB::table('Teammate_Request')
                         ->where('Player_ID', $playerId)
                         ->pluck(DB::raw("CONCAT(Requested_FirstName, ' ', Requested_LastName)"))
                         ->implode(', ')
                 ];
+            }
+        }
+
+        if($delete){
+            if($campId){
+                DB::table('Teammate_Request')->where('Camp_ID', $campId)->delete();
+                $playerIds = DB::table('Player_Camp')->where('Camp_ID', $campId)->pluck('Player_ID');
+                Player::whereIn('Player_ID', $playerIds)->delete();
+                DB::table('Player_Camp')->where('Camp_ID', $campId)->delete();
+                Camp::where('Camp_ID', $campId)->delete();
             }
         }
 
@@ -199,7 +208,7 @@ class CoachController extends Controller
             private $data;
             public function __construct($data) { $this->data = $data; }
             public function collection() { return collect($this->data); }
-            public function headings(): array { return ['Team', 'Player Name', 'Age']; }
+            public function headings(): array { return ['Team', 'Player Name', 'Teammate Requests']; }
         }, $filename);
     }
 
