@@ -27,65 +27,47 @@ class PaymentController extends Controller
      */
     public function show($playerId, $campId)
     {
-        try {
-            
-            $player = Player::with('parent')->where('Player_ID', $playerId)->first();
-            
-            if (!$player) {
-                return redirect()->route('home')
-                    ->with('error', 'Player registration not found.');
-            }
-
-            // Get camp information from URL parameter
-            $camp = Camp::find($campId);
-            if (!$camp) {
-                return redirect()->route('home')
-                    ->with('error', 'Camp information not found.');
-            }
-                    
-            // Check if there's already a paid order for this player
-            $existingOrder = $this->findOrCreateOrder($player, $campId);
-            if ($existingOrder && $existingOrder->isFullyPaid()) {
-                return redirect()->route('payment.success')
-                    ->with('success', 'Payment has already been processed for this registration.');
-            }
-
-            // Build registration data from database instead of session
-            $registration = [
-                'camper_name' => $player->Camper_FirstName . ' ' . $player->Camper_LastName,
-                'division_name' => $player->Division_Name,
-                'camp_id' => $campId,
-                'parent_name' => $player->parent ? $player->parent->Parent_FirstName . ' ' . $player->parent->Parent_LastName : '',
-                'email' => $player->parent->Email ?? '',
-                'address' => $player->parent->Address ?? '',
-                'city' => $player->parent->City ?? '',
-                'state' => $player->parent->State ?? '',
-                'postal_code' => $player->parent->Postal_Code ?? ''
-            ];
-
-            // Get the camp name for display
-            $campName = $camp->Camp_Name;
-
-            // Calculate amount (in cents for Stripe)
-            $amount = $this->calculateRegistrationAmount($player, $campId);
-            
-            // Get or create order for tracking
-            $order = $existingOrder ?: $this->findOrCreateOrder($player, $campId);
-
-            return view('payment', [
-                'playerId' => $playerId,
-                'amount' => $amount,
-                'registration' => $registration,
-                'player' => $player,
-                'campName' => $campName,
-                'order' => $order
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Payment form error: ' . $e->getMessage());
-            return redirect()->route('home')
-                ->with('error', 'Unable to load payment form. Please try again.');
+        $player = Player::with('parent')->where('Player_ID', $playerId)->first();
+        $camp = Camp::find($campId);
+                
+        // Check if there's already a paid order for this player
+        $existingOrder = $this->findOrCreateOrder($player, $campId);
+        if ($existingOrder && $existingOrder->isFullyPaid()) {
+            return redirect()->route('payment.success')
+                ->with('success', 'Payment has already been processed for this registration.');
         }
+
+        // Build registration data from database instead of session
+        $registration = [
+            'camper_name' => $player->Camper_FirstName . ' ' . $player->Camper_LastName,
+            'division_name' => $player->Division_Name,
+            'camp_id' => $campId,
+            'parent_name' => $player->parent ? $player->parent->Parent_FirstName . ' ' . $player->parent->Parent_LastName : '',
+            'email' => $player->parent->Email ?? '',
+            'address' => $player->parent->Address ?? '',
+            'city' => $player->parent->City ?? '',
+            'state' => $player->parent->State ?? '',
+            'postal_code' => $player->parent->Postal_Code ?? ''
+        ];
+
+        // Get the camp name for display
+        $campName = $camp->Camp_Name;
+
+        // Calculate amount (in cents for Stripe)
+        $amount = $this->calculateRegistrationAmount($player, $campId);
+        
+        // Get or create order for tracking
+        $order = $existingOrder ?: $this->findOrCreateOrder($player, $campId);
+
+        return view('payment', [
+            'playerId' => $playerId,
+            'amount' => $amount,
+            'registration' => $registration,
+            'player' => $player,
+            'campName' => $campName,
+            'order' => $order,
+            'campId' => $campId
+        ]);
     }
 
     /**

@@ -34,7 +34,7 @@ class CampDiscount extends Model
     {
         return $this->belongsTo(Camp::class, 'Camp_ID', 'Camp_ID');
     }
-}
+
 
     /**
      * Check if discount is currently active
