@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\CampDiscount;
 use App\Models\Player;
 use App\Models\Coach;
 
@@ -17,13 +18,25 @@ class Camp extends Model
 
 	public $timestamps = false;
 
-	// Allow mass assignment for these fields
-	protected $fillable = ['Camp_Name', 'Start_Date', 'End_Date'];
+	protected $fillable = [
+		'Camp_Name',
+		'Description',
+		'Start_Date',
+		'End_Date',
+		'Registration_Open',
+		'Registration_Close',
+		'Price',
+		'Camp_Gender',
+		'Age_Min',
+		'Age_Max'
+	];
 
 	// Cast start_date and end_date as dates
 	protected $casts = [
 		'Start_Date' => 'date',
 		'End_Date' => 'date',
+		'Registration_Open' => 'date',
+		'Registration_Close' => 'date',
 	];
 
 	// A camp can have many players
@@ -40,5 +53,9 @@ class Camp extends Model
 			'Camp_ID',      // Foreign key on pivot table for this model
 			'Coach_ID'      // Foreign key on pivot table for the related model
 		);
+	}
+	public function discounts()
+	{
+		return $this->hasMany(CampDiscount::class, 'Camp_ID', 'Camp_ID');
 	}
 }

@@ -54,6 +54,12 @@ Route::middleware(['auth', 'coach'])->group(function () {
 
     Route::get('/camp-registrations', [CoachDashboardController::class, 'campRegistrations'])
         ->name('camp-registrations');
+
+    Route::get('/create-camp', [CoachController::class, 'showCreateCampForm'])
+        ->name('create-camp');
+
+    Route::post('/create-camp', [CoachController::class, 'storeCamp'])
+        ->name('store-camp');
 });
 
 // Regular authenticated user routes

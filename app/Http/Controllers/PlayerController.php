@@ -75,9 +75,9 @@ class PlayerController extends Controller
             $firstNames = $request->input('teammate_first', []);
             $lastNames = $request->input('teammate_last', []);
             
-            // Validate there are the same amout of last and first names
+            // Validate there are the same amount of last and first names
             if (count($firstNames) !== count($lastNames)) {
-                return redirect()->back()->with('error', 'Invalid teammate request data.');
+                return redirect()->back()->withInput()->with('error', 'Invalid teammate request data.');
             }
 
             $requestsToInsert = [];
@@ -102,7 +102,7 @@ class PlayerController extends Controller
 
             return redirect()->back()->with('success', 'Registration submitted successfully!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'An error occurred while processing your registration. Please try again.');
         }
     }
 }
