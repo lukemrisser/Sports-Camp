@@ -25,7 +25,7 @@ class PaymentController extends Controller
     /**
      * Show payment form for a registered player
      */
-    public function show($playerId)
+    public function show($playerId, $campId)
     {
         try {
             
@@ -35,42 +35,42 @@ class PaymentController extends Controller
                 return redirect()->route('home')
                     ->with('error', 'Player registration not found.');
             }
+
+            // Get camp information from URL parameter
+            $camp = Camp::find($campId);
+            if (!$camp) {
+                return redirect()->route('home')
+                    ->with('error', 'Camp information not found.');
+            }
                     
             // Check if there's already a paid order for this player
-            $existingOrder = $this->findOrCreateOrder($player);
+            $existingOrder = $this->findOrCreateOrder($player, $campId);
             if ($existingOrder && $existingOrder->isFullyPaid()) {
                 return redirect()->route('payment.success')
                     ->with('success', 'Payment has already been processed for this registration.');
             }
 
-            // Get registration data from session or reconstruct from player
-            $sessionData = session('registration_data');
-            
-            $registration = session('registration_data', [
+            // Build registration data from database instead of session
+            $registration = [
                 'camper_name' => $player->Camper_FirstName . ' ' . $player->Camper_LastName,
                 'division_name' => $player->Division_Name,
+                'camp_id' => $campId,
                 'parent_name' => $player->parent ? $player->parent->Parent_FirstName . ' ' . $player->parent->Parent_LastName : '',
                 'email' => $player->parent->Email ?? '',
                 'address' => $player->parent->Address ?? '',
                 'city' => $player->parent->City ?? '',
                 'state' => $player->parent->State ?? '',
                 'postal_code' => $player->parent->Postal_Code ?? ''
-            ]);
+            ];
 
-            // Get the actual camp name from Camp_ID for display
-            $campName = 'Camp Registration'; // Default fallback
-            if (isset($registration['camp_id'])) {
-                $camp = Camp::find($registration['camp_id']);
-                if ($camp) {
-                    $campName = $camp->Camp_Name;
-                }
-            }
+            // Get the camp name for display
+            $campName = $camp->Camp_Name;
 
             // Calculate amount (in cents for Stripe)
-            $amount = $this->calculateRegistrationAmount($player);
+            $amount = $this->calculateRegistrationAmount($player, $campId);
             
             // Get or create order for tracking
-            $order = $existingOrder ?: $this->findOrCreateOrder($player);
+            $order = $existingOrder ?: $this->findOrCreateOrder($player, $campId);
 
             return view('payment', [
                 'playerId' => $playerId,
@@ -95,6 +95,7 @@ class PaymentController extends Controller
     {
         $request->validate([
             'player_id' => 'required|exists:Players,Player_ID',
+            'camp_id' => 'required|exists:Camps,Camp_ID',
             'amount' => 'required|numeric|min:1',
             'payment_method_id' => 'required|string',
             'cardholder_name' => 'required|string|max:255',
@@ -118,7 +119,7 @@ class PaymentController extends Controller
             }
             
             // Check if already paid using Order model
-            $order = $this->findOrCreateOrder($player);
+            $order = $this->findOrCreateOrder($player, $request->camp_id);
             if ($order && $order->isFullyPaid()) {
                 return response()->json([
                     'success' => false,
@@ -136,6 +137,7 @@ class PaymentController extends Controller
                 'description' => "Sports Camp Registration - {$player->Camper_FirstName} {$player->Camper_LastName}",
                 'metadata' => [
                     'player_id' => $player->Player_ID,
+                    'camp_id' => $request->camp_id,
                     'player_name' => $player->Camper_FirstName . ' ' . $player->Camper_LastName,
                     'division_name' => $player->Division_Name,
                 ],
@@ -254,18 +256,13 @@ class PaymentController extends Controller
     /**
      * Calculate registration amount based on player and camp
      */
-    private function calculateRegistrationAmount($player)
+    private function calculateRegistrationAmount($player, $campId)
     {
-        $registrationData = session('registration_data');
-        $camp = null;
-        
-        if ($registrationData && isset($registrationData['camp_id'])) {
-            // Use Camp_ID from session (preferred method)
-            $camp = Camp::find($registrationData['camp_id']);
-        }
-        else {
+        $camp = Camp::find($campId);
+
+        if (!$camp) {
             throw new \Illuminate\Http\Exceptions\HttpResponseException(
-                redirect()->route('home')->with('error', 'Camp information not found. Please start over.')
+                redirect()->route('home')->with('error', 'Camp not found. Please start over.')
             );
         }
 
@@ -278,24 +275,15 @@ class PaymentController extends Controller
     /**
      * Find existing order or create a new one for the player
      */
-    private function findOrCreateOrder(Player $player): ?Order
+    private function findOrCreateOrder(Player $player, $campId): ?Order
     {
-        // Get camp_id from session data
-        $registrationData = session('registration_data');
-        $campId = $registrationData['camp_id'] ?? null;
-        
-        if (!$campId) {
-            return null;
-        }
-
-        // Try to find existing order for this specific player and camp
         $order = Order::where('Player_ID', $player->Player_ID)
                      ->where('Camp_ID', $campId)
                      ->first();
 
         if (!$order) {
             // Create new order for this specific player
-            $amount = $this->calculateRegistrationAmount($player) / 100; // Convert cents to dollars
+            $amount = $this->calculateRegistrationAmount($player, $campId) / 100; // Convert cents to dollars
             
             $order = Order::create([
                 'Player_ID' => $player->Player_ID,
@@ -313,14 +301,14 @@ class PaymentController extends Controller
     /**
      * Get order details for a player
      */
-    public function getOrderDetails($playerId): ?Order
+    public function getOrderDetails($playerId, $campId): ?Order
     {
         $player = Player::where('Player_ID', $playerId)->first();
         if (!$player) {
             return null;
         }
 
-        return $this->findOrCreateOrder($player);
+        return $this->findOrCreateOrder($player, $campId);
     }
 
     /**
@@ -329,7 +317,7 @@ class PaymentController extends Controller
     private function updatePlayerPaymentStatus($player, $paymentIntent, $request)
     {
         // Update the Order record with payment
-        $order = $this->findOrCreateOrder($player);
+        $order = $this->findOrCreateOrder($player, $request->camp_id);
         
         if ($order) {
             // Add payment to the order
@@ -362,27 +350,24 @@ class PaymentController extends Controller
      */
     private function handleSuccessfulPayment($paymentIntent)
     {
-        if (isset($paymentIntent['metadata']['player_id'])) {
+        if (isset($paymentIntent['metadata']['player_id']) && isset($paymentIntent['metadata']['camp_id'])) {
             $playerId = $paymentIntent['metadata']['player_id'];
+            $campId = $paymentIntent['metadata']['camp_id'];
             $player = Player::where('Player_ID', $playerId)->first();
             
             if ($player) {
-                $order = $this->findOrCreateOrder($player);
+                $order = $this->findOrCreateOrder($player, $campId);
                 
                 if ($order && !$order->isFullyPaid()) {
                     // Add payment to the order
                     $paymentAmountDollars = $paymentIntent['amount'] / 100;
                     $order->addPayment($paymentAmountDollars);
 
-                    // Update session for backwards compatibility
-                    session([
-                        "payment_status_player_{$playerId}" => 'paid',
-                        "payment_webhook_confirmed_{$playerId}" => true
-                    ]);
-
-                    Log::info("Payment confirmed via webhook for player {$playerId}: {$paymentIntent['id']}, Order {$order->Order_ID} updated");
+                    Log::info("Payment confirmed via webhook for player {$playerId}, camp {$campId}: {$paymentIntent['id']}, Order {$order->Order_ID} updated");
                 }
             }
+        } else {
+            Log::warning("Missing player_id or camp_id in webhook metadata");
         }
     }
 
