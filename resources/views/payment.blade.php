@@ -67,6 +67,7 @@
                 <form id="payment-form" method="POST" action="{{ route('payment.process') }}" class="registration-form">
                     @csrf
                     <input type="hidden" name="player_id" value="{{ $playerId }}">
+                    <input type="hidden" name="camp_id" value="{{ $registration['camp_id'] }}">
                     <input type="hidden" name="amount" value="{{ $amount }}">
 
                     <!-- Payment Information -->

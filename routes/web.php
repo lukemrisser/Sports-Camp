@@ -34,7 +34,7 @@ Route::get('/coach_dashboard', [CoachDashboardController::class, 'coachDashboard
 Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
 
 // Payment routes
-Route::get('/payment/{player}', [PaymentController::class, 'show'])->name('payment.show');
+Route::get('/payment/{player}/{camp}', [PaymentController::class, 'show'])->name('payment.show');
 Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/cancelled', [PaymentController::class, 'cancelled'])->name('payment.cancelled');
