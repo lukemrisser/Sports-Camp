@@ -145,25 +145,24 @@
         const stripe = Stripe('{{ config("services.stripe.key") }}');
         const elements = stripe.elements();
 
-        // Custom styling for Stripe Elements
-        const style = {
-            base: {
-                fontSize: '16px',
-                color: '#424770',
-                '::placeholder': {
-                    color: '#aab7c4',
-                },
-                padding: '12px',
-            },
-            invalid: {
-                color: '#9e2146',
-            },
-        };
-
-        // Create card element
+        // Create card element with simplified styling
         const cardElement = elements.create('card', {
-            style: style,
-            hidePostalCode: true
+            hidePostalCode: true,
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#32325d',
+                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                    fontSmoothing: 'antialiased',
+                    '::placeholder': {
+                        color: '#aab7c4'
+                    }
+                },
+                invalid: {
+                    color: '#fa755a',
+                    iconColor: '#fa755a'
+                }
+            }
         });
 
         // Mount card element
@@ -427,14 +426,17 @@
         }
 
         .stripe-element {
-            padding: 12px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            background: white;
-            transition: all 0.2s ease;
+            padding: 15px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            background-color: #ffffff;
             min-height: 50px;
-            display: flex;
-            align-items: center;
+            font-size: 16px;
+        }
+        
+        .stripe-element:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .stripe-element:focus-within {
