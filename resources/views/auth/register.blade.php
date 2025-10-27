@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body>
     <div class="auth-container">
         <header class="auth-header">
@@ -20,61 +22,38 @@
                 <!-- Name -->
                 <div class="form-group">
                     <label for="name" class="form-label">Name</label>
-                    <input id="name"
-                           class="form-input"
-                           type="text"
-                           name="name"
-                           value="{{ old('name') }}"
-                           required
-                           autofocus
-                           autocomplete="name" />
+                    <input id="name" class="form-input" type="text" name="name" value="{{ old('name') }}"
+                        required autofocus autocomplete="name" />
                     <x-input-error :messages="$errors->get('name')" class="form-error" />
                 </div>
 
                 <!-- Email Address -->
                 <div class="form-group">
                     <label for="email" class="form-label">Email</label>
-                    <input id="email"
-                           class="form-input"
-                           type="email"
-                           name="email"
-                           value="{{ old('email') }}"
-                           required
-                           autocomplete="username" />
+                    <input id="email" class="form-input" type="email" name="email" value="{{ old('email') }}"
+                        required autocomplete="username" />
                     <x-input-error :messages="$errors->get('email')" class="form-error" />
                 </div>
 
                 <!-- Password -->
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
-                    <input id="password"
-                           class="form-input"
-                           type="password"
-                           name="password"
-                           required
-                           autocomplete="new-password" />
+                    <input id="password" class="form-input" type="password" name="password" required
+                        autocomplete="new-password" />
                     <x-input-error :messages="$errors->get('password')" class="form-error" />
                 </div>
 
                 <!-- Confirm Password -->
                 <div class="form-group">
                     <label for="password_confirmation" class="form-label">Confirm Password</label>
-                    <input id="password_confirmation"
-                           class="form-input"
-                           type="password"
-                           name="password_confirmation"
-                           required
-                           autocomplete="new-password" />
+                    <input id="password_confirmation" class="form-input" type="password" name="password_confirmation"
+                        required autocomplete="new-password" />
                     <x-input-error :messages="$errors->get('password_confirmation')" class="form-error" />
                 </div>
 
                 <div class="form-actions">
                     <a class="login-link" href="{{ route('login') }}">
                         Already registered?
-                    </a>
-
-                    <a class="login-link" href="{{ route('coach-register') }}">
-                        Register as a coach
                     </a>
 
                     <button type="submit" class="register-button">
@@ -266,4 +245,5 @@
         }
     </style>
 </body>
+
 </html>
