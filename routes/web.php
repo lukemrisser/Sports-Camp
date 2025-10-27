@@ -14,7 +14,6 @@ Route::get('/registration', function (){
     return view('registration');
 })->name('registration.form');
 
-// REMOVED coach-register routes - they're in auth.php
 
 // Temporarily change this:
 Route::get('/dashboard', function () {
