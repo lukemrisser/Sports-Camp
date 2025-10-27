@@ -57,18 +57,26 @@
                     <!-- Camp Selection -->
                     <div class="form-section">
                         <h3 class="section-title">Camp Selection</h3>
-                        <div class="form-grid-2">
+                        <div class="form-grid-1">
                             <div class="form-group">
                                 <label class="form-label">Select Camp</label>
-                                @php
-                                    $availableCamps = \App\Models\Camp::getAvailableForRegistration();
-                                @endphp
-                                
-                                @if($availableCamps->count() > 0)
+                                @if(isset($availableCamps) && $availableCamps->count() > 0)
                                     <select name="Camp_ID" class="form-input" required>
                                         <option value="">Select Camp</option>
                                         @foreach($availableCamps as $camp)
-                                            <option value="{{ $camp->Camp_ID }}">{{ $camp->Camp_Name }}</option>
+                                            @php
+                                                if ($camp->Camp_Gender == 'boys')
+                                                    $gender = 'Boys ';
+                                                else if ($camp->Camp_Gender == 'girls')
+                                                    $gender = 'Girls ';
+                                                else
+                                                    $gender = 'Coed ';
+                                                $ageRange = ": Ages {$camp->Age_Min}-{$camp->Age_Max}";
+                                                $fullTitle = $gender . $camp->Camp_Name . $ageRange;
+                                            @endphp
+                                            <option value="{{ $camp->Camp_ID }}" @if(isset($selectedCampId) && $camp->Camp_ID == $selectedCampId) selected @endif>
+                                                {{ $fullTitle }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 @else
@@ -78,11 +86,6 @@
                                     </div>
                                     <input type="hidden" name="Camp_ID" value="">
                                 @endif
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Division Name</label>
-                                <input type="text" name="Division_Name" class="form-input" required 
-                                       placeholder="e.g., Boys 10-12, Girls 8-10">
                             </div>
                         </div>
                     </div>

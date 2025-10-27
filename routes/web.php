@@ -5,14 +5,13 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\CoachController;
 use App\Http\Controllers\CoachDashboardController;
-use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/registration', function (){
-    return view('registration');
-})->name('registration.form');
+Route::get('/registration', [RegistrationController::class, 'show'])
+    ->name('registration.form');
 
 // REMOVED coach-register routes - they're in auth.php
 
