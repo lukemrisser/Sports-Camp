@@ -7,6 +7,7 @@ use App\Http\Controllers\CoachController;
 use App\Http\Controllers\CoachDashboardController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\PaymentController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -54,6 +55,12 @@ Route::middleware(['auth', 'coach'])->group(function () {
         ->name('store-camp');
 });
 
+// Protected routes for admin users only
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboard'])
+        ->name('admin.dashboard');
+});
+
 // Regular authenticated user routes
 Route::middleware(['auth'])->group(function () {
     // Profile routes
@@ -61,9 +68,5 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-// Routes used by the organize-teams view forms
-Route::post('/coach/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('coach.uploadSpreadsheet');
-Route::post('/coach/select-camp', [CoachController::class, 'selectCamp'])->name('coach.selectCamp');
 
 require __DIR__.'/auth.php';
