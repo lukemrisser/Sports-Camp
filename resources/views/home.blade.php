@@ -43,7 +43,7 @@
                     <div class="card-icon">{{ $card['icon'] }}</div>
                     <h3>{{ $card['title'] }}</h3>
                     <p>{{ $card['description'] }}</p>
-                    <a href="{{ route($card['route']) }}" class="card-button">
+                    <a href="{{ route($card['route'], ['camp' => $card['id']]) }}" class="card-button">
                         Register Now
                     </a>
                 </div>
