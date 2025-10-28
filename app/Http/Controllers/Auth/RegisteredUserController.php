@@ -253,4 +253,42 @@ class RegisteredUserController extends Controller
                 ->withErrors(['email' => 'Registration failed. Please try again or contact support.']);
         }
     }
+
+    public function showResendForm(Request $request): View
+    {
+        return view('auth.resend-verification', [
+            'email' => $request->query('email', '')
+        ]);
+    }
+
+    public function resendVerification(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'email' => ['required', 'email']
+        ]);
+
+        $pendingRegistration = PendingRegistration::where('email', $request->email)
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if ($pendingRegistration) {
+            $isCoach = isset($pendingRegistration->additional_data['is_coach']) &&
+                    $pendingRegistration->additional_data['is_coach'];
+
+            Notification::route('mail', $pendingRegistration->email)
+                ->notify(new PendingRegistrationVerification(
+                    $pendingRegistration->token,
+                    $pendingRegistration->name,
+                    $isCoach
+                ));
+
+            session(['pending_email' => $pendingRegistration->email]);
+
+            // Redirect to verification notice page
+            return redirect()->route('verification.notice')
+                ->with('success', 'Verification email sent! Please check your inbox.');
+        }
+
+        return back()->withErrors(['email' => 'No pending registration found with this email address. Please register first.']);
+    }
 }

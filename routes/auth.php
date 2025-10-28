@@ -39,6 +39,13 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
 
+    // Resend verification routes
+    Route::get('resend-verification', [RegisteredUserController::class, 'showResendForm'])
+        ->name('verification.resend.form');
+
+    Route::post('resend-verification', [RegisteredUserController::class, 'resendVerification'])
+        ->name('verification.resend');
+
     // UPDATED: Handle already-verified users to prevent redirect loops
     Route::get('verify-email', function () {
         // Check if user is logged in and already verified

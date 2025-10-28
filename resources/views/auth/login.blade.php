@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body>
     <div class="auth-container">
         <header class="auth-header">
@@ -17,45 +19,54 @@
             <!-- Session Status -->
             <x-auth-session-status class="mb-4" :status="session('status')" />
 
+            <!-- Add Warning Message for Unverified Users -->
+            @if (session('warning'))
+                <div class="warning-message">
+                    {{ session('warning') }}
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
                 <!-- Email Address -->
                 <div class="form-group">
                     <label for="email" class="form-label">Email</label>
-                    <input id="email"
-                           class="form-input"
-                           type="email"
-                           name="email"
-                           value="{{ old('email') }}"
-                           required
-                           autofocus
-                           autocomplete="username" />
+                    <input id="email" class="form-input" type="email" name="email" value="{{ old('email') }}"
+                        required autofocus autocomplete="username" />
                     <x-input-error :messages="$errors->get('email')" class="form-error" />
                 </div>
 
                 <!-- Password -->
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
-                    <input id="password"
-                           class="form-input"
-                           type="password"
-                           name="password"
-                           required
-                           autocomplete="current-password" />
+                    <input id="password" class="form-input" type="password" name="password" required
+                        autocomplete="current-password" />
                     <x-input-error :messages="$errors->get('password')" class="form-error" />
                 </div>
 
                 <!-- Remember Me -->
                 <div class="form-group checkbox-group">
                     <label for="remember_me" class="checkbox-label">
-                        <input id="remember_me"
-                               type="checkbox"
-                               class="checkbox-input"
-                               name="remember">
+                        <input id="remember_me" type="checkbox" class="checkbox-input" name="remember">
                         <span class="checkbox-text">Remember me</span>
                     </label>
                 </div>
+
+                <!-- After the password field and before the form actions -->
+
+                <!-- Only show verification link if user has pending verification -->
+                @if (session('pending_verification'))
+                    <div class="verification-section">
+                        <p class="verification-text">
+                            Haven't verified your email?
+                            <a href="{{ route('verification.resend.form') }}?email={{ session('pending_email') }}"
+                                class="verification-link">
+                                Click here to resend verification email
+                            </a>
+                        </p>
+                    </div>
+                @endif
 
                 <div class="form-actions">
                     @if (Route::has('password.request'))
@@ -83,6 +94,8 @@
     </div>
 
     <style>
+        /* Keep all your existing styles and add these new ones */
+
         * {
             margin: 0;
             padding: 0;
@@ -229,9 +242,43 @@
             box-shadow: 0 6px 16px rgba(10, 63, 148, 0.4);
         }
 
+        /* NEW STYLES FOR VERIFICATION SECTION */
+        .warning-message {
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            color: #92400e;
+            font-size: 14px;
+        }
+
+        .verification-section {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .verification-section p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .verification-link {
+            color: #7c3aed;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .verification-link:hover {
+            text-decoration: underline;
+            color: #6d28d9;
+        }
+
         .auth-footer {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid #e5e7eb;
         }
@@ -305,4 +352,5 @@
         }
     </style>
 </body>
+
 </html>
