@@ -22,7 +22,9 @@
             </div>
 
             <div class="header-buttons">
-                <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
+                @if (Auth::user()->isCoachAdmin())
+                    <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
+                @endif
                 <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
                 <form method="POST" action="{{ route('logout') }}" class="logout-form">
                     @csrf
@@ -57,21 +59,6 @@
                 <a href="{{ route('camp-registrations') }}" class="card-button">View Registrations</a>
             </div>
 
-            <!-- Upload Spreadsheet Card -->
-            <div class="registration-card green">
-                <div class="card-icon">📊</div>
-                <h3>Upload Spreadsheet</h3>
-                <p>Upload a spreadsheet with player information to organize into teams</p>
-                <form action="{{ route('upload-spreadsheet') }}" method="POST" enctype="multipart/form-data"
-                    class="card-form">
-                    @csrf
-                    <div class="form-group">
-                        <input type="file" name="spreadsheet" accept=".xlsx,.xls,.csv" required class="form-input">
-                    </div>
-                    <button type="submit" class="card-button">Upload File</button>
-                </form>
-            </div>
-
             <!-- Organize Teams Card -->
             <div class="registration-card orange">
                 <div class="card-icon">👥</div>
@@ -88,10 +75,6 @@
                 <a href="{{ route('create-camp') }}" class="card-button">Create Camp</a>
             </div>
 
-        </div>
-
-        <div class="navigation">
-            <a href="{{ url('/') }}">← Back to Home</a>
         </div>
     </div>
 

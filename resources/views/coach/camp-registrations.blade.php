@@ -22,11 +22,15 @@
                 </div>
 
                 <div class="header-buttons">
-                    <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
-                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                        @csrf
-                        <button type="submit" class="header-btn logout-btn">Logout</button>
-                    </form>
+                @if (Auth::user()->isCoachAdmin())
+                    <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
+                @endif
+                <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
+                <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
+                <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                    @csrf
+                    <button type="submit" class="header-btn logout-btn">Logout</button>
+                </form>
                 </div>
             </div>
         </header>
