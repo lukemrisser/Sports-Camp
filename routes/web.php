@@ -59,6 +59,15 @@ Route::middleware(['auth', 'coach'])->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboard'])
         ->name('admin.dashboard');
+    
+    Route::get('/finances', [App\Http\Controllers\AdminController::class, 'finances'])
+        ->name('admin.finances');
+    
+    Route::get('/invite-coach', [App\Http\Controllers\AdminController::class, 'inviteCoach'])
+        ->name('admin.invite-coach');
+    
+    Route::get('/manage-coaches', [App\Http\Controllers\AdminController::class, 'manageCoaches'])
+        ->name('admin.manage-coaches');
 });
 
 // Regular authenticated user routes
