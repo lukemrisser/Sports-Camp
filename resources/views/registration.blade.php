@@ -96,12 +96,17 @@
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label class="form-label">Parent First Name</label>
-                                <input type="text" name="Parent_FirstName" class="form-input" required>
+                                <input type="text" name="Parent_FirstName" class="form-input" required
+                                    value="{{ old('Parent_FirstName', isset($parent) ? $parent->Parent_FirstName : '') }}">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Parent Last Name</label>
-                                <input type="text" name="Parent_LastName" class="form-input" required>
+                                <input type="text" name="Parent_LastName" class="form-input" required
+                                    value="{{ old('Parent_LastName', isset($parent) ? $parent->Parent_LastName : '') }}">
                             </div>
+                        @if(isset($parent) && $parent)
+                            <input type="hidden" name="Parent_ID" value="{{ $parent->Parent_ID }}">
+                        @endif
                         </div>
                     </div>
 
@@ -174,31 +179,37 @@
                         <h3 class="section-title">Parent Contact Information</h3>
                         <div class="form-group">
                             <label class="form-label">Address</label>
-                            <input type="text" name="Address" class="form-input" required>
+                            <input type="text" name="Address" class="form-input" required
+                                value="{{ old('Address', isset($parent) ? $parent->Address : '') }}">
                         </div>
                         <div class="form-grid-3">
                             <div class="form-group">
                                 <label class="form-label">City</label>
-                                <input type="text" name="City" class="form-input" required>
+                                <input type="text" name="City" class="form-input" required
+                                    value="{{ old('City', isset($parent) ? $parent->City : '') }}">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">State</label>
-                                <input type="text" name="State" class="form-input" required>
+                                <input type="text" name="State" class="form-input" required
+                                    value="{{ old('State', isset($parent) ? $parent->State : '') }}">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">ZIP Code</label>
-                                <input type="text" name="Postal_Code" class="form-input" required>
+                                <input type="text" name="Postal_Code" class="form-input" required
+                                    value="{{ old('Postal_Code', isset($parent) ? $parent->Postal_Code : '') }}">
                             </div>
                         </div>
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label class="form-label">Email</label>
-                                <input type="email" name="Email" class="form-input" required>
+                                <input type="email" name="Email" class="form-input" required
+                                    value="{{ old('Email', isset($parent) ? $parent->Email : auth()->user()->email ?? '') }}">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Phone</label>
                                 <input type="tel" class="form-input" id="phone" name="Phone"
-                                    placeholder="(123) 456-7890" maxlength="14" required>
+                                    placeholder="(123) 456-7890" maxlength="14" required
+                                    value="{{ old('Phone', isset($parent) ? $parent->Phone : '') }}">
                             </div>
                         </div>
                     </div>
@@ -252,17 +263,18 @@
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label class="form-label">Church Name</label>
-                                <input type="text" name="Church_Name" class="form-input">
+                                <input type="text" name="Church_Name" class="form-input"
+                                    value="{{ old('Church_Name', isset($parent) ? $parent->Church_Name : '') }}">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Church Attendance</label>
                                 <select name="Church_Attendance" class="form-input">
                                     <option value="">Select Frequency</option>
-                                    <option value="Weekly">Weekly</option>
-                                    <option value="Monthly">Monthly</option>
-                                    <option value="Occasionally">Occasionally</option>
-                                    <option value="Rarely">Rarely</option>
-                                    <option value="Never">Never</option>
+                                    <option value="Weekly" @if(old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Weekly') selected @endif>Weekly</option>
+                                    <option value="Monthly" @if(old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Monthly') selected @endif>Monthly</option>
+                                    <option value="Occasionally" @if(old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Occasionally') selected @endif>Occasionally</option>
+                                    <option value="Rarely" @if(old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Rarely') selected @endif>Rarely</option>
+                                    <option value="Never" @if(old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Never') selected @endif>Never</option>
                                 </select>
                             </div>
                         </div>
@@ -280,16 +292,48 @@
     </div>
 
     <script>
-        document.getElementById('phone').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '').substring(0, 10);
-            if (value.length >= 6) {
-                value = '(' + value.substring(0, 3) + ') ' + value.substring(3, 6) + '-' + value.substring(6);
-            } else if (value.length >= 3) {
-                value = '(' + value.substring(0, 3) + ') ' + value.substring(3);
-            } else if (value.length > 0) {
-                value = '(' + value;
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneInput = document.getElementById('phone');
+
+            function formatPhone(value) {
+                value = value.replace(/\D/g, '').substring(0, 10);
+                if (value.length >= 6) {
+                    return '(' + value.substring(0, 3) + ') ' + value.substring(3, 6) + '-' + value.substring(6);
+                } else if (value.length >= 3) {
+                    return '(' + value.substring(0, 3) + ') ' + value.substring(3);
+                } else if (value.length > 0) {
+                    return '(' + value;
+                }
+                return value;
             }
-            e.target.value = value;
+
+            if (phoneInput.value) {
+                phoneInput.value = formatPhone(phoneInput.value);
+            }
+
+            phoneInput.addEventListener('input', function(e) {
+                const input = e.target;
+                const oldValue = input.value;
+                const digitsBefore = oldValue.slice(0, input.selectionStart).replace(/\D/g, '').length;
+
+                const formatted = formatPhone(oldValue);
+                input.value = formatted;
+
+                // Recalculate new cursor position
+                let cursor = formatted.length;
+                let digitCount = 0;
+                for (let i = 0; i < formatted.length; i++) {
+                    if (/\d/.test(formatted[i])) {
+                        digitCount++;
+                    }
+                    if (digitCount === digitsBefore) {
+                        cursor = i + 1;
+                        break;
+                    }
+                }
+
+                input.setSelectionRange(cursor, cursor);
+            });
         });
 
         // Handle adding and removing teammate request fields
