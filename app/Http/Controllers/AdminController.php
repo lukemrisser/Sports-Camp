@@ -14,4 +14,19 @@ class AdminController extends Controller
     {
         return view('admin.dashboard');
     }
+
+    public function finances()
+    {
+        return view('admin.finances');
+    }
+
+    public function inviteCoach()
+    {
+        return view('admin.invite-coach');
+    }
+
+    public function manageCoaches()
+    {
+        return view('admin.manage-coaches');
+    }
 }
