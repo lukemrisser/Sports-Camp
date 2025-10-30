@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Camp;
+use Illuminate\Support\Facades\Auth;
+use App\Models\ParentModel;
 
 class RegistrationController extends Controller
 {
@@ -21,6 +23,16 @@ class RegistrationController extends Controller
             $selectedCampId = null;
         }
 
-        return view('registration', compact('availableCamps', 'selectedCampId'));
+        $parent = null;
+
+        // If user is authenticated, try to load parent info by email
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user && $user->email) {
+                $parent = ParentModel::where('Email', $user->email)->first();
+            }
+        }
+
+        return view('registration', compact('availableCamps', 'selectedCampId', 'parent'));
     }
 }

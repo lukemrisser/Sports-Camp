@@ -11,10 +11,6 @@ use App\Http\Controllers\PaymentController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/registration', [RegistrationController::class, 'show'])
-    ->name('registration.form');
-
-
 // Temporarily change this:
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -63,6 +59,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
 // Regular authenticated user routes
 Route::middleware(['auth'])->group(function () {
+    Route::get('/registration', [RegistrationController::class, 'show'])
+        ->middleware('auth')
+        ->name('registration.form');
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
