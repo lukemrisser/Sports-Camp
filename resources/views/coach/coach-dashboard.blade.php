@@ -74,7 +74,14 @@
                 <p>Set up a new camp session for players to register</p>
                 <a href="{{ route('create-camp') }}" class="card-button">Create Camp</a>
             </div>
-
+            
+            <!-- Edit Camp Card -->
+            <div class="registration-card green">
+                <div class="card-icon">✏️</div>
+                <h3>Edit Existing Camps</h3>
+                <p>Modify details of your existing camp sessions</p>
+                <a href="{{ route('edit-camp') }}" class="card-button">Edit Camps</a>
+            </div>
         </div>
     </div>
 

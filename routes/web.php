@@ -47,6 +47,13 @@ Route::middleware(['auth', 'coach'])->group(function () {
     Route::get('/create-camp', [CoachController::class, 'showCreateCampForm'])
         ->name('create-camp');
 
+    Route::get('/edit-camp', [CoachController::class, 'showEditCampForm'])
+        ->name('edit-camp');
+    Route::get('/edit-camp/{id}/data', [CoachController::class, 'getCampData'])
+        ->name('edit-camp.data');
+    Route::put('/edit-camp/{id}', [CoachController::class, 'updateCamp'])
+        ->name('edit-camp.update');
+
     Route::post('/create-camp', [CoachController::class, 'storeCamp'])
         ->name('store-camp');
 });
