@@ -60,7 +60,8 @@ class RegisteredUserController extends Controller
                     // Check if email exists in pending registrations
                     if (PendingRegistration::where('email', $value)
                         ->where('expires_at', '>', now())
-                        ->exists()) {
+                        ->exists()
+                    ) {
                         $fail('This email has a pending registration. Please check your email or wait for it to expire.');
                     }
                     // Messiah.edu emails should use coach registration
@@ -121,7 +122,8 @@ class RegisteredUserController extends Controller
                     // Check pending registrations
                     if (PendingRegistration::where('email', $value)
                         ->where('expires_at', '>', now())
-                        ->exists()) {
+                        ->exists()
+                    ) {
                         $fail('This email has a pending registration. Please check your email.');
                     }
                     // Check coach relationships
@@ -244,12 +246,11 @@ class RegisteredUserController extends Controller
             // Redirect based on user type
             if ($user->isCoach()) {
                 return redirect()->intended('/coach-dashboard')
-                    ->with('success', 'Your account has been successfully created and verified! Welcome to Sports Camp.');
+                    ->with('success', 'Your account has been successfully created and verified! Welcome to Falcon Teams.');
             }
 
-            return redirect()->intended('/dashboard')
+            return redirect()->intended('/')
                 ->with('success', 'Your account has been successfully created and verified! You can now register your children for camps.');
-
         } catch (\Exception $e) {
             DB::rollback();
             \Log::error('Failed to complete registration: ' . $e->getMessage());
@@ -278,7 +279,7 @@ class RegisteredUserController extends Controller
 
         if ($pendingRegistration) {
             $isCoach = isset($pendingRegistration->additional_data['is_coach']) &&
-                    $pendingRegistration->additional_data['is_coach'];
+                $pendingRegistration->additional_data['is_coach'];
 
             Notification::route('mail', $pendingRegistration->email)
                 ->notify(new PendingRegistrationVerification(
