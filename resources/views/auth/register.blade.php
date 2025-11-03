@@ -19,12 +19,20 @@
             <form method="POST" action="{{ route('register') }}">
                 @csrf
 
-                <!-- Name -->
+                <!-- First Name -->
                 <div class="form-group">
-                    <label for="name" class="form-label">Name</label>
-                    <input id="name" class="form-input" type="text" name="name" value="{{ old('name') }}"
-                        required autofocus autocomplete="name" />
-                    <x-input-error :messages="$errors->get('name')" class="form-error" />
+                    <label for="fname" class="form-label">First Name</label>
+                    <input id="fname" class="form-input" type="text" name="fname" value="{{ old('fname') }}"
+                        required autofocus>
+                    <x-input-error :messages="$errors->get('fname')" class="mt-2" />
+                </div>
+
+                <!-- Last Name -->
+                <div class="form-group">
+                    <label for="lname" class="form-label">Last Name</label>
+                    <input id="lname" class="form-input" type="text" name="lname" value="{{ old('lname') }}"
+                        required>
+                    <x-input-error :messages="$errors->get('lname')" class="mt-2" />
                 </div>
 
                 <!-- Email Address -->

@@ -7,6 +7,7 @@ use App\Http\Controllers\CoachController;
 use App\Http\Controllers\CoachDashboardController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\PaymentController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -60,6 +61,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::post('/parent/store', [App\Http\Controllers\ParentController::class, 'store'])
+        ->name('parent.store');
+
+    Route::post('/profile/update-ajax', [ProfileController::class, 'updateAjax'])
+        ->name('profile.update.ajax');
 });
 
 // Routes used by the organize-teams view forms

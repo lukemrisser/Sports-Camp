@@ -44,7 +44,7 @@ class Camp extends Model
 	{
 		return $this->belongsToMany(Player::class, 'Player_Camp', 'Camp_ID', 'Player_ID');
 	}
-    
+
 	public function coaches()
 	{
 		return $this->belongsToMany(
@@ -78,7 +78,7 @@ class Camp extends Model
 	public function getDiscountedPrice($originalPrice)
 	{
 		$discount = $this->getBestDiscount();
-		
+
 		if (!$discount) {
 			return $originalPrice;
 		}
@@ -88,12 +88,10 @@ class Camp extends Model
 
 	// Scope to get camps that are currently accepting registrations
 	public function scopeAcceptingRegistrations($query)
-	{
-		$today = now()->toDateString();
-		
-		return $query->whereDate('Registration_Open', '<=', $today)
-					 ->whereDate('Registration_Close', '>=', $today);
-	}
+    {
+        return $query->where('Registration_Open', '<=', now())
+                    ->where('Registration_Close', '>=', now());
+    }
 
 	// Static method to get all camps currently accepting registrations
 	public static function getAvailableForRegistration()
@@ -105,7 +103,7 @@ class Camp extends Model
 	public function isAcceptingRegistrations()
 	{
 		$today = now()->toDateString();
-		
+
 		return $this->Registration_Open <= $today && $this->Registration_Close >= $today;
 	}
 }

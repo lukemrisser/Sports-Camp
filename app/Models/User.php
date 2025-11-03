@@ -19,7 +19,8 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'fname',
+        'lname',
         'email',
         'password',
     ];
@@ -60,5 +61,20 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isCoachAdmin()
     {
         return $this->coach && $this->coach->admin;
+    }
+
+    public function parent()
+    {
+        return $this->hasOne(\App\Models\ParentModel::class, 'Email', 'email');
+    }
+
+    public function isParent()
+    {
+        return $this->parent()->exists();
+    }
+
+    public function getNameAttribute()
+    {
+        return $this->fname . ' ' . $this->lname;
     }
 }

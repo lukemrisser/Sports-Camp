@@ -42,9 +42,10 @@ class RegisteredUserController extends Controller
             return $this->storeCoachPending($request);
         }
 
-        // Regular user (parent/player) validation
+        // Regular user (parent/player) validation - UPDATED for fname/lname
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'fname' => ['required', 'string', 'max:255'],
+            'lname' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
                 'string',
@@ -71,19 +72,23 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Create pending registration
+        // Create pending registration - store fname and lname in additional_data
         $token = Str::random(64);
         $pendingRegistration = PendingRegistration::create([
-            'name' => $request->name,
+            'name' => $request->fname . ' ' . $request->lname, // Store full name for email
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'token' => $token,
+            'additional_data' => [
+                'fname' => $request->fname,
+                'lname' => $request->lname,
+            ],
             'expires_at' => now()->addHours(48), // 48 hour expiry
         ]);
 
-        // Send verification email
+        // Send verification email (using full name)
         Notification::route('mail', $request->email)
-            ->notify(new PendingRegistrationVerification($token, $request->name, false));
+            ->notify(new PendingRegistrationVerification($token, $request->fname . ' ' . $request->lname, false));
 
         // Store email in session for display
         session(['pending_email' => $request->email]);
@@ -97,7 +102,7 @@ class RegisteredUserController extends Controller
      */
     private function storeCoachPending(Request $request): RedirectResponse
     {
-        // Coach validation
+        // Coach validation - already has firstname/lastname
         $request->validate([
             'coach_firstname' => ['required', 'string', 'max:255'],
             'coach_lastname' => ['required', 'string', 'max:255'],
@@ -150,6 +155,8 @@ class RegisteredUserController extends Controller
             'token' => $token,
             'additional_data' => [
                 'is_coach' => true,
+                'fname' => $request->coach_firstname,  // Store as fname
+                'lname' => $request->coach_lastname,   // Store as lname
                 'coach_firstname' => $request->coach_firstname,
                 'coach_lastname' => $request->coach_lastname,
                 'sport' => $request->sport,
@@ -191,16 +198,22 @@ class RegisteredUserController extends Controller
         DB::beginTransaction();
 
         try {
-            // Create user with email already verified
+            // Get fname and lname from additional_data
+            $additionalData = $pendingRegistration->additional_data;
+            $fname = $additionalData['fname'] ?? '';
+            $lname = $additionalData['lname'] ?? '';
+
+            // Create user with fname and lname
             $user = User::create([
-                'name' => $pendingRegistration->name,
+                'fname' => $fname,
+                'lname' => $lname,
+                'name' => $pendingRegistration->name, // Keep full name for compatibility
                 'email' => $pendingRegistration->email,
                 'password' => $pendingRegistration->password,
-                'email_verified_at' => now(), // This is crucial
+                'email_verified_at' => now(),
             ]);
 
             // Create coach record if needed
-            $additionalData = $pendingRegistration->additional_data;
             if ($additionalData && isset($additionalData['is_coach']) && $additionalData['is_coach']) {
                 Coach::create([
                     'Coach_FirstName' => $additionalData['coach_firstname'],
@@ -218,14 +231,6 @@ class RegisteredUserController extends Controller
 
             // Log the user in
             Auth::login($user);
-
-            // Debug: Check what Laravel sees
-            \Log::info('User after login:', [
-                'id' => $user->id,
-                'email' => $user->email,
-                'email_verified_at' => $user->email_verified_at,
-                'hasVerifiedEmail' => $user->hasVerifiedEmail(),
-            ]);
 
             // Force refresh the user instance to ensure all attributes are loaded
             Auth::user()->refresh();
