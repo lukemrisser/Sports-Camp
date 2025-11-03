@@ -108,10 +108,10 @@
             </div>
 
             <!-- Parent Contact Information -->
-            <div class="info-card">
-                <h3 class="card-title">Contact Information</h3>
+            @if (Auth::user()->parent)
+                <div class="info-card">
+                    <h3 class="card-title">Contact Information</h3>
 
-                @if (Auth::user()->parent)
                     <!-- Display Mode -->
                     <div class="info-grid display-mode" id="contact-display">
                         <div class="info-item">
@@ -180,20 +180,66 @@
                                 value="{{ Auth::user()->parent->Church_Name }}" placeholder="Church Name">
                         </div>
                     </form>
-                @else
-                    <!-- Original form for new parent records -->
+                </div>
+            @elseif (Auth::user()->parent && !Auth::user()->isCoach())
+                <!-- Form for new parent records -->
+                <div class="info-card">
+                    <h3 class="card-title">Contact Information</h3>
                     <form method="POST" action="{{ route('parent.store') }}" class="contact-form">
                         @csrf
-                        <!-- Keep your existing form fields here -->
                         <div class="info-grid">
-                            <!-- ... existing form fields ... -->
+                            <div class="info-item">
+                                <label class="info-label" for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="Phone" class="info-input"
+                                    placeholder="(555) 123-4567" value="{{ old('Phone') }}">
+                                @error('Phone')
+                                    <span class="error-message">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label" for="address">Home Address</label>
+                                <input type="text" id="address" name="Address" class="info-input"
+                                    placeholder="123 Main St" value="{{ old('Address') }}">
+                                @error('Address')
+                                    <span class="error-message">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label" for="city">City</label>
+                                <input type="text" id="city" name="City" class="info-input"
+                                    placeholder="Springfield" value="{{ old('City') }}">
+                                @error('City')
+                                    <span class="error-message">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label" for="state">State</label>
+                                <input type="text" id="state" name="State" class="info-input"
+                                    placeholder="PA" maxlength="2" value="{{ old('State') }}">
+                                @error('State')
+                                    <span class="error-message">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label" for="postal_code">ZIP Code</label>
+                                <input type="text" id="postal_code" name="Postal_Code" class="info-input"
+                                    placeholder="12345" value="{{ old('Postal_Code') }}">
+                                @error('Postal_Code')
+                                    <span class="error-message">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label" for="church_name">Church Affiliation (Optional)</label>
+                                <input type="text" id="church_name" name="Church_Name" class="info-input"
+                                    placeholder="Church Name" value="{{ old('Church_Name') }}">
+                            </div>
                         </div>
                         <div class="form-actions">
                             <button type="submit" class="btn-primary">Save Contact Information</button>
                         </div>
                     </form>
-                @endif
-            </div>
+                </div>
+            @endif
 
             <!-- Coach-specific Information (unchanged) -->
             @if (Auth::user()->isCoach())
