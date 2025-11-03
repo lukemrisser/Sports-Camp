@@ -34,12 +34,12 @@ class PendingRegistrationVerification extends Notification
         return (new MailMessage)
             ->subject('Complete Your Sports Camp Registration')
             ->greeting('Hello ' . $this->name . '!')
-            ->line('Thank you for registering for Sports Camp. You\'re almost done!')
+            ->line('Thank you for registering for Falcon Teams. You\'re almost done!')
             ->line('Please click the button below to verify your email address and complete your registration.')
             ->action('Complete Registration', $verificationUrl)
             ->line('This link will expire in ' . $expiryHours . ' hours.')
             ->line('After verification, you\'ll be able to log in and ' .
-                   ($this->isCoach ? 'access your coach dashboard.' : 'register your children for camps.'))
+                ($this->isCoach ? 'access your coach dashboard.' : 'register your children for camps.'))
             ->line('If you did not create an account, no further action is required.');
     }
 }
