@@ -17,9 +17,13 @@
         </div>
 
         <div class="header-buttons">
-            <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
-            @if (Auth::user()->isCoach())
+            @if (Auth::user()->isCoachAdmin())
+                <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
                 <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
+            @elseif (Auth::user()->isCoach())
+                <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
+            @else
+                <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
             @endif
             <form method="POST" action="{{ route('logout') }}" class="logout-form">
                 @csrf

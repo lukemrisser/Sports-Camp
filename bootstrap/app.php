@@ -16,13 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register your custom middleware alias here
         $middleware->alias([
             'coach' => \App\Http\Middleware\EnsureUserIsCoach::class,
-        ]);
-    })
-    ->withMiddleware(function (Middleware $middleware) {
-        $middleware->trustProxies(at: '*');
-
-        $middleware->alias([
-            'coach' => \App\Http\Middleware\EnsureUserIsCoach::class,
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'verified.staged' => \App\Http\Middleware\VerifiedStaged::class,
         ]);
     })

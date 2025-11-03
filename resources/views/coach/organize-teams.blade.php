@@ -18,7 +18,15 @@
             </div>
 
             <div class="header-buttons">
-                <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
+                @if (Auth::user()->isCoachAdmin())
+                    <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
+                @endif
+                <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
+                <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
+                <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                    @csrf
+                    <button type="submit" class="header-btn logout-btn">Logout</button>
+                </form>
             </div>
         </div>
     </header>
@@ -26,19 +34,19 @@
     <div class="container">
         <div class="upload">
             <h2>Upload Spreadsheet</h2>
-            <form action="{{ route('coach.uploadSpreadsheet') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('upload-spreadsheet') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="file" name="spreadsheet" accept=".xlsx, .xls" required>
                 <input type="number" name="num_teams" min="1" placeholder="Number of teams" required
                     style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 18px; font-size: 1rem;" />
-                <button type="submit">Upload and Generate</button>
+                <button type="submit">Upload and Generate Teams</button>
             </form>
         </div>
         <div class="or" style="text-align: center; margin: 20px 0; font-weight: 600; color: #555;">OR</div>
 
         <div class="upload">
             <h2>Select Camp</h2>
-            <form action="{{ route('coach.selectCamp') }}" method="POST"
+            <form action="{{ route('select-camp') }}" method="POST"
                 style="text-align: center; background: #f8fafc; border-radius: 12px; padding: 32px 24px; max-width: 420px; margin: 40px auto 0 auto; box-shadow: 0 4px 24px rgba(10, 63, 148, 0.08);">
                 @csrf
                 <select name="camp_id">
@@ -51,7 +59,7 @@
                 </select>
                 <input type="number" name="num_teams" min="1" placeholder="Number of teams" required
                     style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 18px; font-size: 1rem;" />
-                <button type="submit">Select and generate</button>
+                <button type="submit">Select and Generate Teams</button>
             </form>
         </div>
 

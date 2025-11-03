@@ -37,7 +37,7 @@
                     <h2 class="success-title">Payment Successful!</h2>
                     
                     <div class="success-message">
-                        <p>Thank you for your payment. Your sports camp registration has been completed successfully.</p>
+                        <p>Thank you for your payment. A charge should be added to your account shortly.</p>
                     </div>
 
                     @if (session('success'))
@@ -46,64 +46,108 @@
                         </div>
                     @endif
 
-                    <!-- What's Next Section -->
-                    <div class="next-steps">
-                        <h3>What's Next?</h3>
-                        <ul class="steps-list">
-                            <li>
-                                <span class="step-icon">📧</span>
-                                <span>You will receive a confirmation email with your registration details</span>
-                            </li>
-                            <li>
-                                <span class="step-icon">📋</span>
-                                <span>Check your email for camp information and what to bring</span>
-                            </li>
-                            <li>
-                                <span class="step-icon">📅</span>
-                                <span>Mark your calendar - camp details will be in your confirmation email</span>
-                            </li>
-                            <li>
-                                <span class="step-icon">📞</span>
-                                <span>Contact us if you have any questions about your registration</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Contact Information -->
-                    <div class="contact-info">
-                        <h3>Need Help?</h3>
-                        <p>If you have any questions about your registration or the camp, please don't hesitate to contact us:</p>
-                        <div class="contact-details">
-                            <div class="contact-item">
-                                <span class="contact-icon">📧</span>
-                                <span>Email: info@falconteams.com</span>
-                            </div>
-                            <div class="contact-item">
-                                <span class="contact-icon">📞</span>
-                                <span>Phone: (555) 123-4567</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
+                    <!-- Action Button -->
                     <div class="action-buttons">
                         <a href="{{ route('home') }}" class="btn btn-primary">Return to Home</a>
-                        <a href="{{ route('registration.form') }}" class="btn btn-secondary">Register Another Camper</a>
-                    </div>
-
-                    <!-- Receipt Information -->
-                    <div class="receipt-info">
-                        <p class="receipt-text">
-                            <svg class="receipt-icon" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                            </svg>
-                            A receipt has been emailed to you for your records
-                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        .success-wrapper {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .success-content {
+            background: white;
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .success-icon {
+            margin-bottom: 2rem;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .success-title {
+            font-size: 2.5rem;
+            color: #059669;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .success-message {
+            font-size: 1.125rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-block;
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .btn-primary {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #047857;
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+        }
+
+        @media (max-width: 640px) {
+            .success-wrapper {
+                padding: 1rem;
+            }
+
+            .success-content {
+                padding: 2rem 1rem;
+            }
+
+            .success-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </body>
 
 </html>

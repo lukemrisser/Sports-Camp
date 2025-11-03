@@ -13,7 +13,7 @@ class PlayerController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'Division_Name' => 'required|string|max:50',
+            //'Division_Name' => 'nullable|string|max:50',
             'Camp_ID' => 'required|integer|exists:Camps,Camp_ID',
             'Parent_FirstName' => 'required|string|max:50',
             'Parent_LastName' => 'required|string|max:50',
@@ -69,7 +69,7 @@ class PlayerController extends Controller
             
             $playerId = DB::table('Players')->insertGetId([
                 'Parent_ID' => $parent->Parent_ID,
-                'Division_Name' => $validatedData['Division_Name'],
+                //'Division_Name' => $validatedData['Division_Name'],
                 'Camper_FirstName' => $validatedData['Camper_FirstName'],
                 'Camper_LastName' => $validatedData['Camper_LastName'],
                 'Gender' => $validatedData['Gender'],

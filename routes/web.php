@@ -11,10 +11,6 @@ use App\Http\Controllers\PaymentController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/registration', [RegistrationController::class, 'show'])
-    ->name('registration.form');
-
-
 // Temporarily change this:
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -55,8 +51,26 @@ Route::middleware(['auth', 'coach'])->group(function () {
         ->name('store-camp');
 });
 
+// Protected routes for admin users only
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboard'])
+        ->name('admin.dashboard');
+    
+    Route::get('/finances', [App\Http\Controllers\AdminController::class, 'finances'])
+        ->name('admin.finances');
+    
+    Route::get('/invite-coach', [App\Http\Controllers\AdminController::class, 'inviteCoach'])
+        ->name('admin.invite-coach');
+    
+    Route::get('/manage-coaches', [App\Http\Controllers\AdminController::class, 'manageCoaches'])
+        ->name('admin.manage-coaches');
+});
+
 // Regular authenticated user routes
 Route::middleware(['auth'])->group(function () {
+    Route::get('/registration', [RegistrationController::class, 'show'])
+        ->middleware('auth')
+        ->name('registration.form');
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -68,9 +82,5 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/update-ajax', [ProfileController::class, 'updateAjax'])
         ->name('profile.update.ajax');
 });
-
-// Routes used by the organize-teams view forms
-Route::post('/coach/upload-spreadsheet', [CoachController::class, 'uploadSpreadsheet'])->name('coach.uploadSpreadsheet');
-Route::post('/coach/select-camp', [CoachController::class, 'selectCamp'])->name('coach.selectCamp');
 
 require __DIR__.'/auth.php';
