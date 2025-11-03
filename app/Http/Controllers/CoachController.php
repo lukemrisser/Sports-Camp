@@ -25,6 +25,92 @@ class CoachController extends Controller
         return view('coach.create-camp');
     }
 
+    public function showEditCampForm()
+    {
+        $camps = Camp::all();
+        return view('coach.edit-camp', compact('camps'));
+    }
+
+
+    public function getCampData($id)
+    {
+        $camp = Camp::with('discounts')->findOrFail($id);
+        return response()->json($camp);
+    }
+
+    public function updateCamp(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+            'registration_open' => 'required|date',
+            'registration_close' => 'required|date',
+            'price' => 'required|numeric',
+            'gender' => 'required|string',
+            'min_age' => 'required|numeric',
+            'max_age' => 'required|numeric',
+            'discount_amount.*' => 'nullable|numeric',
+            'discount_date.*' => 'nullable|date'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $camp = Camp::findOrFail($id);
+
+
+            $camp->update([
+                'Camp_Name' => $validated['name'],
+                'Description' => $validated['description'],
+                'Start_Date' => $validated['start_date'],
+                'End_Date' => $validated['end_date'],
+                'Registration_Open' => $validated['registration_open'],
+                'Registration_Close' => $validated['registration_close'],
+                'Price' => $validated['price'],
+                'Camp_Gender' => $validated['gender'],
+                'Age_Min' => $validated['min_age'],
+                'Age_Max' => $validated['max_age']
+            ]);
+
+            // Replace discounts: delete existing and insert provided
+            DB::table('Camp_Discount')->where('Camp_ID', $camp->Camp_ID)->delete();
+
+            $discountAmounts = $request->input('discount_amount', []);
+            $discountDates = $request->input('discount_date', []);
+            $toInsert = [];
+            foreach ($discountAmounts as $i => $amount) {
+                $date = trim($discountDates[$i] ?? '');
+                if ($amount === null && $date === null) continue;
+                if ($amount === null xor $date === null) {
+                    throw ValidationException::withMessages([
+                        'discount' => ['Each discount must include both an amount and a date.'],
+                    ]);
+                }
+                $toInsert[] = [
+                    'Camp_ID' => $camp->Camp_ID,
+                    'Discount_Date' => $date,
+                    'Discount_Amount' => $amount
+                ];
+            }
+            if (!empty($toInsert)) {
+                DB::table('Camp_Discount')->insert($toInsert);
+            }
+
+            DB::commit();
+
+            return redirect()->route('edit-camp')->with('success', 'Camp updated successfully');
+
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            return redirect()->back()->withInput()->withErrors($e->errors());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Camp Update Error: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Failed to update camp');
+        }
+    }
+
     public function storeCamp(Request $request)
     {
         $validated = $request->validate([

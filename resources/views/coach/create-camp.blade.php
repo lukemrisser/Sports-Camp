@@ -1,9 +1,36 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Create New Camp') }}
-        </h2>
-    </x-slot>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Camp - {{ config('app.name') }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+
+<body>
+
+    <header class="main-header">
+        <div class=header-container>
+            <div class="header-content">
+                <h1>Falcon Teams</h1>
+                <p>Upload a spreadsheet or select a camp to generate teams</p>
+            </div>
+
+            <div class="header-buttons">
+                @if (Auth::user()->isCoachAdmin())
+                    <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
+                @endif
+                <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
+                <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
+                <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                    @csrf
+                    <button type="submit" class="header-btn logout-btn">Logout</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
     <style>
         .currency-symbol {
             position: absolute;
@@ -224,7 +251,6 @@
             </div>
         </div>
     </div>
-</x-app-layout>
 
 <script>
     // Dynamically add/remove discount fields
