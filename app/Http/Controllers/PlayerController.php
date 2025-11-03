@@ -13,7 +13,7 @@ class PlayerController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'Division_Name' => 'required|string|max:50',
+            'Division_Name' => 'nullable|string|max:50',
             'Camp_ID' => 'required|integer|exists:Camps,Camp_ID',
             'Parent_FirstName' => 'required|string|max:50',
             'Parent_LastName' => 'required|string|max:50',
