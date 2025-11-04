@@ -51,4 +51,14 @@ class Player extends Model
     {
         return $this->hasMany(TeammateRequest::class, 'player_id', 'Player_ID');
     }
+
+    // Calculate age from birth date
+    public function getAgeAttribute()
+    {
+        if (!$this->Birth_Date) {
+            return null;
+        }
+        
+        return \Carbon\Carbon::parse($this->Birth_Date)->age;
+    }
 }

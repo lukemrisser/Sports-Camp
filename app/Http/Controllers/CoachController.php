@@ -503,6 +503,7 @@ class CoachController extends Controller
                 $teamsData[] = [
                     'Team' => 'Team ' . ($teamIndex + 1),
                     'Player Name' => $player ? ($player->Camper_FirstName . ' ' . $player->Camper_LastName) : 'Unknown',
+                    'Age' => $player ? $player->Age : '',
                     'Teammate Requests' => $teammateRequests
                 ];
             }
@@ -546,7 +547,7 @@ class CoachController extends Controller
             private $data;
             public function __construct($data) { $this->data = $data; }
             public function collection() { return collect($this->data); }
-            public function headings(): array { return ['Team', 'Player Name', 'Teammate Requests']; }
+            public function headings(): array { return ['Team', 'Player Name', 'Age', 'Teammate Requests']; }
         }, $filename);
     }
 }
