@@ -41,6 +41,12 @@ Route::middleware(['auth', 'coach'])->group(function () {
     Route::post('/select-camp', [CoachController::class, 'selectCamp'])
         ->name('select-camp');
 
+    Route::get('/teams-display', [CoachController::class, 'showTeamsDisplay'])
+        ->name('teams-display');
+
+    Route::get('/download-teams-excel', [CoachController::class, 'downloadTeamsExcel'])
+        ->name('download-teams-excel');
+
     Route::get('/camp-registrations', [CoachDashboardController::class, 'campRegistrations'])
         ->name('camp-registrations');
 

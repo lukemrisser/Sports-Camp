@@ -248,7 +248,19 @@ class CoachController extends Controller
         }
 
         $teams = $this->sortTeamsDatabase($createdPlayers, $numTeams, $campId);
-        return $this->exportTeamsToExcel($teams, true, $campId);
+        
+        // Prepare teams data for display and Excel
+        $teamsData = $this->prepareTeamsData($teams, $createdPlayers, $campId);
+        
+        // Store data in session for display page and Excel download
+        session([
+            'teams_display_data' => $teamsData,
+            'excel_export_data' => $teamsData,
+            'delete_after_export' => true,
+            'camp_id_for_cleanup' => $campId
+        ]);
+        
+        return redirect()->route('teams-display');
     }
 
     public function selectCamp(Request $request)
@@ -257,7 +269,19 @@ class CoachController extends Controller
         $numTeams = $request->input('num_teams');
         $players = Camp::find($campId)->players;
         $teams = $this->sortTeamsDatabase($players, $numTeams, $campId);
-        return $this->exportTeamsToExcel($teams);
+        
+        // Prepare teams data for display and Excel
+        $teamsData = $this->prepareTeamsData($teams, $players, $campId);
+        
+        // Store data in session for display page and Excel download
+        session([
+            'teams_display_data' => $teamsData,
+            'excel_export_data' => $teamsData,
+            'delete_after_export' => false,
+            'camp_id_for_cleanup' => $campId
+        ]);
+        
+        return redirect()->route('teams-display');
     }
 
     public function exportTeamsToExcel($teams, $delete = false, $campId = null)
@@ -462,5 +486,67 @@ class CoachController extends Controller
         $camps = $coach ? $coach->camps : collect(); // Collection of Camp models or empty
 
         return view('coach.organize-teams', compact('camps'));
+    }
+
+    public function prepareTeamsData($teams, $players, $campId)
+    {
+        $teamsData = [];
+        foreach ($teams as $teamIndex => $team) {
+            foreach ($team as $playerId) {
+                $player = Player::find($playerId);
+                $teammateRequests = DB::table('Teammate_Request')
+                    ->where('Player_ID', $playerId)
+                    ->where('Camp_ID', $campId)
+                    ->pluck(DB::raw("CONCAT(Requested_FirstName, ' ', Requested_LastName)"))
+                    ->implode(', ');
+                
+                $teamsData[] = [
+                    'Team' => 'Team ' . ($teamIndex + 1),
+                    'Player Name' => $player ? ($player->Camper_FirstName . ' ' . $player->Camper_LastName) : 'Unknown',
+                    'Teammate Requests' => $teammateRequests
+                ];
+            }
+        }
+        return $teamsData;
+    }
+
+    public function showTeamsDisplay()
+    {
+        $teamsData = session('teams_display_data', []);
+        
+        if (empty($teamsData)) {
+            return redirect()->route('organize-teams')->with('error', 'No team data available. Please generate teams first.');
+        }
+
+        return view('coach.teams-display', compact('teamsData'));
+    }
+
+    public function downloadTeamsExcel()
+    {
+        $teamsData = session('excel_export_data', []);
+        $deleteAfterExport = session('delete_after_export', false);
+        $campId = session('camp_id_for_cleanup');
+        
+        if (empty($teamsData)) {
+            return redirect()->route('organize-teams')->with('error', 'No team data available for export.');
+        }
+
+        // Clean up temporary data if needed (for spreadsheet uploads)
+        if ($deleteAfterExport && $campId) {
+            DB::table('Teammate_Request')->where('Camp_ID', $campId)->delete();
+            $playerIds = DB::table('Player_Camp')->where('Camp_ID', $campId)->pluck('Player_ID');
+            Player::whereIn('Player_ID', $playerIds)->delete();
+            DB::table('Player_Camp')->where('Camp_ID', $campId)->delete();
+            Camp::where('Camp_ID', $campId)->delete();
+        }
+
+        $filename = 'teams_export_' . date('Ymd_His') . '.xlsx';
+
+        return Excel::download(new class($teamsData) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
+            private $data;
+            public function __construct($data) { $this->data = $data; }
+            public function collection() { return collect($this->data); }
+            public function headings(): array { return ['Team', 'Player Name', 'Teammate Requests']; }
+        }, $filename);
     }
 }
