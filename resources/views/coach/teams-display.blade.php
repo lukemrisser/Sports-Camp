@@ -110,44 +110,6 @@
             align-items: center;
         }
 
-        .header-btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .dashboard-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .dashboard-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .login-btn {
-            background: #fff;
-            color: #0a3f94;
-        }
-
-        .login-btn:hover {
-            background: #f0f0f0;
-        }
-
-        .logout-btn {
-            background: #dc3545;
-            color: white;
-        }
-
-        .logout-btn:hover {
-            background: #c82333;
-        }
-
         .logout-form {
             display: inline;
         }
@@ -278,16 +240,6 @@
             }
         }
     </style>
-
-    <script>
-        // Auto-download Excel file when page loads
-        window.addEventListener('load', function() {
-            // Small delay to ensure page is fully loaded
-            setTimeout(function() {
-                window.location.href = '{{ route("download-teams-excel") }}';
-            }, 1000);
-        });
-    </script>
 </body>
 
 </html>
