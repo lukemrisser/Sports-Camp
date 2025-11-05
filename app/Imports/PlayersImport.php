@@ -86,6 +86,7 @@ class PlayersImport implements ToCollection, WithHeadingRow
         $firstNameKeys = ['player first name', 'player_first_name', 'first name', 'firstname', 'camper_firstname', 'camper first name', 'first_name'];
         $lastNameKeys = ['player last name', 'player_last_name', 'last name', 'lastname', 'camper_lastname', 'camper last name', 'last_name'];
         $teammateKeys = ['teammate request', 'teammate_request', 'teammate requests', 'requests', 'teammates'];
+        $birthDateKeys = ['player birth date', 'player_birth_date', 'birth date', 'birthdate', 'birth_date', 'date of birth', 'dob'];
 
         $get = function (array $keys) use ($map) {
             foreach ($keys as $k) {
@@ -101,7 +102,7 @@ class PlayersImport implements ToCollection, WithHeadingRow
         // detect if any expected heading exists in map
         $allKeys = array_keys($map);
         $recognized = false;
-        foreach (array_merge($firstNameKeys, $lastNameKeys, $teammateKeys) as $k) {
+        foreach (array_merge($firstNameKeys, $lastNameKeys, $teammateKeys, $birthDateKeys) as $k) {
             if (in_array(strtolower($k), $allKeys, true)) {
                 $recognized = true;
                 break;
@@ -109,12 +110,13 @@ class PlayersImport implements ToCollection, WithHeadingRow
         }
 
         if (! $recognized) {
-            // positional fallback: [0]=first, [1]=last, [2]=teammate requests
+            // positional fallback: [0]=first, [1]=last, [2]=teammate requests, [3]=birth date
             $values = array_values($row);
             return [
                 'Player First Name' => isset($values[0]) ? trim((string) $values[0]) : '',
                 'Player Last Name' => isset($values[1]) ? trim((string) $values[1]) : '',
                 'Teammate Request' => isset($values[2]) ? trim((string) $values[2]) : '',
+                'Player Birth Date' => isset($values[3]) ? trim((string) $values[3]) : '',
             ];
         }
 
@@ -122,6 +124,7 @@ class PlayersImport implements ToCollection, WithHeadingRow
             'Player First Name' => $get($firstNameKeys) ?? '',
             'Player Last Name' => $get($lastNameKeys) ?? '',
             'Teammate Request' => $get($teammateKeys) ?? '',
+            'Player Birth Date' => $get($birthDateKeys) ?? '',
         ];
     }
 }

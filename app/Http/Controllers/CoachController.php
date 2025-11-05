@@ -210,11 +210,31 @@ class CoachController extends Controller
 
         $createdPlayers = collect();
         foreach ($importedRows as $row) {
+            // Format birth date from mm/dd/yyyy or Excel serial number to yyyy-mm-dd for MySQL
+            $birthDate = null;
+            if (!empty($row['player_birth_date'])) {
+                try {
+                    // Check if it's a numeric value (Excel serial date)
+                    if (is_numeric($row['player_birth_date'])) {
+                        // Convert Excel serial date to Carbon date
+                        // Excel counts from January 1, 1900 (with a leap year bug, so we subtract 1)
+                        $excelEpoch = \Carbon\Carbon::create(1900, 1, 1)->subDays(2);
+                        $birthDate = $excelEpoch->addDays((int)$row['player_birth_date'])->format('Y-m-d');
+                    } else {
+                        // Try to parse as formatted date string
+                        $birthDate = \Carbon\Carbon::createFromFormat('m/d/Y', $row['player_birth_date'])->format('Y-m-d');
+                    }
+                } catch (\Exception $e) {
+                    // If date parsing fails, leave as null
+                    Log::error('Date parsing error for player birth date: ' . $row['player_birth_date'] . ' - ' . $e->getMessage());
+                    $birthDate = null;
+                }
+            }
 
             $player = Player::create([
                 'Camper_FirstName' => $row['player_first_name'] ?? '',
                 'Camper_LastName' => $row['player_last_name'] ?? '',
-                //'Age' => $age,
+                'Birth_Date' => $birthDate,
             ]);
 
             // Attach player to the camp
@@ -514,9 +534,23 @@ class CoachController extends Controller
     public function showTeamsDisplay()
     {
         $teamsData = session('teams_display_data', []);
+        $deleteAfterExport = session('delete_after_export', false);
+        $campId = session('camp_id_for_cleanup');
         
         if (empty($teamsData)) {
             return redirect()->route('organize-teams')->with('error', 'No team data available. Please generate teams first.');
+        }
+
+        // Clean up temporary data if it came from spreadsheet upload
+        if ($deleteAfterExport && $campId) {
+            DB::table('Teammate_Request')->where('Camp_ID', $campId)->delete();
+            $playerIds = DB::table('Player_Camp')->where('Camp_ID', $campId)->pluck('Player_ID');
+            Player::whereIn('Player_ID', $playerIds)->delete();
+            DB::table('Player_Camp')->where('Camp_ID', $campId)->delete();
+            Camp::where('Camp_ID', $campId)->delete();
+            
+            // Clear the cleanup flags from session since we've already cleaned up
+            session()->forget(['delete_after_export', 'camp_id_for_cleanup']);
         }
 
         return view('coach.teams-display', compact('teamsData'));
@@ -525,20 +559,9 @@ class CoachController extends Controller
     public function downloadTeamsExcel()
     {
         $teamsData = session('excel_export_data', []);
-        $deleteAfterExport = session('delete_after_export', false);
-        $campId = session('camp_id_for_cleanup');
         
         if (empty($teamsData)) {
             return redirect()->route('organize-teams')->with('error', 'No team data available for export.');
-        }
-
-        // Clean up temporary data if needed (for spreadsheet uploads)
-        if ($deleteAfterExport && $campId) {
-            DB::table('Teammate_Request')->where('Camp_ID', $campId)->delete();
-            $playerIds = DB::table('Player_Camp')->where('Camp_ID', $campId)->pluck('Player_ID');
-            Player::whereIn('Player_ID', $playerIds)->delete();
-            DB::table('Player_Camp')->where('Camp_ID', $campId)->delete();
-            Camp::where('Camp_ID', $campId)->delete();
         }
 
         $filename = 'teams_export_' . date('Ymd_His') . '.xlsx';
