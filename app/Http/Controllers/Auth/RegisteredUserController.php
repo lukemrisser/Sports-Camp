@@ -103,7 +103,7 @@ class RegisteredUserController extends Controller
      */
     private function storeCoachPending(Request $request): RedirectResponse
     {
-        // Coach validation - already has firstname/lastname
+        // Coach validation (same as before)
         $request->validate([
             'coach_firstname' => ['required', 'string', 'max:255'],
             'coach_lastname' => ['required', 'string', 'max:255'],
@@ -118,13 +118,6 @@ class RegisteredUserController extends Controller
                     // Check users table
                     if (User::where('email', $value)->exists()) {
                         $fail('This email is already registered.');
-                    }
-                    // Check pending registrations
-                    if (PendingRegistration::where('email', $value)
-                        ->where('expires_at', '>', now())
-                        ->exists()
-                    ) {
-                        $fail('This email has a pending registration. Please check your email.');
                     }
                     // Check coach relationships
                     $coachExists = Coach::whereHas('user', function ($query) use ($value) {
@@ -146,36 +139,44 @@ class RegisteredUserController extends Controller
             'email.regex' => 'Coach registration requires a valid @messiah.edu email address.',
         ]);
 
-        // Create pending registration with coach data
-        $token = Str::random(64);
-        $fullName = $request->coach_firstname . ' ' . $request->coach_lastname;
+        DB::beginTransaction();
 
-        $pendingRegistration = PendingRegistration::create([
-            'name' => $fullName,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'token' => $token,
-            'additional_data' => [
-                'is_coach' => true,
-                'fname' => $request->coach_firstname,  // Store as fname
-                'lname' => $request->coach_lastname,   // Store as lname
-                'coach_firstname' => $request->coach_firstname,
-                'coach_lastname' => $request->coach_lastname,
-                'sport' => $request->sport,
+        try {
+            // Create user account immediately with email already verified
+            $user = User::create([
+                'fname' => $request->coach_firstname,
+                'lname' => $request->coach_lastname,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'email_verified_at' => now(), // Mark as verified immediately for coaches
+            ]);
+
+            // Create coach record
+            Coach::create([
+                'Coach_FirstName' => $request->coach_firstname,
+                'Coach_LastName' => $request->coach_lastname,
+                'user_id' => $user->id,
                 'admin' => $request->has('admin') && $request->admin == '1',
-            ],
-            'expires_at' => now()->addHours(48), // 48 hour expiry
-        ]);
+                'sport' => $request->sport,
+            ]);
 
-        // Send verification email
-        Notification::route('mail', $request->email)
-            ->notify(new PendingRegistrationVerification($token, $fullName, true));
+            DB::commit();
 
-        // Store email in session for display
-        session(['pending_email' => $request->email]);
+            // Log the coach in immediately
+            Auth::login($user);
 
-        // Redirect to the Laravel verify-email view
-        return redirect()->route('verification.notice');
+            // Redirect to coach dashboard
+            return redirect()->route('coach-dashboard')
+                ->with('success', 'Welcome to Falcon Teams! Your coach account has been created.');
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            \Log::error('Coach registration failed: ' . $e->getMessage());
+
+            return back()
+                ->withErrors(['email' => 'Registration failed. Please try again.'])
+                ->withInput();
+        }
     }
 
     /**
