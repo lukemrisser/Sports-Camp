@@ -86,6 +86,16 @@
                             <input id="name" name="name" type="text" class="form-input" required>
                         </div>
 
+                        <div class="form-group">
+                            <label for="sport_id" class="form-label">Sport</label>
+                            <select id="sport_id" name="sport_id" class="form-input" required>
+                                <option value="">Select a sport</option>
+                                @foreach($sports as $sport)
+                                    <option value="{{ $sport->Sport_ID }}">{{ $sport->Sport_Name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label for="start_date" class="form-label">Start Date</label>
@@ -209,6 +219,7 @@
                     form.style.display = '';
                     form.action = `{{ url('/edit-camp') }}/${id}`;
                     document.getElementById('name').value = data.Camp_Name || '';
+                    document.getElementById('sport_id').value = data.Sport_ID || '';
                     document.getElementById('start_date').value = data.Start_Date ? data.Start_Date.split('T')[0] : '';
                     document.getElementById('end_date').value = data.End_Date ? data.End_Date.split('T')[0] : '';
                     document.getElementById('registration_open').value = data.Registration_Open ? data.Registration_Open.split('T')[0] : '';

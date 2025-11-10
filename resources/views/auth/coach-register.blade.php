@@ -65,31 +65,12 @@
                             class="form-input form-select"
                             name="sport"
                             required>
-                        <option value="" disabled {{ old('sport') ? '' : 'selected' }}>Select your sport or camp</option>
-                        <optgroup label="Sports Teams">
-                            <option value="soccer" {{ old('sport') == 'soccer' ? 'selected' : '' }}>Soccer</option>
-                            <option value="basketball" {{ old('sport') == 'basketball' ? 'selected' : '' }}>Basketball</option>
-                            <option value="baseball" {{ old('sport') == 'baseball' ? 'selected' : '' }}>Baseball</option>
-                            <option value="softball" {{ old('sport') == 'softball' ? 'selected' : '' }}>Softball</option>
-                            <option value="volleyball" {{ old('sport') == 'volleyball' ? 'selected' : '' }}>Volleyball</option>
-                            <option value="tennis" {{ old('sport') == 'tennis' ? 'selected' : '' }}>Tennis</option>
-                            <option value="track" {{ old('sport') == 'track' ? 'selected' : '' }}>Track & Field</option>
-                            <option value="swimming" {{ old('sport') == 'swimming' ? 'selected' : '' }}>Swimming</option>
-                            <option value="football" {{ old('sport') == 'football' ? 'selected' : '' }}>Football</option>
-                            <option value="lacrosse" {{ old('sport') == 'lacrosse' ? 'selected' : '' }}>Lacrosse</option>
-                        </optgroup>
-                        <optgroup label="Summer Camps">
-                            <option value="all_sports_camp" {{ old('sport') == 'all_sports_camp' ? 'selected' : '' }}>All Sports Camp</option>
-                            <option value="soccer_camp" {{ old('sport') == 'soccer_camp' ? 'selected' : '' }}>Soccer Camp</option>
-                            <option value="basketball_camp" {{ old('sport') == 'basketball_camp' ? 'selected' : '' }}>Basketball Camp</option>
-                            <option value="volleyball_camp" {{ old('sport') == 'volleyball_camp' ? 'selected' : '' }}>Volleyball Camp</option>
-                            <option value="tennis_camp" {{ old('sport') == 'tennis_camp' ? 'selected' : '' }}>Tennis Camp</option>
-                            <option value="stem_sports_camp" {{ old('sport') == 'stem_sports_camp' ? 'selected' : '' }}>STEM & Sports Camp</option>
-                        </optgroup>
-                        <optgroup label="Other">
-                            <option value="administration" {{ old('sport') == 'administration' ? 'selected' : '' }}>Administration</option>
-                            <option value="multiple" {{ old('sport') == 'multiple' ? 'selected' : '' }}>Multiple Teams/Camps</option>
-                        </optgroup>
+                        <option value="" disabled {{ old('sport') ? '' : 'selected' }}>Select your sport</option>
+                        @foreach($sports as $sport)
+                            <option value="{{ $sport->Sport_ID }}" {{ old('sport') == $sport->Sport_ID ? 'selected' : '' }}>
+                                {{ $sport->Sport_Name }}
+                            </option>
+                        @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('sport')" class="form-error" />
                 </div>
