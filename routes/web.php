@@ -78,6 +78,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     Route::get('/manage-coaches', [App\Http\Controllers\AdminController::class, 'manageCoaches'])
         ->name('admin.manage-coaches');
+
+    // Sports management routes
+    Route::get('/sports', [App\Http\Controllers\Admin\AdminSportsController::class, 'index'])
+        ->name('admin.manage-sports');
+    Route::post('/sports', [App\Http\Controllers\Admin\AdminSportsController::class, 'store'])
+        ->name('admin.sports.store');
+    Route::put('/sports/{id}', [App\Http\Controllers\Admin\AdminSportsController::class, 'update'])
+        ->name('admin.sports.update');
+    Route::delete('/sports/{id}', [App\Http\Controllers\Admin\AdminSportsController::class, 'destroy'])
+        ->name('admin.sports.destroy');
 });
 
 // Regular authenticated user routes
