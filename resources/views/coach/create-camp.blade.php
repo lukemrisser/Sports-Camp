@@ -80,6 +80,24 @@
                                    value="{{ old('name') }}">
                         </div>
 
+                        <div class="form-group">
+                            <label for="sport_id" class="form-label">
+                                Sport <span class="text-red-500">*</span>
+                            </label>
+                            <select name="sport_id" 
+                                    id="sport_id" 
+                                    required 
+                                    class="form-input">
+                                <option value="" disabled {{ old('sport_id', $defaultSportId) ? '' : 'selected' }}>Select a sport</option>
+                                @foreach($sports as $sport)
+                                    <option value="{{ $sport->Sport_ID }}" 
+                                            {{ old('sport_id', $defaultSportId) == $sport->Sport_ID ? 'selected' : '' }}>
+                                        {{ $sport->Sport_Name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label for="start_date" class="form-label">
