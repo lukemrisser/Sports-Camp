@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Coach;
+use App\Models\Sport;
 use App\Models\PendingRegistration;
 use App\Notifications\PendingRegistrationVerification;
 use Illuminate\Auth\Events\Registered;
@@ -26,7 +27,8 @@ class RegisteredUserController extends Controller
     public function create(): View
     {
         if (request()->is('coach-register')) {
-            return view('auth.coach-register');
+            $sports = Sport::orderBy('Sport_Name')->get();
+            return view('auth.coach-register', compact('sports'));
         }
         return view('auth.register');
     }
@@ -130,8 +132,8 @@ class RegisteredUserController extends Controller
             ],
             'sport' => [
                 'required',
-                'string',
-                'in:soccer,basketball,baseball,softball,volleyball,tennis,track,swimming,football,lacrosse,all_sports_camp,soccer_camp,basketball_camp,volleyball_camp,tennis_camp,stem_sports_camp,administration,multiple'
+                'integer',
+                'exists:Sports,Sport_ID'
             ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'admin' => ['nullable', 'boolean'],
@@ -157,7 +159,7 @@ class RegisteredUserController extends Controller
                 'Coach_LastName' => $request->coach_lastname,
                 'user_id' => $user->id,
                 'admin' => $request->has('admin') && $request->admin == '1',
-                'sport' => $request->sport,
+                'Sport_ID' => $request->sport,
             ]);
 
             DB::commit();

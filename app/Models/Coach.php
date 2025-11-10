@@ -19,7 +19,7 @@ class Coach extends Model
         'Coach_LastName',
         'user_id',
         'admin',
-        'sport'
+        'Sport_ID',
     ];
 
     protected $casts = [
@@ -43,8 +43,19 @@ class Coach extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    // A coach belongs to one sport
+    public function sport()
+    {
+        return $this->belongsTo(Sport::class, 'Sport_ID', 'Sport_ID');
+    }
+
     public function getFullNameAttribute()
     {
         return $this->coach_firstname . ' ' . $this->coach_lastname;
     }
+
+	public function getSportAttribute()
+	{
+		return $this->sport->Sport_Name ?? null; // or whatever the name field is called
+	}
 }
