@@ -106,7 +106,149 @@
                     </div>
                 </form>
             </div>
+            <!-- Children/Players Information -->
+            @if (Auth::user()->parent && Auth::user()->parent->players->count() > 0)
+                <div class="info-card">
+                    <h3 class="card-title">My Players</h3>
+                    <div class="players-grid">
+                        @foreach (Auth::user()->parent->players as $player)
+                            <div class="player-card">
+                                <div class="player-info">
+                                    <div class="player-name">
+                                        <strong>{{ $player->Camper_FirstName }}
+                                            {{ $player->Camper_LastName }}</strong>
+                                    </div>
 
+
+                                    <div class="player-details">
+                                        <span class="detail-item">
+                                            <label>Birthdate:</label>
+                                            @if ($player->Birth_Date)
+                                                {{ \Carbon\Carbon::parse($player->Birth_Date)->format('M d, Y') }}
+                                            @else
+                                                Not specified
+                                            @endif
+                                        </span>
+                                        <span class="detail-item">
+                                            <label>Gender:</label>
+                                            {{ $player->Gender == 'M' ? 'Male' : ($player->Gender == 'F' ? 'Female' : 'Not specified') }}
+                                        </span>
+                                        <span class="detail-item">
+                                            <label>Shirt Size:</label>
+                                            {{ $player->Shirt_Size ?: 'Not specified' }}
+                                        </span>
+                                        @if ($player->School_Grade)
+                                            <span class="detail-item">
+                                                <label>Grade:</label> {{ $player->School_Grade }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <!-- Health Information Section -->
+                                    <div class="health-info-section"
+                                        onclick="toggleHealthInfo({{ $player->Player_ID }})" style="cursor: pointer;">
+                                        <div class="health-header">
+                                            <span class="health-icon">🏥</span>
+                                            <label style="cursor: pointer;">Health Information</label>
+                                            @php
+                                                $healthCount = 0;
+                                                if ($player->Asthma == 1) {
+                                                    $healthCount++;
+                                                }
+                                                if (
+                                                    $player->Medications &&
+                                                    $player->Medications !== 'None' &&
+                                                    $player->Medications !== ''
+                                                ) {
+                                                    $healthCount++;
+                                                }
+                                                if (
+                                                    $player->Allergies &&
+                                                    $player->Allergies !== 'None' &&
+                                                    $player->Allergies !== ''
+                                                ) {
+                                                    $healthCount++;
+                                                }
+                                                if (
+                                                    $player->Injuries &&
+                                                    $player->Injuries !== 'None' &&
+                                                    $player->Injuries !== ''
+                                                ) {
+                                                    $healthCount++;
+                                                }
+                                            @endphp
+
+                                            @if ($healthCount > 0)
+                                                <span class="health-badge">{{ $healthCount }}
+                                                    item{{ $healthCount > 1 ? 's' : '' }}</span>
+                                            @else
+                                                <span class="health-badge-clear">Clear</span>
+                                            @endif
+                                            <span class="expand-icon" id="expand-{{ $player->Player_ID }}">▼</span>
+                                        </div>
+
+                                        <div class="health-details" id="health-{{ $player->Player_ID }}"
+                                            style="display: none;">
+                                            @if ($healthCount > 0)
+                                                @if ($player->Asthma == 1)
+                                                    <div class="health-item">
+                                                        <span class="health-label">Asthma:</span>
+                                                        <span class="health-value">Yes - requires monitoring</span>
+                                                    </div>
+                                                @endif
+
+                                                @if ($player->Medications && $player->Medications !== 'None' && $player->Medications !== '')
+                                                    <div class="health-item">
+                                                        <span class="health-label">Medications:</span>
+                                                        <span class="health-value">{{ $player->Medications }}</span>
+                                                    </div>
+                                                @endif
+
+                                                @if ($player->Allergies && $player->Allergies !== 'None' && $player->Allergies !== '')
+                                                    <div class="health-item">
+                                                        <span class="health-label">Allergies:</span>
+                                                        <span class="health-value">{{ $player->Allergies }}</span>
+                                                    </div>
+                                                @endif
+
+                                                @if ($player->Injuries && $player->Injuries !== 'None' && $player->Injuries !== '')
+                                                    <div class="health-item">
+                                                        <span class="health-label">Injuries:</span>
+                                                        <span class="health-value">{{ $player->Injuries }}</span>
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <div class="health-item no-issues">
+                                                    <span class="health-value">✓ No health concerns reported</span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    @if ($player->camps && $player->camps->count() > 0)
+                                        <div class="player-camps">
+                                            <label>📅 Registered Camps:</label>
+                                            <ul class="camps-list">
+                                                @foreach ($player->camps as $camp)
+                                                    <li>{{ $camp->Camp_Name }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @elseif (Auth::user()->parent && !Auth::user()->isCoach())
+                <div class="info-card">
+                    <h3 class="card-title">My Children</h3>
+                    <div class="no-players-message">
+                        <p>No children registered yet.</p>
+                        <a href="{{ route('registration.form') }}" class="btn-primary">Register a Child for Camp</a>
+                    </div>
+                </div>
+            @endif
             <!-- Parent Contact Information -->
             @if (Auth::user()->parent)
                 <div class="info-card">
@@ -126,7 +268,8 @@
                         </div>
                         <div class="info-item">
                             <label class="info-label">City</label>
-                            <p class="info-value" id="display-city">{{ Auth::user()->parent->City ?: 'Not provided' }}
+                            <p class="info-value" id="display-city">
+                                {{ Auth::user()->parent->City ?: 'Not provided' }}
                             </p>
                         </div>
                         <div class="info-item">
@@ -321,6 +464,381 @@
             gap: 10px;
             flex-wrap: wrap;
         }
+
+        .players-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .player-card {
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .player-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #d1d5db;
+        }
+
+        .player-info {
+            flex-grow: 1;
+        }
+
+        .player-name {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #111827;
+            border-bottom: 2px solid #0a3f94;
+            padding-bottom: 10px;
+        }
+
+        .player-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .detail-item {
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .detail-item label {
+            font-weight: 600;
+            color: #374151;
+            margin-right: 6px;
+        }
+
+        /* Health Information Styles */
+        .health-info-section {
+            background: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+
+        .health-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #1e40af;
+        }
+
+        .health-icon {
+            font-size: 18px;
+        }
+
+        .health-details {
+            padding-left: 28px;
+        }
+
+        .health-item {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .health-label {
+            font-weight: 600;
+            color: #3730a3;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .health-value {
+            color: #4b5563;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .health-item.no-issues {
+            color: #059669;
+            font-style: italic;
+        }
+
+        .player-camps {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .player-camps label {
+            font-weight: 600;
+            color: #374151;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .camps-list {
+            margin-left: 28px;
+            list-style-type: disc;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .camps-list li {
+            margin-bottom: 4px;
+        }
+
+        .no-players-message {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .no-players-message p {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .player-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Compact Health Display */
+        .health-info-compact {
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .health-summary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .health-label-compact {
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .health-pill {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .health-pill.health-clickable {
+            cursor: pointer;
+            background: #c7d2fe;
+        }
+
+        .health-pill.health-clickable:hover {
+            background: #a5b4fc;
+        }
+
+        .health-clear {
+            color: #059669;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .health-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 60px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            min-width: 250px;
+            margin-top: 8px;
+        }
+
+        .dropdown-item {
+            padding: 6px 0;
+            font-size: 13px;
+            color: #4b5563;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Collapsible version styling */
+        .health-info-section {
+            background: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
+            transition: background-color 0.2s ease;
+        }
+
+        .health-info-section:hover {
+            background: #e0f2fe;
+        }
+
+        .health-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #1e40af;
+            position: relative;
+        }
+
+        .health-badge {
+            background: #fbbf24;
+            color: #92400e;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: auto;
+        }
+
+        .health-badge-clear {
+            background: #86efac;
+            color: #14532d;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: auto;
+        }
+
+        .expand-icon {
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .expand-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        /* Compact Health Display */
+        .health-info-compact {
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .health-summary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .health-label-compact {
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .health-pill {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .health-pill.health-clickable {
+            cursor: pointer;
+            background: #c7d2fe;
+        }
+
+        .health-pill.health-clickable:hover {
+            background: #a5b4fc;
+        }
+
+        .health-clear {
+            color: #059669;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .health-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 60px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            min-width: 250px;
+            margin-top: 8px;
+        }
+
+        .dropdown-item {
+            padding: 6px 0;
+            font-size: 13px;
+            color: #4b5563;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Collapsible version styling */
+        .health-info-section {
+            background: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
+        }
+
+        .health-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #1e40af;
+            position: relative;
+        }
+
+        .health-badge {
+            background: #fbbf24;
+            color: #92400e;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: auto;
+        }
+
+        .health-badge-clear {
+            background: #86efac;
+            color: #14532d;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: auto;
+        }
+
+        .expand-icon {
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .expand-icon.rotated {
+            transform: rotate(180deg);
+        }
     </style>
 
     <script>
@@ -462,6 +980,19 @@
             } catch (error) {
                 console.error('Error:', error);
                 alert('Error updating profile. Please try again.');
+            }
+        }
+
+        function toggleHealthInfo(playerId) {
+            const details = document.getElementById('health-' + playerId);
+            const expandIcon = document.getElementById('expand-' + playerId);
+
+            if (details.style.display === 'none') {
+                details.style.display = 'block';
+                if (expandIcon) expandIcon.classList.add('rotated');
+            } else {
+                details.style.display = 'none';
+                if (expandIcon) expandIcon.classList.remove('rotated');
             }
         }
     </script>
