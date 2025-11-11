@@ -75,7 +75,9 @@ class Order extends Model
      */
     public function getRemainingAmountAttribute(): float
     {
-        return $this->Item_Amount - $this->Item_Amount_Paid;
+        $itemAmount = $this->Item_Amount ?? 0;
+        $itemAmountPaid = $this->Item_Amount_Paid ?? 0;
+        return $itemAmount - $itemAmountPaid;
     }
 
     /**
@@ -83,7 +85,9 @@ class Order extends Model
      */
     public function isFullyPaid(): bool
     {
-        return $this->Item_Amount_Paid >= $this->Item_Amount;
+        $itemAmount = $this->Item_Amount ?? 0;
+        $itemAmountPaid = $this->Item_Amount_Paid ?? 0;
+        return $itemAmountPaid >= $itemAmount && $itemAmount > 0;
     }
 
     /**
@@ -91,7 +95,9 @@ class Order extends Model
      */
     public function isPartiallyPaid(): bool
     {
-        return $this->Item_Amount_Paid > 0 && $this->Item_Amount_Paid < $this->Item_Amount;
+        $itemAmount = $this->Item_Amount ?? 0;
+        $itemAmountPaid = $this->Item_Amount_Paid ?? 0;
+        return $itemAmountPaid > 0 && $itemAmountPaid < $itemAmount;
     }
 
     /**
@@ -195,5 +201,23 @@ class Order extends Model
     public function scopeForCamp($query, $campId)
     {
         return $query->where('Camp_ID', $campId);
+    }
+
+    /**
+     * Get the sport through the camp relationship
+     */
+    public function getSportAttribute()
+    {
+        return $this->camp ? $this->camp->sport : null;
+    }
+
+    /**
+     * Scope to find orders for a specific sport
+     */
+    public function scopeForSport($query, $sportId)
+    {
+        return $query->whereHas('camp', function ($q) use ($sportId) {
+            $q->where('Sport_ID', $sportId);
+        });
     }
 }

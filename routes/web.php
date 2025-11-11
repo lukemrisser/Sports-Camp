@@ -73,6 +73,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/finances', [App\Http\Controllers\AdminController::class, 'finances'])
         ->name('admin.finances');
 
+    Route::post('/finances/export', [App\Http\Controllers\AdminController::class, 'exportFinances'])
+        ->name('admin.finances.export');
+
     Route::get('/invite-coach', [App\Http\Controllers\AdminController::class, 'inviteCoach'])
         ->name('admin.invite-coach');
 
