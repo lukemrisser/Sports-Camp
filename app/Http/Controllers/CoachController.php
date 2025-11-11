@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Coach;
 use App\Models\Camp;
+use App\Models\Sport;
 use App\Models\User;
 use App\Models\Player;
 use App\Imports\PlayersImport;
@@ -22,13 +23,18 @@ class CoachController extends Controller
 {
     public function showCreateCampForm()
     {
-        return view('coach.create-camp');
+        $sports = Sport::orderBy('Sport_Name')->get();
+        $coach = Auth::user()->coach;
+        $defaultSportId = $coach ? $coach->Sport_ID : null;
+        
+        return view('coach.create-camp', compact('sports', 'defaultSportId'));
     }
 
     public function showEditCampForm()
     {
         $camps = Camp::all();
-        return view('coach.edit-camp', compact('camps'));
+        $sports = Sport::orderBy('Sport_Name')->get();
+        return view('coach.edit-camp', compact('camps', 'sports'));
     }
 
 
@@ -42,6 +48,7 @@ class CoachController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'sport_id' => 'required|integer|exists:Sports,Sport_ID',
             'description' => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
@@ -61,6 +68,7 @@ class CoachController extends Controller
 
 
             $camp->update([
+                'Sport_ID' => $validated['sport_id'],
                 'Camp_Name' => $validated['name'],
                 'Description' => $validated['description'],
                 'Start_Date' => $validated['start_date'],
@@ -115,6 +123,7 @@ class CoachController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'sport_id' => 'required|integer|exists:Sports,Sport_ID',
             'description' => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
@@ -133,6 +142,7 @@ class CoachController extends Controller
 
         try {
             $camp = Camp::create([
+                'Sport_ID' => $validated['sport_id'],
                 'Camp_Name' => $validated['name'],
                 'Description' => $validated['description'],
                 'Start_Date' => $validated['start_date'],

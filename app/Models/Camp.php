@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\CampDiscount;
 use App\Models\Player;
 use App\Models\Coach;
+use App\Models\Sport;
 
 class Camp extends Model
 {
@@ -19,6 +20,7 @@ class Camp extends Model
 	public $timestamps = false;
 
 	protected $fillable = [
+		'Sport_ID',
 		'Camp_Name',
 		'Description',
 		'Start_Date',
@@ -38,6 +40,12 @@ class Camp extends Model
 		'Registration_Open' => 'date',
 		'Registration_Close' => 'date',
 	];
+
+	// A camp belongs to one sport
+	public function sport()
+	{
+		return $this->belongsTo(Sport::class, 'Sport_ID', 'Sport_ID');
+	}
 
 	// A camp can have many players
 	public function players()
@@ -105,5 +113,9 @@ class Camp extends Model
 		$today = now()->toDateString();
 
 		return $this->Registration_Open <= $today && $this->Registration_Close >= $today;
+	}
+	public function getSportAttribute()
+	{
+		return $this->sport->Sport_Name ?? null; // or whatever the name field is called
 	}
 }
