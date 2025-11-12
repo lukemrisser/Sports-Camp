@@ -95,6 +95,15 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/profile/update-ajax', [ProfileController::class, 'updateAjax'])
         ->name('profile.update.ajax');
+
+    Route::post('/player/update-ajax', [PlayerController::class, 'updateAjax'])
+        ->name('player.update.ajax');
+
+    Route::post('/player/delete-ajax', [PlayerController::class, 'deleteAjax'])
+        ->name('player.delete.ajax');
+
+    Route::post('/player/add-ajax', [PlayerController::class, 'addAjax'])
+        ->name('player.add.ajax');
 });
 
 require __DIR__ . '/auth.php';

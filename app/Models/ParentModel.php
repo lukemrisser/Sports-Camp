@@ -29,8 +29,9 @@ class ParentModel extends Model
         'Church_Attendance'
     ];
 
+    // In ParentModel.php
     public function players()
     {
-        return $this->hasMany(Player::class, 'Parent_ID', 'Parent_ID');
+        return $this->hasMany(Player::class, 'Parent_ID', 'Parent_ID')->with('camps');
     }
 }

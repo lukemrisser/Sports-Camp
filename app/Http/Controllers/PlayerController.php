@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use App\Models\ParentModel;
 use App\Models\Camp;
+use App\Models\Player;
 
 class PlayerController extends Controller
 {
@@ -40,10 +42,10 @@ class PlayerController extends Controller
 
         try {
             $phoneNumber = preg_replace('/[^0-9]/', '', $validatedData['Phone']);
-            
+
             Log::info("Starting player registration for {$validatedData['Camper_FirstName']} {$validatedData['Camper_LastName']}");
             Log::info("Parent email: {$validatedData['Email']}, phone: {$phoneNumber}");
-            
+
             // First create or find the parent
             $parent = ParentModel::firstOrCreate(
                 [
@@ -61,12 +63,12 @@ class PlayerController extends Controller
                     'Church_Attendance' => $validatedData['Church_Attendance']
                 ]
             );
-            
+
             Log::info("Parent found/created with Parent_ID: {$parent->Parent_ID}");
 
             // Then create the player record
             Log::info("Creating player for Parent_ID: {$parent->Parent_ID}");
-            
+
             $playerId = DB::table('Players')->insertGetId([
                 'Parent_ID' => $parent->Parent_ID,
                 //'Division_Name' => $validatedData['Division_Name'],
@@ -80,7 +82,7 @@ class PlayerController extends Controller
                 'Medication_Status' => $validatedData['Medication_Status'],
                 'Injuries' => $validatedData['Injuries']
             ]);
-            
+
             Log::info("Player created successfully with Player_ID: {$playerId}");
 
             // Create the relationship between player and camp in Player_Camp table
@@ -88,13 +90,13 @@ class PlayerController extends Controller
                 'Player_ID' => $playerId,
                 'Camp_ID' => $validatedData['Camp_ID']
             ]);
-            
+
             Log::info("Player-Camp relationship created: Player_ID {$playerId} -> Camp_ID {$validatedData['Camp_ID']}");
 
             // Handle teammate requests (if any)
             $firstNames = $request->input('teammate_first', []);
             $lastNames = $request->input('teammate_last', []);
-            
+
             // Validate there are the same amount of last and first names
             if (count($firstNames) !== count($lastNames)) {
                 return redirect()->back()->withInput()->with('error', 'Invalid teammate request data.');
@@ -120,16 +122,180 @@ class PlayerController extends Controller
             if (!empty($requestsToInsert)) {
                 DB::table('Teammate_Request')->insert($requestsToInsert);
             }
-            
+
             // Redirect to payment page instead of back to registration
             return redirect()->route('payment.show', [
-                'player' => $playerId, 
+                'player' => $playerId,
                 'camp' => $validatedData['Camp_ID']
             ])->with('success', 'Registration completed! Please proceed with payment.');
         } catch (\Exception $e) {
             Log::error("Exception in PlayerController store method: " . $e->getMessage());
             Log::error("Stack trace: " . $e->getTraceAsString());
             return redirect()->back()->withInput()->with('error', 'Registration failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update player information via AJAX from dashboard
+     */
+    public function updateAjax(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'player_id' => 'required|integer',
+                'Camper_FirstName' => 'required|string|max:50',
+                'Camper_LastName' => 'required|string|max:50',
+                'Birth_Date' => 'required|date',
+                'Gender' => 'required|string|in:M,F',
+                'Shirt_Size' => 'nullable|string',
+                'Medications' => 'nullable|string',
+                'Allergies' => 'nullable|string',
+                'Injuries' => 'nullable|string',
+                'Asthma' => 'required|boolean',
+            ]);
+
+            // Verify the player belongs to the logged-in parent
+            $player = Player::where('Player_ID', $request->player_id)
+                ->where('Parent_ID', Auth::user()->parent->Parent_ID)
+                ->firstOrFail();
+
+            // Update player data
+            $player->update([
+                'Camper_FirstName' => $request->Camper_FirstName,
+                'Camper_LastName' => $request->Camper_LastName,
+                'Birth_Date' => $request->Birth_Date,
+                'Gender' => $request->Gender,
+                'Shirt_Size' => $request->Shirt_Size,
+                'Medications' => $request->Medications ?: 'None',
+                'Allergies' => $request->Allergies ?: 'None',
+                'Injuries' => $request->Injuries ?: 'None',
+                'Asthma' => $request->Asthma,
+            ]);
+
+            Log::info("Player updated successfully: Player_ID {$player->Player_ID}");
+
+            return response()->json([
+                'success' => true,
+                'player' => $player->fresh(),
+                'message' => 'Player information updated successfully!'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Player not found or you do not have permission to edit this player.'
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error("Error updating player: " . $e->getMessage());
+            Log::error("Stack trace: " . $e->getTraceAsString());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating the player. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Soft delete a player by setting Parent_ID to NULL
+     */
+    public function deleteAjax(Request $request)
+    {
+        try {
+            $request->validate([
+                'player_id' => 'required|integer'
+            ]);
+
+            // Verify the player belongs to the logged-in parent
+            $player = Player::where('Player_ID', $request->player_id)
+                ->where('Parent_ID', Auth::user()->parent->Parent_ID)
+                ->firstOrFail();
+
+            // Soft delete by setting Parent_ID to NULL
+            $player->Parent_ID = null;
+            $player->save();
+
+            Log::info("Player soft deleted: Player_ID {$player->Player_ID} by Parent_ID " . Auth::user()->parent->Parent_ID);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Player removed from your account successfully.'
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Player not found or you do not have permission to remove this player.'
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error("Error deleting player: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while removing the player. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Add a new player via AJAX from dashboard
+     */
+    public function addAjax(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'Camper_FirstName' => 'required|string|max:50',
+                'Camper_LastName' => 'required|string|max:50',
+                'Birth_Date' => 'required|date',
+                'Gender' => 'required|string|in:M,F',
+                'Shirt_Size' => 'required|string',
+                'Medications' => 'nullable|string',
+                'Allergies' => 'nullable|string',
+                'Injuries' => 'nullable|string',
+                'Asthma' => 'required|boolean',
+            ]);
+
+            // Get the parent ID from the authenticated user
+            $parentId = Auth::user()->parent->Parent_ID;
+
+            // Create the new player
+            $player = Player::create([
+                'Parent_ID' => $parentId,
+                'Camper_FirstName' => $request->Camper_FirstName,
+                'Camper_LastName' => $request->Camper_LastName,
+                'Birth_Date' => $request->Birth_Date,
+                'Gender' => $request->Gender,
+                'Shirt_Size' => $request->Shirt_Size,
+                'Medications' => $request->Medications ?: 'None',
+                'Allergies' => $request->Allergies ?: 'None',
+                'Injuries' => $request->Injuries ?: 'None',
+                'Asthma' => $request->Asthma,
+            ]);
+
+            Log::info("New player added: Player_ID {$player->Player_ID} for Parent_ID {$parentId}");
+
+            return response()->json([
+                'success' => true,
+                'player' => $player,
+                'message' => 'Player added successfully!'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error("Error adding player: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while adding the player. Please try again.'
+            ], 500);
         }
     }
 }
