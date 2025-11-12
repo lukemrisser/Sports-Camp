@@ -9,8 +9,10 @@ use App\Http\Controllers\CoachDashboardController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\SportsController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/sport/{sport}', [SportsController::class, 'show'])->name('sport.show');
 
 // Temporarily change this:
 Route::get('/dashboard', function () {

@@ -42,9 +42,8 @@
                 <div class="registration-card {{ $card['color'] }}">
                     <div class="card-icon">{{ $card['icon'] }}</div>
                     <h3>{{ $card['title'] }}</h3>
-                    <p>{{ $card['description'] }}</p>
-                    <a href="{{ route($card['route'], ['camp' => $card['id']]) }}" class="card-button">
-                        Register Now
+                    <a href="{{ route($card['route'], ['sport' => $card['id']]) }}" class="card-button">
+                        Learn More
                     </a>
                 </div>
             @endforeach
