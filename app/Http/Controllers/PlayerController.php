@@ -30,10 +30,11 @@ class PlayerController extends Controller
             'Shirt_Size' => 'required|string',
             'Allergies' => 'nullable|string',
             'Asthma' => 'required|boolean',
-            'Medication_Status' => 'required|boolean',
+            'medication_status_choice' => 'required|boolean',
+            'Medication_Status' => 'nullable|string',
             'Injuries' => 'nullable|string',
             'Church_Name' => 'nullable|string|max:255',
-            'Church_Attendance' => 'required|string',
+            'Church_Attendance' => 'nullable|string|max:50',
             'teammate_first.*' => 'nullable|string|max:50',
             'teammate_last.*' => 'nullable|string|max:50'
         ]);
