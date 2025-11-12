@@ -51,6 +51,13 @@
                     </div>
                 @endif
 
+                <!-- Age/Gender Validation Error -->
+                <div id="validation-error" class="alert alert-error" style="display: none;">
+                    <ul class="error-list">
+                        <li id="validation-message"></li>
+                    </ul>
+                </div>
+
                 <form method="POST" action="{{ route('players.store') }}" class="registration-form">
                     @csrf
 
@@ -59,7 +66,7 @@
                         <h3 class="section-title">Camp Selection</h3>
                         <div class="form-grid-1">
                             <div class="form-group">
-                                <label class="form-label">Select Camp</label>
+                                <label class="form-label">Select Camp <span class="text-red-500">*</span></label>
                                 @if(isset($availableCamps) && $availableCamps->count() > 0)
                                     <select name="Camp_ID" class="form-input" required>
                                         <option value="">Select Camp</option>
@@ -95,12 +102,12 @@
                         <h3 class="section-title">Parent/Guardian Information</h3>
                         <div class="form-grid-2">
                             <div class="form-group">
-                                <label class="form-label">Parent First Name</label>
+                                <label class="form-label">Parent First Name <span class="text-red-500">*</span></label>
                                 <input type="text" name="Parent_FirstName" class="form-input" required
                                     value="{{ old('Parent_FirstName', isset($parent) ? $parent->Parent_FirstName : '') }}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Parent Last Name</label>
+                                <label class="form-label">Parent Last Name <span class="text-red-500">*</span></label>
                                 <input type="text" name="Parent_LastName" class="form-input" required
                                     value="{{ old('Parent_LastName', isset($parent) ? $parent->Parent_LastName : '') }}">
                             </div>
@@ -115,15 +122,15 @@
                         <h3 class="section-title">Camper Information</h3>
                         <div class="form-grid-2">
                             <div class="form-group">
-                                <label class="form-label">Camper First Name</label>
+                                <label class="form-label">Camper First Name <span class="text-red-500">*</span></label>
                                 <input type="text" name="Camper_FirstName" class="form-input" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Camper Last Name</label>
+                                <label class="form-label">Camper Last Name <span class="text-red-500">*</span></label>
                                 <input type="text" name="Camper_LastName" class="form-input" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Gender</label>
+                                <label class="form-label">Gender <span class="text-red-500">*</span></label>
                                 <select name="Gender" class="form-input" required>
                                     <option value="">Select Gender</option>
                                     <option value="M">Male</option>
@@ -131,12 +138,12 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Birth Date</label>
+                                <label class="form-label">Birth Date <span class="text-red-500">*</span></label>
                                 <input type="date" name="Birth_Date" class="form-input" required
                                     max="{{ date('Y-m-d') }}" min="{{ date('Y-m-d', strtotime('-100 years')) }}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Shirt Size</label>
+                                <label class="form-label">Shirt Size <span class="text-red-500">*</span></label>
                                 <select name="Shirt_Size" class="form-input" required>
                                     <option value="">Select Size</option>
                                     <option value="YS">Youth Small</option>
@@ -178,35 +185,35 @@
                     <div class="form-section">
                         <h3 class="section-title">Parent Contact Information</h3>
                         <div class="form-group">
-                            <label class="form-label">Address</label>
+                            <label class="form-label">Address <span class="text-red-500">*</span></label>
                             <input type="text" name="Address" class="form-input" required
                                 value="{{ old('Address', isset($parent) ? $parent->Address : '') }}">
                         </div>
                         <div class="form-grid-3">
                             <div class="form-group">
-                                <label class="form-label">City</label>
+                                <label class="form-label">City <span class="text-red-500">*</span></label>
                                 <input type="text" name="City" class="form-input" required
                                     value="{{ old('City', isset($parent) ? $parent->City : '') }}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">State</label>
+                                <label class="form-label">State <span class="text-red-500">*</span></label>
                                 <input type="text" name="State" class="form-input" required
                                     value="{{ old('State', isset($parent) ? $parent->State : '') }}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">ZIP Code</label>
+                                <label class="form-label">ZIP Code <span class="text-red-500">*</span></label>
                                 <input type="text" name="Postal_Code" class="form-input" required
                                     value="{{ old('Postal_Code', isset($parent) ? $parent->Postal_Code : '') }}">
                             </div>
                         </div>
                         <div class="form-grid-2">
                             <div class="form-group">
-                                <label class="form-label">Email</label>
+                                <label class="form-label">Email <span class="text-red-500">*</span></label>
                                 <input type="email" name="Email" class="form-input" required
                                     value="{{ old('Email', isset($parent) ? $parent->Email : auth()->user()->email ?? '') }}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Phone</label>
+                                <label class="form-label">Phone <span class="text-red-500">*</span></label>
                                 <input type="tel" class="form-input" id="phone" name="Phone"
                                     placeholder="(123) 456-7890" maxlength="14" required
                                     value="{{ old('Phone', isset($parent) ? $parent->Phone : '') }}">
@@ -222,7 +229,7 @@
                             <textarea name="Allergies" class="form-input form-textarea" rows="3"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Does the camper have asthma?</label>
+                            <label class="form-label">Does the camper have asthma? <span class="text-red-500">*</span></label>
                             <div class="radio-group">
                                 <label class="radio-label">
                                     <input type="radio" name="Asthma" value="1" class="radio-input"
@@ -237,19 +244,23 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Is the camper on any medications?</label>
+                            <label class="form-label">Is the camper on any medications? <span class="text-red-500">*</span></label>
                             <div class="radio-group">
                                 <label class="radio-label">
-                                    <input type="radio" name="Medication_Status" value="1"
-                                        class="radio-input" required>
+                                    <input type="radio" name="medication_status_choice" value="1"
+                                        class="radio-input" id="medication-yes" required>
                                     <span class="radio-text">Yes</span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="Medication_Status" value="0"
-                                        class="radio-input" required>
+                                    <input type="radio" name="medication_status_choice" value="0"
+                                        class="radio-input" id="medication-no" required>
                                     <span class="radio-text">No</span>
                                 </label>
                             </div>
+                        </div>
+                        <div class="form-group" id="medication-details-container" style="display: none;">
+                            <label class="form-label">Medication Details</label>
+                            <textarea id="medication_status" name="Medication_Status" class="form-input form-textarea" rows="3" placeholder="List the medications and dosages"></textarea>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Recent Injuries or Health Concerns</label>
@@ -292,7 +303,20 @@
     </div>
 
     <script>
+        // Store camp data globally for validation
+        let campData = {};
+
+        // Fetch all camp data on page load
         document.addEventListener('DOMContentLoaded', function() {
+            @foreach($availableCamps as $camp)
+                campData[{{ $camp->Camp_ID }}] = {
+                    age_min: {{ $camp->Age_Min }},
+                    age_max: {{ $camp->Age_Max }},
+                    gender: '{{ $camp->Camp_Gender }}',
+                    name: '{{ $camp->Camp_Name }}'
+                };
+            @endforeach
+
             const phoneInput = document.getElementById('phone');
 
             function formatPhone(value) {
@@ -333,6 +357,98 @@
                 }
 
                 input.setSelectionRange(cursor, cursor);
+            });
+
+            // Validation function
+            function validateAgeAndGender() {
+                const campSelect = document.querySelector('select[name="Camp_ID"]');
+                const birthDateInput = document.querySelector('input[name="Birth_Date"]');
+                const genderSelect = document.querySelector('select[name="Gender"]');
+                const validationError = document.getElementById('validation-error');
+                const validationMessage = document.getElementById('validation-message');
+
+                // Clear previous error
+                validationError.style.display = 'none';
+                validationMessage.textContent = '';
+
+                // If no camp selected, skip validation
+                if (!campSelect.value) {
+                    return true;
+                }
+
+                const campId = parseInt(campSelect.value);
+                const camp = campData[campId];
+                const birthDate = birthDateInput.value;
+                const selectedGender = genderSelect.value;
+
+                if (!camp || !birthDate || !selectedGender) {
+                    return true; // Skip if incomplete
+                }
+
+                // Calculate age
+                const birth = new Date(birthDate);
+                const today = new Date();
+                let age = today.getFullYear() - birth.getFullYear();
+                const monthDiff = today.getMonth() - birth.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                    age--;
+                }
+
+                var validation = true
+                // Validate age
+                if (age < camp.age_min || age > camp.age_max) {
+                    validationMessage.textContent = `Camper age (${age}) must be between ${camp.age_min} and ${camp.age_max} for this camp.`;
+                    validationError.style.display = 'block';
+                    validation = false;
+                }
+
+                // Validate gender
+                const genderMap = { 'M': 'boys', 'F': 'girls' };
+                const camperGender = genderMap[selectedGender];
+                
+                if (camp.gender !== 'mixed' && camp.gender !== camperGender) {
+                    const campGenderName = camp.gender === 'boys' ? 'Boys' : 'Girls';
+                    const camperGenderName = selectedGender === 'M' ? 'Male' : 'Female';
+                    validationMessage.textContent = `This camp is for ${campGenderName} only, but you selected ${camperGenderName}.`;
+                    validationError.style.display = 'block';
+                    validation = false;
+                }
+
+                return validation;
+            }
+
+            // Listen for changes to camp, birth date, and gender
+            document.querySelector('select[name="Camp_ID"]').addEventListener('change', validateAgeAndGender);
+            document.querySelector('input[name="Birth_Date"]').addEventListener('change', validateAgeAndGender);
+            document.querySelector('select[name="Gender"]').addEventListener('change', validateAgeAndGender);
+
+            // Toggle medication details field
+            const medicationYes = document.getElementById('medication-yes');
+            const medicationNo = document.getElementById('medication-no');
+            const medicationDetailsContainer = document.getElementById('medication-details-container');
+            const medicationStatusField = document.getElementById('medication_status');
+
+            function toggleMedicationDetails() {
+                if (medicationYes.checked) {
+                    medicationDetailsContainer.style.display = 'block';
+                    medicationStatusField.setAttribute('required', 'required');
+                } else {
+                    medicationDetailsContainer.style.display = 'none';
+                    medicationStatusField.removeAttribute('required');
+                    medicationStatusField.value = ''; // Clear the field if "No" is selected
+                }
+            }
+
+            medicationYes.addEventListener('change', toggleMedicationDetails);
+            medicationNo.addEventListener('change', toggleMedicationDetails);
+
+            // Prevent form submission if validation fails
+            const form = document.querySelector('.registration-form');
+            form.addEventListener('submit', function(e) {
+                if (!validateAgeAndGender()) {
+                    e.preventDefault();
+                    return false;
+                }
             });
         });
 

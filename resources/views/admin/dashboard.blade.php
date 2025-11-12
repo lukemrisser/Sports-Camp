@@ -53,6 +53,14 @@
                 <p>View, edit, and manage existing coach accounts</p>
                 <a href="{{ route('admin.manage-coaches') }}" class="card-button">Manage Coaches</a>
             </div>
+
+            <!-- Manage Sports Card -->
+            <div class="registration-card purple">
+                <div class="card-icon">⚽</div>
+                <h3>Manage Sports</h3>
+                <p>Add, edit, and delete sports available for camps</p>
+                <a href="{{ route('admin.manage-sports') }}" class="card-button">Manage Sports</a>
+            </div>
         </div>
     </div>
 </body>
