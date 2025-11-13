@@ -158,6 +158,14 @@
                             </div>
                         </div>
 
+                        <h5 class="section-title">Promo Codes</h5>
+                        <div id="promo-section"></div>
+                        <div class="form-grid-2">
+                            <div class="mt-1">
+                                <button type="button" id="add-promo" class="submit-button" style="width:auto;">Add Promo Code</button>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="submit-section">
@@ -173,9 +181,14 @@
         const select = document.getElementById('camp-select');
         const form = document.getElementById('edit-camp-form');
         const discountSection = document.getElementById('discount-section');
+        const promoSection = document.getElementById('promo-section');
 
         function clearDiscounts() {
             discountSection.innerHTML = '';
+        }
+
+        function clearPromos() {
+            promoSection.innerHTML = '';
         }
 
         function addDiscountRow(amount = '', date = '') {
@@ -200,7 +213,34 @@
             remove.addEventListener('click', () => wrapper.remove());
         }
 
+        function addPromoRow(code = '', amount = '', date = '') {
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('promo-section', 'form-grid-3');
+            wrapper.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Promo Code</label>
+                    <input type="text" name="promo_code[]" class="form-input" value="${code}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Discount Amount</label>
+                    <div style="position: relative;">
+                        <span class="currency-symbol">$</span>
+                        <input type="number" name="promo_amount[]" class="form-input" min="0.01" step="0.01" style="padding-left:25px;" value="${amount}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">End Date (Optional)</label>
+                    <input type="date" name="promo_date[]" class="form-input" value="${date}">
+                </div>
+                <button type="button" class="remove-promo absolute right-0 top-8 px-3 text-red-500 hover:text-red-700" title="Remove promo">&times;</button>
+            `;
+            promoSection.appendChild(wrapper);
+            const remove = wrapper.querySelector('.remove-promo');
+            remove.addEventListener('click', () => wrapper.remove());
+        }
+
         document.getElementById('add-discount').addEventListener('click', () => addDiscountRow());
+        document.getElementById('add-promo').addEventListener('click', () => addPromoRow());
 
         select.addEventListener('change', function() {
             const id = this.value;
@@ -231,8 +271,17 @@
                     document.getElementById('description').value = data.Description || '';
 
                     clearDiscounts();
+                    clearPromos();
                     if (data.discounts && data.discounts.length) {
-                        data.discounts.forEach(d => addDiscountRow(d.Discount_Amount, d.Discount_Date ? d.Discount_Date.split('T')[0] : ''));
+                        data.discounts.forEach(d => {
+                            if (d.Promo_Code) {
+                                // This is a promo code
+                                addPromoRow(d.Promo_Code, d.Discount_Amount, d.Discount_Date ? d.Discount_Date.split('T')[0] : '');
+                            } else {
+                                // This is an early discount
+                                addDiscountRow(d.Discount_Amount, d.Discount_Date ? d.Discount_Date.split('T')[0] : '');
+                            }
+                        });
                     }
                 })
                 .catch(e => {

@@ -329,6 +329,11 @@ body {
     box-shadow: 0 0 0 3px rgba(10, 63, 148, 0.1);
 }
 
+.discount-section,
+.promo-section {
+    position: relative;
+}
+
 .form-error {
     color: var(--danger-red);
     font-size: 14px;
