@@ -39,6 +39,49 @@
 <body>
     <div class="dashboard-container">
         <div class="dashboard-wrapper">
+
+            <!-- Quick Actions -->
+            <div class="info-card">
+                <h3 class="card-title">Quick Actions</h3>
+                <div class="action-buttons">
+                    @if (Auth::user()->isCoach())
+                        <a href="{{ route('coach-dashboard') }}" class="action-btn btn-primary">
+                            Go to Coach Dashboard
+                        </a>
+                        <a href="{{ route('organize-teams') }}" class="action-btn btn-secondary">
+                            Organize Teams
+                        </a>
+                    @else
+                        <a href="{{ route('registration.form') }}" class="action-btn btn-primary">
+                            Register for Camp
+                        </a>
+                        @if (Auth::user()->parent)
+                            <button onclick="openAddPlayerModal()" class="action-btn btn-secondary">
+                                Add New Player
+                            </button>
+                            @if (Auth::user()->parent->players->count() > 0)
+                                <button onclick="scrollToPlayers()" class="action-btn btn-secondary">
+                                    My Players ({{ Auth::user()->parent->players->count() }})
+                                </button>
+                            @endif
+                        @endif
+                    @endif
+
+                    <!-- Edit/Save/Cancel buttons -->
+                    <button id="edit-btn" class="action-btn btn-secondary" onclick="toggleEditMode()">
+                        Edit Profile
+                    </button>
+                    <button id="save-btn" class="action-btn btn-primary" style="display: none;"
+                        onclick="saveProfile()">
+                        Save Changes
+                    </button>
+                    <button id="cancel-btn" class="action-btn btn-secondary" style="display: none;"
+                        onclick="cancelEdit()">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+
             <!-- User Information Card -->
             <div class="info-card">
                 <h3 class="card-title">Personal Information</h3>
@@ -109,311 +152,7 @@
                     </div>
                 </form>
             </div>
-            <!-- Children/Players Information -->
-            @if (Auth::user()->parent && Auth::user()->parent->players->count() > 0)
-                <div class="info-card">
-                    <h3 class="card-title">My Players</h3>
-                    <div class="players-grid">
-                        @foreach (Auth::user()->parent->players as $player)
-                            <div class="player-card">
-                                <div class="player-info">
-                                    <!-- Display Mode -->
-                                    <div class="player-display-mode" id="player-display-{{ $player->Player_ID }}">
-                                        <div class="player-name">
-                                            <strong>
-                                                <span
-                                                    id="display-player-fname-{{ $player->Player_ID }}">{{ $player->Camper_FirstName }}</span>
-                                                <span
-                                                    id="display-player-lname-{{ $player->Player_ID }}">{{ $player->Camper_LastName }}</span>
-                                            </strong>
-                                        </div>
 
-                                        <div class="player-details">
-                                            <span class="detail-item">
-                                                <label>Birthdate:</label>
-                                                <span id="display-player-birthdate-{{ $player->Player_ID }}">
-                                                    {{ $player->Birth_Date ? \Carbon\Carbon::parse($player->Birth_Date)->format('M d, Y') : 'Not specified' }}
-                                                </span>
-                                            </span>
-                                            <span class="detail-item">
-                                                <label>Gender:</label>
-                                                <span id="display-player-gender-{{ $player->Player_ID }}">
-                                                    {{ $player->Gender == 'M' ? 'Male' : ($player->Gender == 'F' ? 'Female' : 'Not specified') }}
-                                                </span>
-                                            </span>
-                                            <span class="detail-item">
-                                                <label>Shirt Size:</label>
-                                                <span
-                                                    id="display-player-shirt-{{ $player->Player_ID }}">{{ $player->Shirt_Size ?: 'Not specified' }}</span>
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Edit Mode -->
-                                    <div class="player-edit-mode" id="player-edit-{{ $player->Player_ID }}"
-                                        style="display: none;">
-                                        <div class="player-edit-form">
-                                            <div class="edit-row">
-                                                <div class="edit-field">
-                                                    <label>First Name:</label>
-                                                    <input type="text"
-                                                        id="edit-player-fname-{{ $player->Player_ID }}"
-                                                        value="{{ $player->Camper_FirstName }}" class="player-input">
-                                                </div>
-                                                <div class="edit-field">
-                                                    <label>Last Name:</label>
-                                                    <input type="text"
-                                                        id="edit-player-lname-{{ $player->Player_ID }}"
-                                                        value="{{ $player->Camper_LastName }}" class="player-input">
-                                                </div>
-                                            </div>
-
-                                            <div class="edit-row">
-                                                <div class="edit-field">
-                                                    <label>Birthdate:</label>
-                                                    <input type="date"
-                                                        id="edit-player-birthdate-{{ $player->Player_ID }}"
-                                                        value="{{ $player->Birth_Date }}" class="player-input">
-                                                </div>
-                                                <div class="edit-field">
-                                                    <label>Gender:</label>
-                                                    <select id="edit-player-gender-{{ $player->Player_ID }}"
-                                                        class="player-input">
-                                                        <option value="M"
-                                                            {{ $player->Gender == 'M' ? 'selected' : '' }}>Male
-                                                        </option>
-                                                        <option value="F"
-                                                            {{ $player->Gender == 'F' ? 'selected' : '' }}>Female
-                                                        </option>
-                                                    </select>
-                                                </div>
-                                                <div class="edit-field">
-                                                    <label>Shirt Size:</label>
-                                                    <select id="edit-player-shirt-{{ $player->Player_ID }}"
-                                                        class="player-input">
-                                                        <option value="">Select Size</option>
-                                                        <option value="YXS"
-                                                            {{ $player->Shirt_Size == 'YXS' ? 'selected' : '' }}>Youth
-                                                            XS</option>
-                                                        <option value="YS"
-                                                            {{ $player->Shirt_Size == 'YS' ? 'selected' : '' }}>Youth S
-                                                        </option>
-                                                        <option value="YM"
-                                                            {{ $player->Shirt_Size == 'YM' ? 'selected' : '' }}>Youth M
-                                                        </option>
-                                                        <option value="YL"
-                                                            {{ $player->Shirt_Size == 'YL' ? 'selected' : '' }}>Youth L
-                                                        </option>
-                                                        <option value="YXL"
-                                                            {{ $player->Shirt_Size == 'YXL' ? 'selected' : '' }}>Youth
-                                                            XL</option>
-                                                        <option value="AS"
-                                                            {{ $player->Shirt_Size == 'AS' ? 'selected' : '' }}>Adult S
-                                                        </option>
-                                                        <option value="AM"
-                                                            {{ $player->Shirt_Size == 'AM' ? 'selected' : '' }}>Adult M
-                                                        </option>
-                                                        <option value="AL"
-                                                            {{ $player->Shirt_Size == 'AL' ? 'selected' : '' }}>Adult L
-                                                        </option>
-                                                        <option value="AXL"
-                                                            {{ $player->Shirt_Size == 'AXL' ? 'selected' : '' }}>Adult
-                                                            XL</option>
-                                                        <option value="AXXL"
-                                                            {{ $player->Shirt_Size == 'AXXL' ? 'selected' : '' }}>Adult
-                                                            XXL</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <div class="edit-row">
-                                                <div class="edit-field full-width">
-                                                    <label>Medications:</label>
-                                                    <input type="text"
-                                                        id="edit-player-medications-{{ $player->Player_ID }}"
-                                                        value="{{ $player->Medications }}" class="player-input"
-                                                        placeholder="None or list medications">
-                                                </div>
-                                            </div>
-
-                                            <div class="edit-row">
-                                                <div class="edit-field full-width">
-                                                    <label>Allergies:</label>
-                                                    <input type="text"
-                                                        id="edit-player-allergies-{{ $player->Player_ID }}"
-                                                        value="{{ $player->Allergies }}" class="player-input"
-                                                        placeholder="None or list allergies">
-                                                </div>
-                                            </div>
-
-                                            <div class="edit-row">
-                                                <div class="edit-field full-width">
-                                                    <label>Injuries:</label>
-                                                    <input type="text"
-                                                        id="edit-player-injuries-{{ $player->Player_ID }}"
-                                                        value="{{ $player->Injuries }}" class="player-input"
-                                                        placeholder="None or list injuries">
-                                                </div>
-                                            </div>
-
-                                            <div class="edit-row">
-                                                <div class="edit-field">
-                                                    <label class="checkbox-label">
-                                                        <input type="checkbox"
-                                                            id="edit-player-asthma-{{ $player->Player_ID }}"
-                                                            {{ $player->Asthma ? 'checked' : '' }}>
-                                                        Has Asthma
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Health Information Section (Collapsible) -->
-                                    <div class="health-info-section"
-                                        onclick="toggleHealthInfo({{ $player->Player_ID }})"
-                                        style="cursor: pointer;">
-                                        <div class="health-header">
-                                            <span class="health-icon">🏥</span>
-                                            <label style="cursor: pointer;">Health Information</label>
-                                            @php
-                                                $healthCount = 0;
-                                                if ($player->Asthma == 1) {
-                                                    $healthCount++;
-                                                }
-                                                if (
-                                                    $player->Medications &&
-                                                    $player->Medications !== 'None' &&
-                                                    $player->Medications !== ''
-                                                ) {
-                                                    $healthCount++;
-                                                }
-                                                if (
-                                                    $player->Allergies &&
-                                                    $player->Allergies !== 'None' &&
-                                                    $player->Allergies !== ''
-                                                ) {
-                                                    $healthCount++;
-                                                }
-                                                if (
-                                                    $player->Injuries &&
-                                                    $player->Injuries !== 'None' &&
-                                                    $player->Injuries !== ''
-                                                ) {
-                                                    $healthCount++;
-                                                }
-                                            @endphp
-
-                                            @if ($healthCount > 0)
-                                                <span class="health-badge">{{ $healthCount }}
-                                                    item{{ $healthCount > 1 ? 's' : '' }}</span>
-                                            @else
-                                                <span class="health-badge-clear">Clear</span>
-                                            @endif
-                                            <span class="expand-icon" id="expand-{{ $player->Player_ID }}">▼</span>
-                                        </div>
-
-                                        <div class="health-details" id="health-{{ $player->Player_ID }}"
-                                            style="display: none;">
-                                            @if ($healthCount > 0)
-                                                @if ($player->Asthma == 1)
-                                                    <div class="health-item">
-                                                        <span class="health-label">Asthma:</span>
-                                                        <span class="health-value">Yes - requires monitoring</span>
-                                                    </div>
-                                                @endif
-
-                                                @if ($player->Medications && $player->Medications !== 'None' && $player->Medications !== '')
-                                                    <div class="health-item">
-                                                        <span class="health-label">Medications:</span>
-                                                        <span class="health-value">{{ $player->Medications }}</span>
-                                                    </div>
-                                                @endif
-
-                                                @if ($player->Allergies && $player->Allergies !== 'None' && $player->Allergies !== '')
-                                                    <div class="health-item">
-                                                        <span class="health-label">Allergies:</span>
-                                                        <span class="health-value">{{ $player->Allergies }}</span>
-                                                    </div>
-                                                @endif
-
-                                                @if ($player->Injuries && $player->Injuries !== 'None' && $player->Injuries !== '')
-                                                    <div class="health-item">
-                                                        <span class="health-label">Injuries:</span>
-                                                        <span class="health-value">{{ $player->Injuries }}</span>
-                                                    </div>
-                                                @endif
-                                            @else
-                                                <div class="health-item no-issues">
-                                                    <span class="health-value">✓ No health concerns reported</span>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-
-                                    @if ($player->camps && $player->camps->count() > 0)
-                                        <div class="player-camps">
-                                            <label>📅 Registered Camps:</label>
-                                            <ul class="camps-list">
-                                                @foreach ($player->camps as $camp)
-                                                    <li class="camp-item">
-                                                        <div class="camp-name">{{ $camp->Camp_Name }}</div>
-                                                        @if ($camp->Start_Date && $camp->End_Date)
-                                                            <div class="camp-dates">
-                                                                {{ \Carbon\Carbon::parse($camp->Start_Date)->format('M d') }}
-                                                                -
-                                                                {{ \Carbon\Carbon::parse($camp->End_Date)->format('M d, Y') }}
-                                                            </div>
-                                                        @endif
-                                                        @if ($camp->Location)
-                                                            <div class="camp-location">📍 {{ $camp->Location }}</div>
-                                                        @endif
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    @else
-                                        <div class="player-camps">
-                                            <label>📅 Registered Camps:</label>
-                                            <p class="no-camps">Not registered for any camps yet</p>
-                                        </div>
-                                    @endif
-
-                                    <!-- Action Buttons -->
-                                    <div class="player-actions">
-                                        <button id="edit-player-btn-{{ $player->Player_ID }}" class="btn-edit-player"
-                                            onclick="togglePlayerEdit({{ $player->Player_ID }})">
-                                            Edit Player
-                                        </button>
-                                        <button id="delete-player-btn-{{ $player->Player_ID }}"
-                                            class="btn-delete-player"
-                                            onclick="confirmDeletePlayer({{ $player->Player_ID }}, '{{ $player->Camper_FirstName }} {{ $player->Camper_LastName }}')">
-                                            Delete Player
-                                        </button>
-                                        <button id="save-player-btn-{{ $player->Player_ID }}" class="btn-save-player"
-                                            style="display: none;" onclick="savePlayer({{ $player->Player_ID }})">
-                                            Save Changes
-                                        </button>
-                                        <button id="cancel-player-btn-{{ $player->Player_ID }}"
-                                            class="btn-cancel-player" style="display: none;"
-                                            onclick="cancelPlayerEdit({{ $player->Player_ID }})">
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @elseif (Auth::user()->parent && !Auth::user()->isCoach())
-                <div class="info-card">
-                    <h3 class="card-title">My Children</h3>
-                    <div class="no-players-message">
-                        <p>No children registered yet.</p>
-                        <a href="{{ route('registration.form') }}" class="btn-primary">Register a Child for Camp</a>
-                    </div>
-                </div>
-            @endif
             <!-- Parent Contact Information -->
             @if (Auth::user()->parent)
                 <div class="info-card">
@@ -549,43 +288,343 @@
                 </div>
             @endif
 
+            <!-- Children/Players Information -->
+            @if (Auth::user()->parent && Auth::user()->parent->players->count() > 0)
+                <div class="info-card collapsible-card" id="players-section">
+                    <div class="card-header-collapsible" onclick="togglePlayersSection()">
+                        <h3 class="card-title">My Players</h3>
+                        <div class="card-meta">
+                            <span class="player-count">{{ Auth::user()->parent->players->count() }}
+                                {{ Auth::user()->parent->players->count() == 1 ? 'Player' : 'Players' }}</span>
+                            <span class="collapse-icon" id="players-collapse-icon">▶</span>
+                        </div>
+                    </div>
+                    <div class="players-content smooth-transition" id="players-content">
+                        <div class="players-grid">
+                            @foreach (Auth::user()->parent->players as $player)
+                                <div class="player-card">
+                                    <div class="player-info">
+                                        <!-- Display Mode -->
+                                        <div class="player-display-mode"
+                                            id="player-display-{{ $player->Player_ID }}">
+                                            <div class="player-name">
+                                                <strong>
+                                                    <span
+                                                        id="display-player-fname-{{ $player->Player_ID }}">{{ $player->Camper_FirstName }}</span>
+                                                    <span
+                                                        id="display-player-lname-{{ $player->Player_ID }}">{{ $player->Camper_LastName }}</span>
+                                                </strong>
+                                            </div>
 
-            <!-- Quick Actions -->
-            <div class="info-card">
-                <h3 class="card-title">Quick Actions</h3>
-                <div class="action-buttons">
-                    @if (Auth::user()->isCoach())
-                        <a href="{{ route('coach-dashboard') }}" class="action-btn btn-primary">
-                            Go to Coach Dashboard
-                        </a>
-                        <a href="{{ route('organize-teams') }}" class="action-btn btn-secondary">
-                            Organize Teams
-                        </a>
-                    @else
-                        <a href="{{ route('registration.form') }}" class="action-btn btn-primary">
-                            Register for Camp
-                        </a>
-                        @if (Auth::user()->parent)
-                            <button onclick="openAddPlayerModal()" class="action-btn btn-secondary">
-                                Add New Player
-                            </button>
-                        @endif
-                    @endif
+                                            <div class="player-details">
+                                                <span class="detail-item">
+                                                    <label>Birthdate:</label>
+                                                    <span id="display-player-birthdate-{{ $player->Player_ID }}">
+                                                        {{ $player->Birth_Date ? \Carbon\Carbon::parse($player->Birth_Date)->format('M d, Y') : 'Not specified' }}
+                                                    </span>
+                                                </span>
+                                                <span class="detail-item">
+                                                    <label>Gender:</label>
+                                                    <span id="display-player-gender-{{ $player->Player_ID }}">
+                                                        {{ $player->Gender == 'M' ? 'Male' : ($player->Gender == 'F' ? 'Female' : 'Not specified') }}
+                                                    </span>
+                                                </span>
+                                                <span class="detail-item">
+                                                    <label>Shirt Size:</label>
+                                                    <span
+                                                        id="display-player-shirt-{{ $player->Player_ID }}">{{ $player->Shirt_Size ?: 'Not specified' }}</span>
+                                                </span>
+                                            </div>
+                                        </div>
 
-                    <!-- Edit/Save/Cancel buttons -->
-                    <button id="edit-btn" class="action-btn btn-secondary" onclick="toggleEditMode()">
-                        Edit Profile
-                    </button>
-                    <button id="save-btn" class="action-btn btn-primary" style="display: none;"
-                        onclick="saveProfile()">
-                        Save Changes
-                    </button>
-                    <button id="cancel-btn" class="action-btn btn-secondary" style="display: none;"
-                        onclick="cancelEdit()">
-                        Cancel
-                    </button>
+                                        <!-- Edit Mode -->
+                                        <div class="player-edit-mode" id="player-edit-{{ $player->Player_ID }}"
+                                            style="display: none;">
+                                            <div class="player-edit-form">
+                                                <div class="edit-row">
+                                                    <div class="edit-field">
+                                                        <label>First Name:</label>
+                                                        <input type="text"
+                                                            id="edit-player-fname-{{ $player->Player_ID }}"
+                                                            value="{{ $player->Camper_FirstName }}"
+                                                            class="player-input">
+                                                    </div>
+                                                    <div class="edit-field">
+                                                        <label>Last Name:</label>
+                                                        <input type="text"
+                                                            id="edit-player-lname-{{ $player->Player_ID }}"
+                                                            value="{{ $player->Camper_LastName }}"
+                                                            class="player-input">
+                                                    </div>
+                                                </div>
+
+                                                <div class="edit-row">
+                                                    <div class="edit-field">
+                                                        <label>Birthdate:</label>
+                                                        <input type="date"
+                                                            id="edit-player-birthdate-{{ $player->Player_ID }}"
+                                                            value="{{ $player->Birth_Date }}" class="player-input">
+                                                    </div>
+                                                    <div class="edit-field">
+                                                        <label>Gender:</label>
+                                                        <select id="edit-player-gender-{{ $player->Player_ID }}"
+                                                            class="player-input">
+                                                            <option value="M"
+                                                                {{ $player->Gender == 'M' ? 'selected' : '' }}>Male
+                                                            </option>
+                                                            <option value="F"
+                                                                {{ $player->Gender == 'F' ? 'selected' : '' }}>Female
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="edit-field">
+                                                        <label>Shirt Size:</label>
+                                                        <select id="edit-player-shirt-{{ $player->Player_ID }}"
+                                                            class="player-input">
+                                                            <option value="">Select Size</option>
+                                                            <option value="YXS"
+                                                                {{ $player->Shirt_Size == 'YXS' ? 'selected' : '' }}>
+                                                                Youth
+                                                                XS</option>
+                                                            <option value="YS"
+                                                                {{ $player->Shirt_Size == 'YS' ? 'selected' : '' }}>
+                                                                Youth S
+                                                            </option>
+                                                            <option value="YM"
+                                                                {{ $player->Shirt_Size == 'YM' ? 'selected' : '' }}>
+                                                                Youth M
+                                                            </option>
+                                                            <option value="YL"
+                                                                {{ $player->Shirt_Size == 'YL' ? 'selected' : '' }}>
+                                                                Youth L
+                                                            </option>
+                                                            <option value="YXL"
+                                                                {{ $player->Shirt_Size == 'YXL' ? 'selected' : '' }}>
+                                                                Youth
+                                                                XL</option>
+                                                            <option value="AS"
+                                                                {{ $player->Shirt_Size == 'AS' ? 'selected' : '' }}>
+                                                                Adult S
+                                                            </option>
+                                                            <option value="AM"
+                                                                {{ $player->Shirt_Size == 'AM' ? 'selected' : '' }}>
+                                                                Adult M
+                                                            </option>
+                                                            <option value="AL"
+                                                                {{ $player->Shirt_Size == 'AL' ? 'selected' : '' }}>
+                                                                Adult L
+                                                            </option>
+                                                            <option value="AXL"
+                                                                {{ $player->Shirt_Size == 'AXL' ? 'selected' : '' }}>
+                                                                Adult
+                                                                XL</option>
+                                                            <option value="AXXL"
+                                                                {{ $player->Shirt_Size == 'AXXL' ? 'selected' : '' }}>
+                                                                Adult
+                                                                XXL</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="edit-row">
+                                                    <div class="edit-field full-width">
+                                                        <label>Medications:</label>
+                                                        <input type="text"
+                                                            id="edit-player-medications-{{ $player->Player_ID }}"
+                                                            value="{{ $player->Medications }}" class="player-input"
+                                                            placeholder="None or list medications">
+                                                    </div>
+                                                </div>
+
+                                                <div class="edit-row">
+                                                    <div class="edit-field full-width">
+                                                        <label>Allergies:</label>
+                                                        <input type="text"
+                                                            id="edit-player-allergies-{{ $player->Player_ID }}"
+                                                            value="{{ $player->Allergies }}" class="player-input"
+                                                            placeholder="None or list allergies">
+                                                    </div>
+                                                </div>
+
+                                                <div class="edit-row">
+                                                    <div class="edit-field full-width">
+                                                        <label>Injuries:</label>
+                                                        <input type="text"
+                                                            id="edit-player-injuries-{{ $player->Player_ID }}"
+                                                            value="{{ $player->Injuries }}" class="player-input"
+                                                            placeholder="None or list injuries">
+                                                    </div>
+                                                </div>
+
+                                                <div class="edit-row">
+                                                    <div class="edit-field">
+                                                        <label class="checkbox-label">
+                                                            <input type="checkbox"
+                                                                id="edit-player-asthma-{{ $player->Player_ID }}"
+                                                                {{ $player->Asthma ? 'checked' : '' }}>
+                                                            Has Asthma
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Health Information Section (Collapsible) -->
+                                        <div class="health-info-section"
+                                            onclick="toggleHealthInfo({{ $player->Player_ID }})"
+                                            style="cursor: pointer;">
+                                            <div class="health-header">
+                                                <span class="health-icon">🏥</span>
+                                                <label style="cursor: pointer;">Health Information</label>
+                                                @php
+                                                    $healthCount = 0;
+                                                    if ($player->Asthma == 1) {
+                                                        $healthCount++;
+                                                    }
+                                                    if (
+                                                        $player->Medications &&
+                                                        $player->Medications !== 'None' &&
+                                                        $player->Medications !== ''
+                                                    ) {
+                                                        $healthCount++;
+                                                    }
+                                                    if (
+                                                        $player->Allergies &&
+                                                        $player->Allergies !== 'None' &&
+                                                        $player->Allergies !== ''
+                                                    ) {
+                                                        $healthCount++;
+                                                    }
+                                                    if (
+                                                        $player->Injuries &&
+                                                        $player->Injuries !== 'None' &&
+                                                        $player->Injuries !== ''
+                                                    ) {
+                                                        $healthCount++;
+                                                    }
+                                                @endphp
+
+                                                @if ($healthCount > 0)
+                                                    <span class="health-badge">{{ $healthCount }}
+                                                        item{{ $healthCount > 1 ? 's' : '' }}</span>
+                                                @else
+                                                    <span class="health-badge-clear">Clear</span>
+                                                @endif
+                                                <span class="expand-icon"
+                                                    id="expand-{{ $player->Player_ID }}">▼</span>
+                                            </div>
+
+                                            <div class="health-details" id="health-{{ $player->Player_ID }}"
+                                                style="display: none;">
+                                                @if ($healthCount > 0)
+                                                    @if ($player->Asthma == 1)
+                                                        <div class="health-item">
+                                                            <span class="health-label">Asthma:</span>
+                                                            <span class="health-value">Yes - requires monitoring</span>
+                                                        </div>
+                                                    @endif
+
+                                                    @if ($player->Medications && $player->Medications !== 'None' && $player->Medications !== '')
+                                                        <div class="health-item">
+                                                            <span class="health-label">Medications:</span>
+                                                            <span
+                                                                class="health-value">{{ $player->Medications }}</span>
+                                                        </div>
+                                                    @endif
+
+                                                    @if ($player->Allergies && $player->Allergies !== 'None' && $player->Allergies !== '')
+                                                        <div class="health-item">
+                                                            <span class="health-label">Allergies:</span>
+                                                            <span class="health-value">{{ $player->Allergies }}</span>
+                                                        </div>
+                                                    @endif
+
+                                                    @if ($player->Injuries && $player->Injuries !== 'None' && $player->Injuries !== '')
+                                                        <div class="health-item">
+                                                            <span class="health-label">Injuries:</span>
+                                                            <span class="health-value">{{ $player->Injuries }}</span>
+                                                        </div>
+                                                    @endif
+                                                @else
+                                                    <div class="health-item no-issues">
+                                                        <span class="health-value">✓ No health concerns reported</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        @if ($player->camps && $player->camps->count() > 0)
+                                            <div class="player-camps">
+                                                <label>📅 Registered Camps:</label>
+                                                <ul class="camps-list">
+                                                    @foreach ($player->camps as $camp)
+                                                        <li class="camp-item">
+                                                            <div class="camp-name">{{ $camp->Camp_Name }}</div>
+                                                            @if ($camp->Start_Date && $camp->End_Date)
+                                                                <div class="camp-dates">
+                                                                    {{ \Carbon\Carbon::parse($camp->Start_Date)->format('M d') }}
+                                                                    -
+                                                                    {{ \Carbon\Carbon::parse($camp->End_Date)->format('M d, Y') }}
+                                                                </div>
+                                                            @endif
+                                                            @if ($camp->Location)
+                                                                <div class="camp-location">📍 {{ $camp->Location }}
+                                                                </div>
+                                                            @endif
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @else
+                                            <div class="player-camps">
+                                                <label>📅 Registered Camps:</label>
+                                                <p class="no-camps">Not registered for any camps yet</p>
+                                            </div>
+                                        @endif
+
+                                        <!-- Action Buttons -->
+                                        <div class="player-actions">
+                                            <button id="edit-player-btn-{{ $player->Player_ID }}"
+                                                class="btn-edit-player"
+                                                onclick="togglePlayerEdit({{ $player->Player_ID }})">
+                                                Edit Player
+                                            </button>
+                                            <button id="delete-player-btn-{{ $player->Player_ID }}"
+                                                class="btn-delete-player"
+                                                onclick="confirmDeletePlayer({{ $player->Player_ID }}, '{{ $player->Camper_FirstName }} {{ $player->Camper_LastName }}')">
+                                                Delete Player
+                                            </button>
+                                            <button id="save-player-btn-{{ $player->Player_ID }}"
+                                                class="btn-save-player" style="display: none;"
+                                                onclick="savePlayer({{ $player->Player_ID }})">
+                                                Save Changes
+                                            </button>
+                                            <button id="cancel-player-btn-{{ $player->Player_ID }}"
+                                                class="btn-cancel-player" style="display: none;"
+                                                onclick="cancelPlayerEdit({{ $player->Player_ID }})">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
-            </div>
+            @elseif (Auth::user()->parent && !Auth::user()->isCoach())
+                <div class="info-card">
+                    <h3 class="card-title">My Children</h3>
+                    <div class="no-players-message">
+                        <p>No children registered yet.</p>
+                        <a href="{{ route('registration.form') }}" class="btn-primary">Register a Child for
+                            Camp</a>
+                    </div>
+                </div>
+            @endif
+
+
+
+
         </div>
     </div>
 
@@ -685,7 +724,6 @@
             }
         }
 
-        // Combine all DOMContentLoaded listeners
         document.addEventListener('DOMContentLoaded', function() {
             // Check for pending toast messages
             const pendingToast = sessionStorage.getItem('pendingToast');
@@ -715,6 +753,39 @@
                         closeAddPlayerModal();
                     }
                 });
+            }
+
+            // Players section - ALWAYS start closed (no session persistence)
+            const content = document.getElementById('players-content');
+            const icon = document.getElementById('players-collapse-icon');
+
+            if (content) {
+                // Clear any stored state from previous implementation
+                localStorage.removeItem('playersExpanded');
+                localStorage.removeItem('playersOpenedByButton');
+
+                // Set initial closed state with inline styles
+                content.style.maxHeight = '0px';
+                content.style.opacity = '0';
+                content.style.overflow = 'hidden';
+                content.style.paddingTop = '0';
+                content.style.transition = 'none'; // No transition on initial load
+
+                // Ensure icon starts in closed position
+                if (icon) {
+                    icon.style.transform = 'rotate(0deg)';
+                    icon.style.transition = 'transform 0.3s ease';
+                }
+
+                // Remove any expanded class that might be lingering
+                content.classList.remove('expanded');
+                content.classList.add('smooth-transition');
+
+                // Set up transition for future animations after page loads
+                setTimeout(() => {
+                    content.style.transition =
+                        'max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease-out, padding 0.4s ease-out';
+                }, 100);
             }
         });
 
@@ -1068,6 +1139,137 @@
                 });
             }
         });
+
+        function togglePlayersSection() {
+            const content = document.getElementById('players-content');
+            const icon = document.getElementById('players-collapse-icon');
+
+            // Check if currently expanded
+            const isExpanded = content.style.opacity === '1' ||
+                (content.style.opacity === '' && window.getComputedStyle(content).opacity === '1');
+
+            // Set smooth transition with better easing
+            content.style.transition =
+                'max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease-out, padding 0.4s ease-out';
+
+            if (isExpanded) {
+                // Closing animation
+                content.style.maxHeight = content.scrollHeight + 'px'; // Set explicit height first
+                content.style.overflow = 'hidden';
+
+                // Force browser reflow
+                content.offsetHeight;
+
+                // Now animate to closed
+                content.style.maxHeight = '0px';
+                content.style.opacity = '0';
+                content.style.paddingTop = '0';
+                icon.style.transform = 'rotate(0deg)';
+
+                // Clean up classes
+                content.classList.remove('expanded');
+                localStorage.removeItem('playersExpanded');
+                localStorage.removeItem('playersOpenedByButton');
+            } else {
+                // Opening animation
+                content.style.display = 'block'; // Ensure it's visible
+                content.style.paddingTop = '24px';
+
+                // Calculate the full height
+                const targetHeight = content.scrollHeight;
+
+                // Animate to open
+                content.style.maxHeight = targetHeight + 'px';
+                content.style.opacity = '1';
+                icon.style.transform = 'rotate(90deg)';
+
+                // After animation, set to auto height
+                setTimeout(() => {
+                    content.style.overflow = 'visible';
+                    content.style.maxHeight = 'none';
+                }, 600);
+
+                // Update state
+                content.classList.add('expanded');
+                localStorage.setItem('playersExpanded', 'true');
+            }
+        }
+
+        // Custom smooth scroll function for better control
+        function smoothScrollTo(targetPosition, duration) {
+            const startPosition = window.pageYOffset;
+            const distance = targetPosition - startPosition;
+            let startTime = null;
+
+            function animation(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1);
+
+                // Easing function for smoother animation (ease-in-out-cubic)
+                const easeInOutCubic = progress < 0.5 ?
+                    4 * progress * progress * progress :
+                    1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+                window.scrollTo(0, startPosition + (distance * easeInOutCubic));
+
+                if (timeElapsed < duration) {
+                    requestAnimationFrame(animation);
+                }
+            }
+
+            requestAnimationFrame(animation);
+        }
+
+
+
+
+        function scrollToPlayers() {
+            const playersSection = document.getElementById('players-section');
+
+            if (playersSection) {
+                const content = document.getElementById('players-content');
+                const icon = document.getElementById('players-collapse-icon');
+
+                // Check if already open
+                const isExpanded = content.style.opacity === '1';
+
+                if (!isExpanded && content) {
+                    // Open with smooth animation
+                    content.style.transition =
+                        'max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease-out, padding 0.4s ease-out';
+                    content.style.display = 'block';
+                    content.style.paddingTop = '24px';
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    content.style.opacity = '1';
+                    icon.style.transform = 'rotate(90deg)';
+
+                    setTimeout(() => {
+                        content.style.overflow = 'visible';
+                        content.style.maxHeight = 'none';
+                    }, 600);
+
+                    content.classList.add('expanded');
+                    localStorage.setItem('playersExpanded', 'true');
+                    localStorage.setItem('playersOpenedByButton', 'true');
+                }
+
+                // Smooth scroll after a delay
+                setTimeout(() => {
+                    const rect = playersSection.getBoundingClientRect();
+                    const absoluteTop = window.pageYOffset + rect.top;
+                    const targetPosition = absoluteTop - 80;
+                    smoothScrollTo(targetPosition, 1000); // Slightly slower for smoothness
+
+                    setTimeout(() => {
+                        playersSection.classList.add('highlight-section');
+                        setTimeout(() => {
+                            playersSection.classList.remove('highlight-section');
+                        }, 2000);
+                    }, 1050);
+                }, isExpanded ? 100 : 400); // Wait longer if we just opened it
+            }
+        }
     </script>
 
     <!-- Delete Player Confirmation Modal -->
