@@ -68,7 +68,7 @@
                                 </p>
                             @endif
                             <p class="registration-due">
-                                <strong>Registration Due:</strong> {{ $camp['registration_due'] }}
+                                <strong>Register By:</strong> {{ $camp['registration_due'] }}
                             </p>
                         </div>
                         <a href="{{ route($camp['route'], ['camp' => $camp['id']]) }}" class="card-button">
