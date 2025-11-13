@@ -44,6 +44,11 @@ class SportsController extends Controller
                 'discount_amount' => $bestDiscount ? $bestDiscount->Discount_Amount : null,
                 'discount_expires' => $bestDiscount ? \Carbon\Carbon::parse($bestDiscount->Discount_Date)->format('M j, Y') : null,
                 'registration_due' => \Carbon\Carbon::parse($camp->Registration_Close)->format('M j, Y'),
+                'location_name' => $camp->Location_Name,
+                'street_address' => $camp->Street_Address,
+                'city' => $camp->City,
+                'state' => $camp->State,
+                'zip_code' => $camp->Zip_Code,
                 'route' => 'registration.form'
             ];
         })->toArray();

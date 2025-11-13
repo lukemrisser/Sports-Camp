@@ -48,6 +48,10 @@
                             <p class="camp-dates">
                                 <strong>Date:</strong> {{ $camp['start_date'] }} - {{ $camp['end_date'] }}
                             </p>
+                            <p class="camp-location">
+                                <strong>Location:</strong> {{ $camp['location_name'] }}<br>
+                                <span class="location-address">{{ $camp['street_address'] }}, {{ $camp['city'] }}, {{ $camp['state'] }} {{ $camp['zip_code'] }}</span>
+                            </p>
                             @if($camp['has_discount'])
                                 <p class="discount-info">
                                     <strong>Early Bird Discout! Save ${{ number_format($camp['discount_amount'], 2) }} if you register by {{ $camp['discount_expires'] }}</strong>
@@ -93,9 +97,24 @@
             color: #666;
         }
         
-        .camp-dates, .camp-price, .registration-due {
+        .camp-dates, .camp-price, .registration-due, .camp-location, .camp-capacity {
             margin: 5px 0;
             font-size: 0.9em;
+        }
+        
+        .camp-location {
+            color: #4b5563;
+        }
+        
+        .location-address {
+            font-size: 0.85em;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .camp-capacity {
+            color: #7c3aed;
+            font-weight: 500;
         }
         
         .original-price .strikethrough {
