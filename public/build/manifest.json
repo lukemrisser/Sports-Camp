@@ -1,18 +1,18 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-DOHsYveB.css",
+    "file": "assets/app-CsdNJkcr.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
       "app.css"
     ]
   },
-  "resources/css/coach-dashboard.css": {
-    "file": "assets/coach-dashboard-Cdt-VSbc.css",
-    "src": "resources/css/coach-dashboard.css",
+  "resources/css/user-profile.css": {
+    "file": "assets/user-profile-BHK2fuEC.css",
+    "src": "resources/css/user-profile.css",
     "isEntry": true,
     "names": [
-      "coach-dashboard.css"
+      "user-profile.css"
     ]
   },
   "resources/js/app.js": {

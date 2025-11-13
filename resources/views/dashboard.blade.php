@@ -5,7 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - {{ config('app.name', 'Falcon Teams') }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- Include both app.css, user-profile.css, and app.js -->
+    @vite(['resources/css/app.css', 'resources/css/user-profile.css', 'resources/js/app.js'])
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
@@ -315,28 +318,28 @@
                                             @if ($healthCount > 0)
                                                 @if ($player->Asthma == 1)
                                                     <div class="health-item">
-                                                        <span class="health-label">🫁 Asthma:</span>
+                                                        <span class="health-label">Asthma:</span>
                                                         <span class="health-value">Yes - requires monitoring</span>
                                                     </div>
                                                 @endif
 
                                                 @if ($player->Medications && $player->Medications !== 'None' && $player->Medications !== '')
                                                     <div class="health-item">
-                                                        <span class="health-label">💊 Medications:</span>
+                                                        <span class="health-label">Medications:</span>
                                                         <span class="health-value">{{ $player->Medications }}</span>
                                                     </div>
                                                 @endif
 
                                                 @if ($player->Allergies && $player->Allergies !== 'None' && $player->Allergies !== '')
                                                     <div class="health-item">
-                                                        <span class="health-label">⚠️ Allergies:</span>
+                                                        <span class="health-label">Allergies:</span>
                                                         <span class="health-value">{{ $player->Allergies }}</span>
                                                     </div>
                                                 @endif
 
                                                 @if ($player->Injuries && $player->Injuries !== 'None' && $player->Injuries !== '')
                                                     <div class="health-item">
-                                                        <span class="health-label">🩹 Injuries:</span>
+                                                        <span class="health-label">Injuries:</span>
                                                         <span class="health-value">{{ $player->Injuries }}</span>
                                                     </div>
                                                 @endif
@@ -586,805 +589,7 @@
         </div>
     </div>
 
-    <style>
-        .info-input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
 
-        .info-input:focus {
-            outline: none;
-            border-color: #0a3f94;
-            box-shadow: 0 0 0 3px rgba(10, 63, 148, 0.1);
-        }
-
-        .text-muted {
-            color: #6b7280;
-            font-size: 0.875em;
-            font-style: italic;
-        }
-
-        .edit-mode {
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .players-grid {
-            display: grid;
-            gap: 20px;
-        }
-
-        .player-card {
-            background: #ffffff;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 24px;
-            transition: all 0.3s ease;
-        }
-
-        .player-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-color: #d1d5db;
-        }
-
-        .player-info {
-            flex-grow: 1;
-        }
-
-        .player-name {
-            font-size: 20px;
-            margin-bottom: 15px;
-            color: #111827;
-            border-bottom: 2px solid #0a3f94;
-            padding-bottom: 10px;
-        }
-
-        .player-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .detail-item {
-            font-size: 14px;
-            color: #4b5563;
-        }
-
-        .detail-item label {
-            font-weight: 600;
-            color: #374151;
-            margin-right: 6px;
-        }
-
-        /* Health Information Styles */
-        .health-info-section {
-            background: #f0f9ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            padding: 16px;
-            margin: 20px 0;
-        }
-
-        .health-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-            font-weight: 600;
-            color: #1e40af;
-        }
-
-        .health-icon {
-            font-size: 18px;
-        }
-
-        .health-details {
-            padding-left: 28px;
-        }
-
-        .health-item {
-            margin-bottom: 8px;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-        }
-
-        .health-label {
-            font-weight: 600;
-            color: #3730a3;
-            font-size: 13px;
-            white-space: nowrap;
-        }
-
-        .health-value {
-            color: #4b5563;
-            font-size: 13px;
-            line-height: 1.4;
-        }
-
-        .health-item.no-issues {
-            color: #059669;
-            font-style: italic;
-        }
-
-        .player-camps {
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .player-camps label {
-            font-weight: 600;
-            color: #374151;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .camps-list {
-            margin-left: 28px;
-            list-style-type: disc;
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .camps-list li {
-            margin-bottom: 4px;
-        }
-
-        .no-players-message {
-            text-align: center;
-            padding: 40px;
-            color: #6b7280;
-        }
-
-        .no-players-message p {
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-
-        @media (max-width: 640px) {
-            .player-details {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Compact Health Display */
-        .health-info-compact {
-            margin: 15px 0;
-            position: relative;
-        }
-
-        .health-summary {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .health-label-compact {
-            font-weight: 600;
-            color: #374151;
-            font-size: 14px;
-        }
-
-        .health-pill {
-            background: #e0e7ff;
-            color: #3730a3;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .health-pill.health-clickable {
-            cursor: pointer;
-            background: #c7d2fe;
-        }
-
-        .health-pill.health-clickable:hover {
-            background: #a5b4fc;
-        }
-
-        .health-clear {
-            color: #059669;
-            font-size: 14px;
-            font-style: italic;
-        }
-
-        .health-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 60px;
-            background: white;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-            min-width: 250px;
-            margin-top: 8px;
-        }
-
-        .dropdown-item {
-            padding: 6px 0;
-            font-size: 13px;
-            color: #4b5563;
-            border-bottom: 1px solid #f3f4f6;
-        }
-
-        .dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        /* Collapsible version styling */
-        .health-info-section {
-            background: #f0f9ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 15px 0;
-            transition: background-color 0.2s ease;
-        }
-
-        .health-info-section:hover {
-            background: #e0f2fe;
-        }
-
-        .health-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: #1e40af;
-            position: relative;
-        }
-
-        .health-badge {
-            background: #fbbf24;
-            color: #92400e;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-left: auto;
-        }
-
-        .health-badge-clear {
-            background: #86efac;
-            color: #14532d;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-left: auto;
-        }
-
-        .expand-icon {
-            margin-left: 8px;
-            transition: transform 0.3s ease;
-        }
-
-        .expand-icon.rotated {
-            transform: rotate(180deg);
-        }
-
-        /* Compact Health Display */
-        .health-info-compact {
-            margin: 15px 0;
-            position: relative;
-        }
-
-        .health-summary {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .health-label-compact {
-            font-weight: 600;
-            color: #374151;
-            font-size: 14px;
-        }
-
-        .health-pill {
-            background: #e0e7ff;
-            color: #3730a3;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .health-pill.health-clickable {
-            cursor: pointer;
-            background: #c7d2fe;
-        }
-
-        .health-pill.health-clickable:hover {
-            background: #a5b4fc;
-        }
-
-        .health-clear {
-            color: #059669;
-            font-size: 14px;
-            font-style: italic;
-        }
-
-        .health-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 60px;
-            background: white;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-            min-width: 250px;
-            margin-top: 8px;
-        }
-
-        .dropdown-item {
-            padding: 6px 0;
-            font-size: 13px;
-            color: #4b5563;
-            border-bottom: 1px solid #f3f4f6;
-        }
-
-        .dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        /* Collapsible version styling */
-        .health-info-section {
-            background: #f0f9ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 15px 0;
-        }
-
-        .health-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: #1e40af;
-            position: relative;
-        }
-
-        .health-badge {
-            background: #fbbf24;
-            color: #92400e;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-left: auto;
-        }
-
-        .health-badge-clear {
-            background: #86efac;
-            color: #14532d;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-left: auto;
-        }
-
-        .expand-icon {
-            margin-left: 8px;
-            transition: transform 0.3s ease;
-        }
-
-        .expand-icon.rotated {
-            transform: rotate(180deg);
-        }
-
-        /* Player Edit Mode Styles */
-        .player-edit-form {
-            padding: 15px 0;
-            background: #f9fafb;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
-        }
-
-        .edit-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .edit-field {
-            flex: 1;
-        }
-
-        .edit-field.full-width {
-            flex: 100%;
-        }
-
-        .edit-field label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 4px;
-        }
-
-        .player-input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .player-input:focus {
-            outline: none;
-            border-color: #0a3f94;
-            box-shadow: 0 0 0 3px rgba(10, 63, 148, 0.1);
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #374151;
-            cursor: pointer;
-        }
-
-        .checkbox-label input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .player-actions {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-edit-player,
-        .btn-save-player,
-        .btn-cancel-player {
-            padding: 8px 16px;
-            border-radius: 6px;
-            border: none;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-edit-player {
-            background: #0a3f94;
-            color: white;
-        }
-
-        .btn-edit-player:hover {
-            background: #083570;
-            transform: translateY(-1px);
-        }
-
-        .btn-save-player {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-save-player:hover {
-            background: #059669;
-        }
-
-        .btn-cancel-player {
-            background: #6b7280;
-            color: white;
-        }
-
-        .btn-cancel-player:hover {
-            background: #4b5563;
-        }
-
-        @media (max-width: 640px) {
-            .edit-row {
-                flex-direction: column;
-            }
-
-            .player-actions {
-                flex-direction: column;
-            }
-
-            .player-actions button {
-                width: 100%;
-            }
-        }
-
-        .player-camps {
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .player-camps label {
-            font-weight: 600;
-            color: #374151;
-            display: block;
-            margin-bottom: 12px;
-            font-size: 15px;
-        }
-
-        .camps-list {
-            margin-left: 28px;
-            list-style: none;
-        }
-
-        .camp-item {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
-
-        .camp-name {
-            font-weight: 600;
-            color: #1f2937;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-
-        .camp-dates {
-            font-size: 13px;
-            color: #6b7280;
-            margin-bottom: 2px;
-        }
-
-        .camp-location {
-            font-size: 13px;
-            color: #6b7280;
-        }
-
-        .no-camps {
-            color: #9ca3af;
-            font-style: italic;
-            font-size: 14px;
-            margin-left: 28px;
-        }
-
-        .btn-delete-player {
-            padding: 8px 16px;
-            border-radius: 6px;
-            border: none;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #dc2626;
-            color: white;
-            display: inline-block;
-            /* Ensure it's displayed by default */
-
-        }
-
-        .btn-delete-player:hover {
-            background: #b91c1c;
-            transform: translateY(-1px);
-        }
-
-
-        /* Delete Confirmation Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        .modal-header {
-            font-size: 20px;
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 15px;
-        }
-
-        .modal-body {
-            color: #6b7280;
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
-
-        .modal-body .warning {
-            color: #dc2626;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        .modal-btn {
-            padding: 10px 20px;
-            border-radius: 6px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .modal-btn-cancel {
-            background: #e5e7eb;
-            color: #374151;
-        }
-
-        .modal-btn-cancel:hover {
-            background: #d1d5db;
-        }
-
-        .modal-btn-confirm {
-            background: #dc2626;
-            color: white;
-        }
-
-        .modal-btn-confirm:hover {
-            background: #b91c1c;
-        }
-
-        /* Add Player Modal Styles */
-        .modal-large {
-            max-width: 700px;
-            width: 90%;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 28px;
-            color: #6b7280;
-            cursor: pointer;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-close:hover {
-            color: #111827;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-header h2 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #111827;
-        }
-
-        .form-section {
-            margin-bottom: 25px;
-        }
-
-        .form-section h3 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .form-field {
-            flex: 1;
-        }
-
-        .form-field.full-width {
-            flex: 100%;
-        }
-
-        .form-field label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 6px;
-        }
-
-        .form-field input,
-        .form-field select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .form-field input:focus,
-        .form-field select:focus {
-            outline: none;
-            border-color: #0a3f94;
-            box-shadow: 0 0 0 3px rgba(10, 63, 148, 0.1);
-        }
-
-        .required {
-            color: #dc2626;
-        }
-
-        .modal-btn-primary {
-            background: #0a3f94;
-            color: white;
-        }
-
-        .modal-btn-primary:hover {
-            background: #083570;
-        }
-
-        @media (max-width: 640px) {
-            .form-row {
-                flex-direction: column;
-            }
-        }
-    </style>
 
     <script>
         let originalData = {};
@@ -1392,6 +597,42 @@
         let originalPlayerData = {};
 
         let playerToDelete = null;
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icon = type === 'success' ? '✓' : '⚠';
+
+            toast.innerHTML = `
+        <span class="toast-icon">${icon}</span>
+        <span class="toast-message">${message}</span>
+        <button class="toast-close" onclick="closeToast(this)">×</button>
+    `;
+
+            container.appendChild(toast);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => {
+                    if (container.contains(toast)) {
+                        container.removeChild(toast);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        function closeToast(button) {
+            const toast = button.closest('.toast');
+            toast.classList.add('fade-out');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }
+
 
         function confirmDeletePlayer(playerId, playerName) {
             playerToDelete = playerId;
@@ -1427,10 +668,13 @@
                     // Close modal
                     closeDeleteModal();
 
-                    // Show success message
-                    alert('Player has been removed from your account.');
+                    // Store success message for after reload
+                    sessionStorage.setItem('pendingToast', JSON.stringify({
+                        message: 'Player has been removed from your account',
+                        type: 'success'
+                    }));
 
-                    // Reload page to refresh the player list
+                    // Reload immediately
                     location.reload();
                 } else {
                     alert('Error removing player: ' + (data.message || 'Please try again.'));
@@ -1441,17 +685,40 @@
             }
         }
 
-        // Close modal when clicking outside
+        // Combine all DOMContentLoaded listeners
         document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('deleteModal');
-            if (modal) {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
+            // Check for pending toast messages
+            const pendingToast = sessionStorage.getItem('pendingToast');
+            if (pendingToast) {
+                const {
+                    message,
+                    type
+                } = JSON.parse(pendingToast);
+                showToast(message, type);
+                sessionStorage.removeItem('pendingToast');
+            }
+
+            // Modal click handlers
+            const deleteModal = document.getElementById('deleteModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('click', function(e) {
+                    if (e.target === deleteModal) {
                         closeDeleteModal();
                     }
                 });
             }
+
+            const addModal = document.getElementById('addPlayerModal');
+            if (addModal) {
+                addModal.addEventListener('click', function(e) {
+                    if (e.target === addModal) {
+                        closeAddPlayerModal();
+                    }
+                });
+            }
         });
+
+
 
         function togglePlayerEdit(playerId) {
             // Store original values
@@ -1544,7 +811,13 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Reload the page to refresh all player data and health information
+                    // Store success message for after reload
+                    sessionStorage.setItem('pendingToast', JSON.stringify({
+                        message: 'Player information updated successfully',
+                        type: 'success'
+                    }));
+
+                    // Reload immediately
                     location.reload();
                 } else {
                     alert('Error updating player: ' + (data.message || 'Please try again.'));
@@ -1697,8 +970,8 @@
                     // Switch back to display mode
                     cancelEdit();
 
-                    // Show success message
-                    alert('Profile updated successfully!');
+                    // Show success toast
+                    showToast('Profile updated successfully');
                 } else {
                     alert('Error updating profile. Please try again.');
                 }
@@ -1767,10 +1040,13 @@
                     // Close modal
                     closeAddPlayerModal();
 
-                    // Show success message
-                    alert(`${fname} ${lname} has been added successfully!`);
+                    // Store success message for after reload
+                    sessionStorage.setItem('pendingToast', JSON.stringify({
+                        message: `${fname} ${lname} has been added successfully`,
+                        type: 'success'
+                    }));
 
-                    // Reload page to show the new player
+                    // Reload immediately
                     location.reload();
                 } else {
                     alert('Error adding player: ' + (data.message || 'Please try again.'));
@@ -1912,6 +1188,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
 
 </body>
 
