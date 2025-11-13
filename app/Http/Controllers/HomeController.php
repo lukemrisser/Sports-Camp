@@ -3,49 +3,45 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Sport;
 use App\Models\Camp;
 
 class HomeController extends Controller
 {
     public function index()
     {
-       $camps = Camp::getAvailableForRegistration();
+        // Get all sports
+        $sports = Sport::all();
 
-        $campMetadata = [
-            'soccer' => ['icon' => '⚽', 'color' => 'blue'],
-            'volleyball' => ['icon' => '🏐', 'color' => 'green'],
-            'tennis' => ['icon' => '🎾', 'color' => 'purple'],
+        //Use images eventually
+        $sportMetadata = [
+            'soccer' => ['icon' => '⚽'],
+            'volleyball' => ['icon' => '🏐'],
+            'tennis' => ['icon' => '🎾'],
+            'basketball' => ['icon' => '🏀'],
+            'baseball' => ['icon' => '⚾'],
+            'football' => ['icon' => '🏈'],
         ];
 
-        $registrationCards = $camps->map(function ($camp) use ($campMetadata) {
-            
-            $title = strtolower($camp->Camp_Name);
-            $metadata = ['icon' => '⭐️', 'color' => 'orange'];
 
-            foreach ($campMetadata as $keyword => $data) {
-                if (str_contains($title, $keyword)) {
+        $registrationCards = $sports->map(function ($sport) use ($sportMetadata) {
+            $sportName = strtolower($sport->Sport_Name);
+            $metadata = ['icon' => '⭐️'];
+
+            // Match sport name to get appropriate icon and color
+            foreach ($sportMetadata as $keyword => $data) {
+                if (str_contains($sportName, $keyword)) {
                     $metadata = $data;
                     break;
                 }
             }
-            
-            if ($camp->Camp_Gender == 'boys')
-                $gender = 'Boys ';
-            else if ($camp->Camp_Gender == 'girls')
-                $gender = 'Girls ';
-            else
-                $gender = 'Coed ';
-
-            $ageRange = ": Ages {$camp->Age_Min}-{$camp->Age_Max}";
-            $fullTitle = $gender . $camp->Camp_Name . $ageRange;
 
             return [
-                'id' => $camp->Camp_ID,
-                'title' => $fullTitle,
-                'description' => $camp->Description,
+                'id' => $sport->Sport_ID,
+                'title' => $sport->Sport_Name.' Camp',
                 'icon' => $metadata['icon'],
-                'route' => 'registration.form', 
-                'color' => $metadata['color']
+                'route' => 'sport.show',
+                'color' => 'blue',
             ];
         })->toArray();
 

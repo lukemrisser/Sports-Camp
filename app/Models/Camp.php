@@ -30,7 +30,13 @@ class Camp extends Model
 		'Price',
 		'Camp_Gender',
 		'Age_Min',
-		'Age_Max'
+		'Age_Max',
+		'Location_Name',
+		'Street_Address',
+		'City',
+		'State',
+		'Zip_Code',
+		'Max_Capacity',
 	];
 
 	// Cast start_date and end_date as dates
