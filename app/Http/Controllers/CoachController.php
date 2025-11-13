@@ -58,6 +58,12 @@ class CoachController extends Controller
             'gender' => 'required|string',
             'min_age' => 'required|numeric',
             'max_age' => 'required|numeric',
+            'max_capacity' => 'required|integer|min:1|max:1000',
+            'location_name' => 'required|string|max:255',
+            'street_address' => 'required|string|max:255',
+            'city' => 'required|string|max:100',
+            'state' => 'required|string|size:2',
+            'zip_code' => 'required|string|regex:/^[0-9]{5}(-[0-9]{4})?$/',
             'discount_amount.*' => 'nullable|numeric',
             'discount_date.*' => 'nullable|date'
         ]);
@@ -78,7 +84,13 @@ class CoachController extends Controller
                 'Price' => $validated['price'],
                 'Camp_Gender' => $validated['gender'],
                 'Age_Min' => $validated['min_age'],
-                'Age_Max' => $validated['max_age']
+                'Age_Max' => $validated['max_age'],
+                'Max_Capacity' => $validated['max_capacity'],
+                'Location_Name' => $validated['location_name'],
+                'Street_Address' => $validated['street_address'],
+                'City' => $validated['city'],
+                'State' => $validated['state'],
+                'Zip_Code' => $validated['zip_code']
             ]);
 
             // Replace discounts: delete existing and insert provided
@@ -133,6 +145,12 @@ class CoachController extends Controller
             'gender' => 'required|string',
             'min_age' => 'required|numeric',
             'max_age' => 'required|numeric',
+            'max_capacity' => 'required|integer|min:1|max:1000',
+            'location_name' => 'required|string|max:255',
+            'street_address' => 'required|string|max:255',
+            'city' => 'required|string|max:100',
+            'state' => 'required|string|size:2',
+            'zip_code' => 'required|string|regex:/^[0-9]{5}(-[0-9]{4})?$/',
             'discount_amount.*' => 'nullable|numeric',
             'discount_date.*' => 'nullable|date'
         ]);
@@ -152,7 +170,13 @@ class CoachController extends Controller
                 'Price' => $validated['price'],
                 'Camp_Gender' => $validated['gender'],
                 'Age_Min' => $validated['min_age'],
-                'Age_Max' => $validated['max_age']
+                'Age_Max' => $validated['max_age'],
+                'Max_Capacity' => $validated['max_capacity'],
+                'Location_Name' => $validated['location_name'],
+                'Street_Address' => $validated['street_address'],
+                'City' => $validated['city'],
+                'State' => $validated['state'],
+                'Zip_Code' => $validated['zip_code']
             ]);
 
             $discountAmounts = $request->input('discount_amount', []);
