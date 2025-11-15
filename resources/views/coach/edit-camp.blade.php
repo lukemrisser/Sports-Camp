@@ -218,7 +218,7 @@
                     document.getElementById('start_date').value = data.Start_Date ? data.Start_Date.split('T')[
                         0] : '';
                     document.getElementById('end_date').value = data.End_Date ? data.End_Date.split('T')[0] :
-                    '';
+                        '';
                     document.getElementById('registration_open').value = data.Registration_Open ? data
                         .Registration_Open.split('T')[0] : '';
                     document.getElementById('registration_close').value = data.Registration_Close ? data
@@ -241,6 +241,8 @@
                 });
         });
     </script>
+
+    @include('partials.footer')
 
 </body>
 

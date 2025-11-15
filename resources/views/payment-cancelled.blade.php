@@ -143,6 +143,7 @@
             }
         }
     </style>
+    @include('partials.footer')
 </body>
 
 </html>

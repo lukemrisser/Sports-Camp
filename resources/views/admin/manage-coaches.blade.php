@@ -18,6 +18,8 @@
     <div class="container">
         <!-- Content will be added here later -->
     </div>
+
+    @include('partials.footer')
 </body>
 
 </html>

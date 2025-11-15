@@ -353,6 +353,8 @@
             submitBtn.textContent = 'Filtering...';
         });
     </script>
+
+    @include('partials.footer')
 </body>
 
 </html>

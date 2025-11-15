@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coach Register - {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body>
     <div class="auth-container">
         <header class="auth-header">
@@ -21,53 +23,35 @@
                 <!-- First Name -->
                 <div class="form-group">
                     <label for="coach_firstname" class="form-label">First Name</label>
-                    <input id="coach_firstname"
-                           class="form-input"
-                           type="text"
-                           name="coach_firstname"
-                           value="{{ old('coach_firstname') }}"
-                           required
-                           autofocus
-                           autocomplete="given-name" />
+                    <input id="coach_firstname" class="form-input" type="text" name="coach_firstname"
+                        value="{{ old('coach_firstname') }}" required autofocus autocomplete="given-name" />
                     <x-input-error :messages="$errors->get('coach_firstname')" class="form-error" />
                 </div>
 
                 <!-- Last Name -->
                 <div class="form-group">
                     <label for="coach_lastname" class="form-label">Last Name</label>
-                    <input id="coach_lastname"
-                           class="form-input"
-                           type="text"
-                           name="coach_lastname"
-                           value="{{ old('coach_lastname') }}"
-                           required
-                           autocomplete="family-name" />
+                    <input id="coach_lastname" class="form-input" type="text" name="coach_lastname"
+                        value="{{ old('coach_lastname') }}" required autocomplete="family-name" />
                     <x-input-error :messages="$errors->get('coach_lastname')" class="form-error" />
                 </div>
 
                 <!-- Email Address -->
                 <div class="form-group">
                     <label for="email" class="form-label">Email</label>
-                    <input id="email"
-                           class="form-input"
-                           type="email"
-                           name="email"
-                           value="{{ old('email') }}"
-                           required
-                           autocomplete="username" />
+                    <input id="email" class="form-input" type="email" name="email" value="{{ old('email') }}"
+                        required autocomplete="username" />
                     <x-input-error :messages="$errors->get('email')" class="form-error" />
                 </div>
 
                 <!-- Sport Selection -->
                 <div class="form-group">
                     <label for="sport" class="form-label">Sport/Camp</label>
-                    <select id="sport"
-                            class="form-input form-select"
-                            name="sport"
-                            required>
+                    <select id="sport" class="form-input form-select" name="sport" required>
                         <option value="" disabled {{ old('sport') ? '' : 'selected' }}>Select your sport</option>
-                        @foreach($sports as $sport)
-                            <option value="{{ $sport->Sport_ID }}" {{ old('sport') == $sport->Sport_ID ? 'selected' : '' }}>
+                        @foreach ($sports as $sport)
+                            <option value="{{ $sport->Sport_ID }}"
+                                {{ old('sport') == $sport->Sport_ID ? 'selected' : '' }}>
                                 {{ $sport->Sport_Name }}
                             </option>
                         @endforeach
@@ -78,15 +62,12 @@
                 <!-- Admin Checkbox -->
                 <div class="form-group">
                     <div class="checkbox-container">
-                        <input id="admin"
-                               type="checkbox"
-                               name="admin"
-                               value="1"
-                               {{ old('admin') ? 'checked' : '' }}
-                               class="form-checkbox" />
+                        <input id="admin" type="checkbox" name="admin" value="1"
+                            {{ old('admin') ? 'checked' : '' }} class="form-checkbox" />
                         <label for="admin" class="checkbox-label">
                             Register as Administrator
-                            <span class="checkbox-description">Check this box if you have administrative privileges for managing teams and camps</span>
+                            <span class="checkbox-description">Check this box if you have administrative privileges for
+                                managing teams and camps</span>
                         </label>
                     </div>
                     <x-input-error :messages="$errors->get('admin')" class="form-error" />
@@ -95,24 +76,16 @@
                 <!-- Password -->
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
-                    <input id="password"
-                           class="form-input"
-                           type="password"
-                           name="password"
-                           required
-                           autocomplete="new-password" />
+                    <input id="password" class="form-input" type="password" name="password" required
+                        autocomplete="new-password" />
                     <x-input-error :messages="$errors->get('password')" class="form-error" />
                 </div>
 
                 <!-- Confirm Password -->
                 <div class="form-group">
                     <label for="password_confirmation" class="form-label">Confirm Password</label>
-                    <input id="password_confirmation"
-                           class="form-input"
-                           type="password"
-                           name="password_confirmation"
-                           required
-                           autocomplete="new-password" />
+                    <input id="password_confirmation" class="form-input" type="password" name="password_confirmation"
+                        required autocomplete="new-password" />
                     <x-input-error :messages="$errors->get('password_confirmation')" class="form-error" />
                 </div>
 
@@ -151,7 +124,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             /* Different gradient for coach registration to distinguish it */
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: var(--primary-blue);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -373,4 +346,5 @@
         }
     </style>
 </body>
+
 </html>
