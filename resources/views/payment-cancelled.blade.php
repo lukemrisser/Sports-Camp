@@ -8,20 +8,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<header class="main-header">
-    <div class="header-container">
-        <div class="header-content">
-            <h1>Falcon Teams</h1>
-            <p>Payment was cancelled</p>
-        </div>
-
-        <div class="header-buttons">
-            <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
-        </div>
-    </div>
-</header>
-
 <body>
+    @include('partials.header', ['title' => 'Falcon Teams', 'subtitle' => 'Payment was cancelled'])
     <div class="registration-page">
         <div class="registration-container">
             <div class="cancelled-wrapper">
@@ -29,13 +17,15 @@
                     <!-- Cancelled Icon -->
                     <div class="cancelled-icon">
                         <svg class="x-mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="12" r="10" fill="#ef4444" stroke="#ef4444" stroke-width="2"/>
-                            <path d="m15 9-6 6m0-6 6 6" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="12" cy="12" r="10" fill="#ef4444" stroke="#ef4444"
+                                stroke-width="2" />
+                            <path d="m15 9-6 6m0-6 6 6" stroke="#ffffff" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
                         </svg>
                     </div>
 
                     <h2 class="cancelled-title">Payment Cancelled</h2>
-                    
+
                     <div class="cancelled-message">
                         <p>Your payment was cancelled and no charges were made to your card.</p>
                         <p>Your registration has not been completed.</p>

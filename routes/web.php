@@ -15,9 +15,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/sport/{sport}', [SportsController::class, 'show'])->name('sport.show');
 
 // Temporarily change this:
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');  // Removed 'verified' temporarily
+Route::get('/user-profile', function () {
+    return view('user-profile');
+})->middleware(['auth'])->name('user-profile');  // Removed 'verified' temporarily
 
 Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
 

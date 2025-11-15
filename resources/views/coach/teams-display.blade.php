@@ -9,26 +9,10 @@
 </head>
 
 <body>
-    <header class="main-header">
-        <div class="header-container">
-            <div class="header-content">
-                <h1>Generated Teams</h1>
-                <p>Teams organized with teammate requests considered</p>
-            </div>
-
-            <div class="header-buttons">
-                @if (Auth::user()->isCoachAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
-                @endif
-                <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
-                <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
-                <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                    @csrf
-                    <button type="submit" class="header-btn logout-btn">Logout</button>
-                </form>
-            </div>
-        </div>
-    </header>
+    @include('partials.header', [
+        'title' => 'Generated Teams',
+        'subtitle' => 'Teams organized with teammate requests considered',
+    ])
 
     <div class="container">
         <div class="action-buttons-container">
@@ -47,7 +31,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($teamsData as $row)
+                    @foreach ($teamsData as $row)
                         <tr>
                             <td class="team-name">{{ $row['Team'] }}</td>
                             <td class="player-name">{{ $row['Player Name'] }}</td>
@@ -123,7 +107,8 @@
             align-items: center;
         }
 
-        .btn-back, .btn-download {
+        .btn-back,
+        .btn-download {
             padding: 12px 24px;
             background: rgba(255, 255, 255, 0.1);
             color: white;
@@ -134,7 +119,8 @@
             backdrop-filter: blur(10px);
         }
 
-        .btn-back:hover, .btn-download:hover {
+        .btn-back:hover,
+        .btn-download:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: translateY(-2px);
         }
@@ -243,7 +229,8 @@
                 align-items: stretch;
             }
 
-            .btn-back, .btn-download {
+            .btn-back,
+            .btn-download {
                 text-align: center;
                 margin-bottom: 10px;
             }

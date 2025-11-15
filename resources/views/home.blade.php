@@ -10,31 +10,10 @@
 
 <body>
 
-    <header class="main-header">
-        <div class="header-container">
-            <div class="header-content">
-                <h1>Falcon Teams</h1>
-                <p>Choose a registration option below to get started</p>
-            </div>
-
-            <div class="header-buttons">
-                @guest
-                    <a href="{{ route('login') }}" class="header-btn login-btn">Login</a>
-                    <a href="{{ route('register') }}" class="header-btn register-btn">Register</a>
-                @else
-                    <span class="welcome-text">Welcome, {{ Auth::user()->name }}!</span>
-                    @if (Auth::user()->isCoach())
-                        <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
-                    @endif
-                    <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
-                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                        @csrf
-                        <button type="submit" class="header-btn logout-btn">Logout</button>
-                    </form>
-                @endguest
-            </div>
-        </div>
-    </header>
+    @include('partials.header', [
+        'title' => 'Falcon Teams',
+        'subtitle' => 'Choose a registration option below to get started',
+    ])
 
     <div class="container">
         <div class="cards-grid">
@@ -50,6 +29,12 @@
         </div>
     </div>
 
+    @include('partials.footer')
+
 </body>
+
+
+
+
 
 </html>

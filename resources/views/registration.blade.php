@@ -8,20 +8,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<header class="main-header">
-    <div class=header-container>
-        <div class="header-content">
-            <h1>Falcon Teams</h1>
-            <p>Complete the registration form to sign up</p>
-        </div>
-
-        <div class="header-buttons">
-            <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
-        </div>
-    </div>
-</header>
-
 <body>
+    @include('partials.header', [
+        'title' => 'Falcon Teams',
+        'subtitle' => 'Complete the registration form to sign up',
+    ])
     <div class="registration-page">
         <div class="registration-container">
             <div class="registration-form-wrapper">
@@ -67,21 +58,23 @@
                         <div class="form-grid-1">
                             <div class="form-group">
                                 <label class="form-label">Select Camp <span class="text-red-500">*</span></label>
-                                @if(isset($availableCamps) && $availableCamps->count() > 0)
+                                @if (isset($availableCamps) && $availableCamps->count() > 0)
                                     <select name="Camp_ID" class="form-input" required>
                                         <option value="">Select Camp</option>
-                                        @foreach($availableCamps as $camp)
+                                        @foreach ($availableCamps as $camp)
                                             @php
-                                                if ($camp->Camp_Gender == 'boys')
+                                                if ($camp->Camp_Gender == 'boys') {
                                                     $gender = 'Boys ';
-                                                else if ($camp->Camp_Gender == 'girls')
+                                                } elseif ($camp->Camp_Gender == 'girls') {
                                                     $gender = 'Girls ';
-                                                else
+                                                } else {
                                                     $gender = 'Coed ';
+                                                }
                                                 $ageRange = ": Ages {$camp->Age_Min}-{$camp->Age_Max}";
                                                 $fullTitle = $gender . $camp->Camp_Name . $ageRange;
                                             @endphp
-                                            <option value="{{ $camp->Camp_ID }}" @if(isset($selectedCampId) && $camp->Camp_ID == $selectedCampId) selected @endif>
+                                            <option value="{{ $camp->Camp_ID }}"
+                                                @if (isset($selectedCampId) && $camp->Camp_ID == $selectedCampId) selected @endif>
                                                 {{ $fullTitle }}
                                             </option>
                                         @endforeach
@@ -111,9 +104,9 @@
                                 <input type="text" name="Parent_LastName" class="form-input" required
                                     value="{{ old('Parent_LastName', isset($parent) ? $parent->Parent_LastName : '') }}">
                             </div>
-                        @if(isset($parent) && $parent)
-                            <input type="hidden" name="Parent_ID" value="{{ $parent->Parent_ID }}">
-                        @endif
+                            @if (isset($parent) && $parent)
+                                <input type="hidden" name="Parent_ID" value="{{ $parent->Parent_ID }}">
+                            @endif
                         </div>
                     </div>
 
@@ -229,7 +222,8 @@
                             <textarea name="Allergies" class="form-input form-textarea" rows="3"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Does the camper have asthma? <span class="text-red-500">*</span></label>
+                            <label class="form-label">Does the camper have asthma? <span
+                                    class="text-red-500">*</span></label>
                             <div class="radio-group">
                                 <label class="radio-label">
                                     <input type="radio" name="Asthma" value="1" class="radio-input"
@@ -244,7 +238,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Is the camper on any medications? <span class="text-red-500">*</span></label>
+                            <label class="form-label">Is the camper on any medications? <span
+                                    class="text-red-500">*</span></label>
                             <div class="radio-group">
                                 <label class="radio-label">
                                     <input type="radio" name="medication_status_choice" value="1"
@@ -260,7 +255,8 @@
                         </div>
                         <div class="form-group" id="medication-details-container" style="display: none;">
                             <label class="form-label">Medication Details</label>
-                            <textarea id="medication_status" name="Medication_Status" class="form-input form-textarea" rows="3" placeholder="List the medications and dosages"></textarea>
+                            <textarea id="medication_status" name="Medication_Status" class="form-input form-textarea" rows="3"
+                                placeholder="List the medications and dosages"></textarea>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Recent Injuries or Health Concerns</label>
@@ -281,11 +277,16 @@
                                 <label class="form-label">Church Attendance</label>
                                 <select name="Church_Attendance" class="form-input">
                                     <option value="">Select Frequency</option>
-                                    <option value="Weekly" @if(old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Weekly') selected @endif>Weekly</option>
-                                    <option value="Monthly" @if(old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Monthly') selected @endif>Monthly</option>
-                                    <option value="Occasionally" @if(old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Occasionally') selected @endif>Occasionally</option>
-                                    <option value="Rarely" @if(old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Rarely') selected @endif>Rarely</option>
-                                    <option value="Never" @if(old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Never') selected @endif>Never</option>
+                                    <option value="Weekly" @if (old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Weekly') selected @endif>Weekly
+                                    </option>
+                                    <option value="Monthly" @if (old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Monthly') selected @endif>Monthly
+                                    </option>
+                                    <option value="Occasionally" @if (old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Occasionally') selected @endif>
+                                        Occasionally</option>
+                                    <option value="Rarely" @if (old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Rarely') selected @endif>Rarely
+                                    </option>
+                                    <option value="Never" @if (old('Church_Attendance', isset($parent) ? $parent->Church_Attendance : '') == 'Never') selected @endif>Never
+                                    </option>
                                 </select>
                             </div>
                         </div>
@@ -308,7 +309,7 @@
 
         // Fetch all camp data on page load
         document.addEventListener('DOMContentLoaded', function() {
-            @foreach($availableCamps as $camp)
+            @foreach ($availableCamps as $camp)
                 campData[{{ $camp->Camp_ID }}] = {
                     age_min: {{ $camp->Age_Min }},
                     age_max: {{ $camp->Age_Max }},
@@ -397,19 +398,24 @@
                 var validation = true
                 // Validate age
                 if (age < camp.age_min || age > camp.age_max) {
-                    validationMessage.textContent = `Camper age (${age}) must be between ${camp.age_min} and ${camp.age_max} for this camp.`;
+                    validationMessage.textContent =
+                        `Camper age (${age}) must be between ${camp.age_min} and ${camp.age_max} for this camp.`;
                     validationError.style.display = 'block';
                     validation = false;
                 }
 
                 // Validate gender
-                const genderMap = { 'M': 'boys', 'F': 'girls' };
+                const genderMap = {
+                    'M': 'boys',
+                    'F': 'girls'
+                };
                 const camperGender = genderMap[selectedGender];
-                
+
                 if (camp.gender !== 'mixed' && camp.gender !== camperGender) {
                     const campGenderName = camp.gender === 'boys' ? 'Boys' : 'Girls';
                     const camperGenderName = selectedGender === 'M' ? 'Male' : 'Female';
-                    validationMessage.textContent = `This camp is for ${campGenderName} only, but you selected ${camperGenderName}.`;
+                    validationMessage.textContent =
+                        `This camp is for ${campGenderName} only, but you selected ${camperGenderName}.`;
                     validationError.style.display = 'block';
                     validation = false;
                 }

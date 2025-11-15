@@ -10,26 +10,10 @@
 
 <body>
 
-    <header class="main-header">
-        <div class=header-container>
-            <div class="header-content">
-                <h1>Falcon Teams</h1>
-                <p>Upload a spreadsheet or select a camp to generate teams</p>
-            </div>
-
-            <div class="header-buttons">
-                @if (Auth::user()->isCoachAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
-                @endif
-                <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
-                <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
-                <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                    @csrf
-                    <button type="submit" class="header-btn logout-btn">Logout</button>
-                </form>
-            </div>
-        </div>
-    </header>
+    @include('partials.header', [
+        'title' => 'Falcon Teams',
+        'subtitle' => 'Upload a spreadsheet or select a camp to generate teams',
+    ])
 
     <div class="container">
         <div class="cards-container">
@@ -38,7 +22,8 @@
                 <form action="{{ route('upload-spreadsheet') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="file" name="spreadsheet" accept=".xlsx, .xls" required class="file-input">
-                    <input type="number" name="num_teams" min="1" placeholder="Number of teams" required class="form-input" />
+                    <input type="number" name="num_teams" min="1" placeholder="Number of teams" required
+                        class="form-input" />
                     <button type="submit" class="btn-primary">Upload and Generate Teams</button>
                 </form>
             </div>
@@ -54,12 +39,14 @@
                     <select name="camp_id" class="form-input">
                         @foreach ($camps as $camp)
                             <option value="{{ $camp->Camp_ID }}">
-                                {{ $camp->Camp_Name }} ({{ \Carbon\Carbon::parse($camp->Start_Date)->format('m/d/y') }} -
+                                {{ $camp->Camp_Name }} ({{ \Carbon\Carbon::parse($camp->Start_Date)->format('m/d/y') }}
+                                -
                                 {{ \Carbon\Carbon::parse($camp->End_Date)->format('m/d/y') }})
                             </option>
                         @endforeach
                     </select>
-                    <input type="number" name="num_teams" min="1" placeholder="Number of teams" required class="form-input" />
+                    <input type="number" name="num_teams" min="1" placeholder="Number of teams" required
+                        class="form-input" />
                     <button type="submit" class="btn-primary">Select and Generate Teams</button>
                 </form>
             </div>

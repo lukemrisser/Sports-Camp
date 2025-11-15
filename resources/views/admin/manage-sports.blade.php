@@ -10,24 +10,10 @@
 
 <body>
 
-    <header class="main-header">
-        <div class="header-container">
-            <div class="header-content">
-                <h1>Manage Sports</h1>
-                <p>Add, edit, and delete sports available for camps</p>
-            </div>
-
-            <div class="header-buttons">
-                <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
-                <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
-                <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
-                <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                    @csrf
-                    <button type="submit" class="header-btn logout-btn">Logout</button>
-                </form>
-            </div>
-        </div>
-    </header>
+    @include('partials.header', [
+        'title' => 'Manage Sports',
+        'subtitle' => 'Add, edit, and delete sports available for camps',
+    ])
 
 
 
@@ -38,22 +24,22 @@
                     <h2 class="registration-title">Manage Sports</h2>
                 </div>
 
-                @if(session('success'))
+                @if (session('success'))
                     <div class="alert alert-success">
                         {{ session('success') }}
                     </div>
                 @endif
 
-                @if(session('error'))
+                @if (session('error'))
                     <div class="alert alert-error">
                         {{ session('error') }}
                     </div>
                 @endif
 
-                @if($errors->any())
+                @if ($errors->any())
                     <div class="alert alert-error">
                         <ul class="error-list">
-                            @foreach($errors->all() as $error)
+                            @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
@@ -67,14 +53,11 @@
                         <h3 class="section-title">Add New Sport</h3>
                         <div class="form-grid-2">
                             <div class="form-group">
-                                <label for="sport_name" class="form-label">Sport Name <span class="text-red-500">*</span></label>
-                                <input type="text" 
-                                       name="sport_name" 
-                                       id="sport_name"
-                                       class="form-input"
-                                       placeholder="e.g., Soccer, Basketball, etc."
-                                       required 
-                                       value="{{ old('sport_name') }}">
+                                <label for="sport_name" class="form-label">Sport Name <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" name="sport_name" id="sport_name" class="form-input"
+                                    placeholder="e.g., Soccer, Basketball, etc." required
+                                    value="{{ old('sport_name') }}">
                             </div>
                             <div class="form-group" style="display: flex; align-items: end;">
                                 <button type="submit" class="submit-button">Add Sport</button>
@@ -86,8 +69,8 @@
                 <!-- Sports List -->
                 <div class="form-section">
                     <h3 class="section-title">Current Sports</h3>
-                    
-                    @if($sports->count() > 0)
+
+                    @if ($sports->count() > 0)
                         <div class="sports-table-wrapper">
                             <table class="sports-table">
                                 <thead>
@@ -98,19 +81,22 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($sports as $sport)
+                                    @foreach ($sports as $sport)
                                         <tr>
                                             <td class="sport-name">{{ $sport->Sport_Name }}</td>
                                             <td class="sport-usage">
-                                                {{ $sport->camps->count() }} camps, {{ $sport->coaches->count() }} coaches
+                                                {{ $sport->camps->count() }} camps, {{ $sport->coaches->count() }}
+                                                coaches
                                             </td>
                                             <td class="sport-actions">
-                                                <button class="action-btn edit-btn" onclick="editSport({{ $sport->Sport_ID }}, '{{ addslashes($sport->Sport_Name) }}')">
+                                                <button class="action-btn edit-btn"
+                                                    onclick="editSport({{ $sport->Sport_ID }}, '{{ addslashes($sport->Sport_Name) }}')">
                                                     Edit
                                                 </button>
-                                                <form method="POST" action="{{ route('admin.sports.destroy', $sport->Sport_ID) }}" 
-                                                      style="display: inline;"
-                                                      onsubmit="return confirm('Delete {{ addslashes($sport->Sport_Name) }}?')">
+                                                <form method="POST"
+                                                    action="{{ route('admin.sports.destroy', $sport->Sport_ID) }}"
+                                                    style="display: inline;"
+                                                    onsubmit="return confirm('Delete {{ addslashes($sport->Sport_Name) }}?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="action-btn delete-btn">Delete</button>

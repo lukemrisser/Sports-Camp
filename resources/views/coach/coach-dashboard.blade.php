@@ -10,29 +10,10 @@
 
 <body>
 
-    <header class="main-header">
-        <div class="header-container">
-            <div class="header-content">
-                <h1 class="welcome-text">
-                    Welcome, {{ Auth::user()->coach->Coach_FirstName }}!
-                    @if (Auth::user()->isCoachAdmin())
-                        <span class="admin-badge">Admin</span>
-                    @endif
-                </h1>
-            </div>
-
-            <div class="header-buttons">
-                @if (Auth::user()->isCoachAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
-                @endif
-                <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
-                <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                    @csrf
-                    <button type="submit" class="header-btn logout-btn">Logout</button>
-                </form>
-            </div>
-        </div>
-    </header>
+    @include('partials.header', [
+        'title' => 'Welcome, ' . Auth::user()->coach->Coach_FirstName . '!',
+        'title_class' => 'welcome-text',
+    ])
 
     <div class="container">
         <!-- Success/Error Messages -->
@@ -66,7 +47,7 @@
                 <p>Create balanced teams from your uploaded player data</p>
                 <a href="{{ route('organize-teams') }}" class="card-button">Organize Teams</a>
             </div>
-            
+
             <!-- Create Camp Card -->
             <div class="registration-card purple">
                 <div class="card-icon">🏕️</div>
@@ -74,7 +55,7 @@
                 <p>Set up a new camp session for players to register</p>
                 <a href="{{ route('create-camp') }}" class="card-button">Create Camp</a>
             </div>
-            
+
             <!-- Edit Camp Card -->
             <div class="registration-card green">
                 <div class="card-icon">✏️</div>

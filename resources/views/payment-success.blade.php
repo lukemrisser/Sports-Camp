@@ -8,20 +8,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<header class="main-header">
-    <div class="header-container">
-        <div class="header-content">
-            <h1>Falcon Teams</h1>
-            <p>Registration completed successfully!</p>
-        </div>
-
-        <div class="header-buttons">
-            <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
-        </div>
-    </div>
-</header>
-
 <body>
+    @include('partials.header', [
+        'title' => 'Falcon Teams',
+        'subtitle' => 'Registration completed successfully!',
+    ])
     <div class="registration-page">
         <div class="registration-container">
             <div class="success-wrapper">
@@ -29,13 +20,15 @@
                     <!-- Success Icon -->
                     <div class="success-icon">
                         <svg class="checkmark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="12" r="10" fill="#10B981" stroke="#10B981" stroke-width="2"/>
-                            <path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="12" cy="12" r="10" fill="#10B981" stroke="#10B981"
+                                stroke-width="2" />
+                            <path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
                         </svg>
                     </div>
 
                     <h2 class="success-title">Payment Successful!</h2>
-                    
+
                     <div class="success-message">
                         <p>Thank you for your payment. A charge should be added to your account shortly.</p>
                     </div>

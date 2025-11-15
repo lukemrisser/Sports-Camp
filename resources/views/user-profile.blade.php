@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - {{ config('app.name', 'Falcon Teams') }}</title>
+    <title>Profile - {{ config('app.name', 'Falcon Teams') }}</title>
 
     <!-- Include both app.css, user-profile.css, and app.js -->
     @vite(['resources/css/app.css', 'resources/css/user-profile.css', 'resources/js/app.js'])
@@ -12,31 +12,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
-<header class="main-header">
-    <div class="header-container">
-        <div class="header-content">
-            <h1 class="welcome-title">Welcome back, <span id="welcome-name">{{ Auth::user()->name }}</span>!</h1>
-            <p class="welcome-subtitle">Here's your account information</p>
-        </div>
-
-        <div class="header-buttons">
-            @if (Auth::user()->isCoachAdmin())
-                <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
-                <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
-            @elseif (Auth::user()->isCoach())
-                <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
-            @else
-                <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
-            @endif
-            <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                @csrf
-                <button type="submit" class="header-btn logout-btn">Logout</button>
-            </form>
-        </div>
-    </div>
-</header>
-
 <body>
+    @include('partials.header', [
+        'title' => 'Welcome back, ' . Auth::user()->name . '!',
+        'subtitle' => "Here's your account information",
+        'title_class' => 'welcome-title',
+    ])
     <div class="dashboard-container">
         <div class="dashboard-wrapper">
 
@@ -1394,6 +1375,12 @@
     <!-- Toast Notification Container -->
     <div id="toast-container"></div>
 
+
+    @include('partials.footer')
+
+
 </body>
+
+
 
 </html>

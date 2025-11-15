@@ -9,28 +9,11 @@
 </head>
 
 <body>
-    <header class="main-header">
-        <div class="header-container">
-            <div class="header-content">
-                <h1 class="welcome-title">Manage Coaches</h1>
-                <p class="welcome-subtitle">View, edit, and manage existing coach accounts</p>
-            </div>
-
-            <div class="header-buttons">
-                @if (Auth::user()->isCoachAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
-                @endif
-                @if (Auth::user()->isCoach())
-                    <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
-                @endif
-                <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
-                <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                    @csrf
-                    <button type="submit" class="header-btn logout-btn">Logout</button>
-                </form>
-            </div>
-        </div>
-    </header>
+    @include('partials.header', [
+        'title' => 'Manage Coaches',
+        'subtitle' => 'View, edit, and manage existing coach accounts',
+        'title_class' => 'welcome-title',
+    ])
 
     <div class="container">
         <!-- Content will be added here later -->

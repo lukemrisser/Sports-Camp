@@ -10,32 +10,13 @@
 
 <body>
 
-    <header class="main-header">
-        <div class="header-container">
-            <div class="header-content">
-                <h1>{{ $sport->Sport_Name }} Camps</h1>
-                <p>Choose from our available {{ strtolower($sport->Sport_Name) }} camps below</p>
-            </div>
-
-            <div class="header-buttons">
-                <a href="{{ route('home') }}" class="header-btn dashboard-btn">Home</a>
-                @guest
-                    <a href="{{ route('login') }}" class="header-btn login-btn">Login</a>
-                    <a href="{{ route('register') }}" class="header-btn register-btn">Register</a>
-                @else
-                    <span class="welcome-text">Welcome, {{ Auth::user()->name }}!</span>
-                    <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
-                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                        @csrf
-                        <button type="submit" class="header-btn logout-btn">Logout</button>
-                    </form>
-                @endguest
-            </div>
-        </div>
-    </header>
+    @include('partials.header', [
+        'title' => $sport->Sport_Name . ' Camps',
+        'subtitle' => 'Choose from our available ' . strtolower($sport->Sport_Name) . ' camps below',
+    ])
 
     <div class="container">
-        @if(count($campCards) > 0)
+        @if (count($campCards) > 0)
             <div class="cards-grid">
                 @foreach ($campCards as $camp)
                     <div class="registration-card blue">
@@ -50,17 +31,21 @@
                             </p>
                             <p class="camp-location">
                                 <strong>Location:</strong> {{ $camp['location_name'] }}<br>
-                                <span class="location-address">{{ $camp['street_address'] }}, {{ $camp['city'] }}, {{ $camp['state'] }} {{ $camp['zip_code'] }}</span>
+                                <span class="location-address">{{ $camp['street_address'] }}, {{ $camp['city'] }},
+                                    {{ $camp['state'] }} {{ $camp['zip_code'] }}</span>
                             </p>
-                            @if($camp['has_discount'])
+                            @if ($camp['has_discount'])
                                 <p class="discount-info">
-                                    <strong>Early Bird Discout! Save ${{ number_format($camp['discount_amount'], 2) }} if you register by {{ $camp['discount_expires'] }}</strong>
+                                    <strong>Early Bird Discout! Save ${{ number_format($camp['discount_amount'], 2) }}
+                                        if you register by {{ $camp['discount_expires'] }}</strong>
                                 </p>
                                 <p class="camp-price original-price">
-                                    <strong>Original Price:</strong> <span class="strikethrough">${{ number_format($camp['price'], 2) }}</span>
+                                    <strong>Original Price:</strong> <span
+                                        class="strikethrough">${{ number_format($camp['price'], 2) }}</span>
                                 </p>
                                 <p class="camp-price discounted-price">
-                                    <strong>Discounted Price:</strong> <span class="discount-highlight">${{ number_format($camp['discounted_price'], 2) }}</span>
+                                    <strong>Discounted Price:</strong> <span
+                                        class="discount-highlight">${{ number_format($camp['discounted_price'], 2) }}</span>
                                 </p>
                             @else
                                 <p class="camp-price">
@@ -91,43 +76,47 @@
             text-align: left;
             margin: 15px 0;
         }
-        
+
         .camp-description {
             margin-bottom: 10px;
             color: #666;
         }
-        
-        .camp-dates, .camp-price, .registration-due, .camp-location, .camp-capacity {
+
+        .camp-dates,
+        .camp-price,
+        .registration-due,
+        .camp-location,
+        .camp-capacity {
             margin: 5px 0;
             font-size: 0.9em;
         }
-        
+
         .camp-location {
             color: #4b5563;
         }
-        
+
         .location-address {
             font-size: 0.85em;
             color: #6b7280;
             font-style: italic;
         }
-        
+
         .camp-capacity {
             color: #7c3aed;
             font-weight: 500;
         }
-        
+
         .original-price .strikethrough {
             text-decoration: line-through;
             color: #999;
         }
-        
+
         .discounted-price .discount-highlight {
             color: #16a34a;
             font-weight: bold;
             font-size: 1.1em;
         }
-        
+
         .discount-info {
             background: #dcfce7;
             color: #15803d;
@@ -137,12 +126,12 @@
             margin: 8px 0;
             border-left: 3px solid #16a34a;
         }
-        
+
         .registration-due {
             color: #dc2626;
             font-weight: 500;
         }
-        
+
         .no-camps-message {
             text-align: center;
             padding: 60px 20px;
@@ -152,30 +141,30 @@
             max-width: 500px;
             margin: 0 auto;
         }
-        
+
         .no-camps-message h3 {
             color: #333;
             margin-bottom: 15px;
         }
-        
+
         .no-camps-message p {
             color: #666;
             margin-bottom: 25px;
         }
-        
+
         .no-camps-message .card-button {
             background-color: #3b82f6;
             color: white;
         }
-        
+
         .no-camps-message .card-button:hover {
             background-color: #2563eb;
         }
-        
+
         .back-btn {
             background-color: #6b7280 !important;
         }
-        
+
         .back-btn:hover {
             background-color: #4b5563 !important;
         }

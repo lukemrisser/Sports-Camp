@@ -10,20 +10,11 @@
     <script src="https://js.stripe.com/v3/"></script>
 </head>
 
-<header class="main-header">
-    <div class="header-container">
-        <div class="header-content">
-            <h1>Falcon Teams</h1>
-            <p>Complete your payment to finalize registration</p>
-        </div>
-
-        <div class="header-buttons">
-            <a href="{{ route('home') }}" class="header-btn login-btn">← Home</a>
-        </div>
-    </div>
-</header>
-
 <body>
+    @include('partials.header', [
+        'title' => 'Falcon Teams',
+        'subtitle' => 'Complete your payment to finalize registration',
+    ])
     <div class="registration-page">
         <div class="registration-container">
             <div class="registration-form-wrapper">
@@ -64,7 +55,8 @@
                     </div>
                 @endif
 
-                <form id="payment-form" method="POST" action="{{ route('payment.process') }}" class="registration-form">
+                <form id="payment-form" method="POST" action="{{ route('payment.process') }}"
+                    class="registration-form">
                     @csrf
                     <input type="hidden" name="player_id" value="{{ $playerId }}">
                     <input type="hidden" name="camp_id" value="{{ $campId }}">
@@ -73,11 +65,11 @@
                     <!-- Payment Information -->
                     <div class="form-section">
                         <h3 class="section-title">Payment Information</h3>
-                        
+
                         <div class="form-group">
                             <label class="form-label">Cardholder Name</label>
-                            <input type="text" name="cardholder_name" class="form-input" 
-                                   value="{{ $registration['parent_name'] ?? '' }}" required>
+                            <input type="text" name="cardholder_name" class="form-input"
+                                value="{{ $registration['parent_name'] ?? '' }}" required>
                         </div>
 
                         <div class="form-group">
@@ -90,8 +82,8 @@
 
                         <div class="form-group">
                             <label class="form-label">Email Receipt</label>
-                            <input type="email" name="receipt_email" class="form-input" 
-                                   value="{{ $registration['email'] ?? '' }}" required>
+                            <input type="email" name="receipt_email" class="form-input"
+                                value="{{ $registration['email'] ?? '' }}" required>
                         </div>
                     </div>
 
@@ -100,24 +92,24 @@
                         <h3 class="section-title">Billing Address</h3>
                         <div class="form-group">
                             <label class="form-label">Address</label>
-                            <input type="text" name="billing_address" class="form-input" 
-                                   value="{{ $registration['address'] ?? '' }}" required>
+                            <input type="text" name="billing_address" class="form-input"
+                                value="{{ $registration['address'] ?? '' }}" required>
                         </div>
                         <div class="form-grid-3">
                             <div class="form-group">
                                 <label class="form-label">City</label>
-                                <input type="text" name="billing_city" class="form-input" 
-                                       value="{{ $registration['city'] ?? '' }}" required>
+                                <input type="text" name="billing_city" class="form-input"
+                                    value="{{ $registration['city'] ?? '' }}" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">State</label>
-                                <input type="text" name="billing_state" class="form-input" 
-                                       value="{{ $registration['state'] ?? '' }}" required>
+                                <input type="text" name="billing_state" class="form-input"
+                                    value="{{ $registration['state'] ?? '' }}" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">ZIP Code</label>
-                                <input type="text" name="billing_zip" class="form-input" 
-                                       value="{{ $registration['postal_code'] ?? '' }}" required>
+                                <input type="text" name="billing_zip" class="form-input"
+                                    value="{{ $registration['postal_code'] ?? '' }}" required>
                             </div>
                         </div>
                     </div>
@@ -130,7 +122,9 @@
                         </button>
                         <p class="payment-security">
                             <svg class="security-icon" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                                <path fill-rule="evenodd"
+                                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                                    clip-rule="evenodd"></path>
                             </svg>
                             Your payment information is secure and encrypted
                         </p>
@@ -142,7 +136,7 @@
 
     <script>
         // Initialize Stripe
-        const stripe = Stripe('{{ config("services.stripe.key") }}');
+        const stripe = Stripe('{{ config('services.stripe.key') }}');
         const elements = stripe.elements();
 
         // Create card element with simplified styling
@@ -216,7 +210,10 @@
 
             try {
                 // Create payment method
-                const {error, paymentMethod} = await stripe.createPaymentMethod({
+                const {
+                    error,
+                    paymentMethod
+                } = await stripe.createPaymentMethod({
                     type: 'card',
                     card: cardElement,
                     billing_details: billingDetails,
@@ -251,7 +248,8 @@
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content'),
                         'Accept': 'application/json',
                     }
                 });
@@ -260,7 +258,7 @@
 
                 if (result.success) {
                     // Payment successful
-                    window.location.href = result.redirect_url || '{{ route("payment.success") }}';
+                    window.location.href = result.redirect_url || '{{ route('payment.success') }}';
                 } else if (result.requires_action) {
                     // Handle 3D Secure authentication
                     handleAction(result.payment_intent);
@@ -276,7 +274,10 @@
         }
 
         async function handleAction(paymentIntent) {
-            const {error, paymentIntent: confirmedPaymentIntent} = await stripe.confirmCardPayment(
+            const {
+                error,
+                paymentIntent: confirmedPaymentIntent
+            } = await stripe.confirmCardPayment(
                 paymentIntent.client_secret
             );
 
@@ -285,7 +286,7 @@
                 resetButton();
             } else {
                 // Payment succeeded
-                window.location.href = '{{ route("payment.success") }}';
+                window.location.href = '{{ route('payment.success') }}';
             }
         }
 
@@ -293,20 +294,40 @@
             const errorElement = document.getElementById('card-errors');
             errorElement.textContent = message;
             errorElement.style.display = 'block';
-            
+
             // Scroll to error
-            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            errorElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
         }
 
         // Helper functions
         function validateForm() {
-            const requiredFields = [
-                { name: 'cardholder_name', label: 'Cardholder Name' },
-                { name: 'receipt_email', label: 'Email' },
-                { name: 'billing_address', label: 'Billing Address' },
-                { name: 'billing_city', label: 'City' },
-                { name: 'billing_state', label: 'State' },
-                { name: 'billing_zip', label: 'ZIP Code' }
+            const requiredFields = [{
+                    name: 'cardholder_name',
+                    label: 'Cardholder Name'
+                },
+                {
+                    name: 'receipt_email',
+                    label: 'Email'
+                },
+                {
+                    name: 'billing_address',
+                    label: 'Billing Address'
+                },
+                {
+                    name: 'billing_city',
+                    label: 'City'
+                },
+                {
+                    name: 'billing_state',
+                    label: 'State'
+                },
+                {
+                    name: 'billing_zip',
+                    label: 'ZIP Code'
+                }
             ];
 
             let isValid = true;
@@ -433,7 +454,7 @@
             min-height: 50px;
             font-size: 16px;
         }
-        
+
         .stripe-element:focus-within {
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
@@ -482,8 +503,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .hidden {
@@ -558,14 +584,15 @@
             .form-grid-3 {
                 grid-template-columns: 1fr;
             }
-            
+
             .summary-item {
                 font-size: 0.875rem;
             }
-            
+
             .submit-button {
                 padding: 12px 20px;
-                font-size: 16px; /* Prevents zoom on iOS */
+                font-size: 16px;
+                /* Prevents zoom on iOS */
             }
         }
     </style>

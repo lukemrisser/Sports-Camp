@@ -10,26 +10,10 @@
 
 <body>
 
-    <header class="main-header">
-        <div class=header-container>
-            <div class="header-content">
-                <h1>Falcon Teams</h1>
-                <p>Upload a spreadsheet or select a camp to generate teams</p>
-            </div>
-
-            <div class="header-buttons">
-                @if (Auth::user()->isCoachAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
-                @endif
-                <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
-                <a href="{{ route('dashboard') }}" class="header-btn login-btn">Account</a>
-                <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                    @csrf
-                    <button type="submit" class="header-btn logout-btn">Logout</button>
-                </form>
-            </div>
-        </div>
-    </header>
+    @include('partials.header', [
+        'title' => 'Falcon Teams',
+        'subtitle' => 'Upload a spreadsheet or select a camp to generate teams',
+    ])
 
     <style>
         .currency-symbol {
@@ -48,16 +32,16 @@
                     <h2 class="registration-title">Edit Camp</h2>
                 </div>
 
-                @if(session('success'))
+                @if (session('success'))
                     <div class="alert alert-success">
                         {{ session('success') }}
                     </div>
                 @endif
 
-                @if($errors->any())
+                @if ($errors->any())
                     <div class="alert alert-error">
                         <ul class="error-list">
-                            @foreach($errors->all() as $error)
+                            @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
@@ -69,8 +53,9 @@
                         <label class="form-label">Select Camp to Edit</label>
                         <select id="camp-select" class="form-input">
                             <option value="">-- Select a camp --</option>
-                            @foreach($camps as $camp)
-                                <option value="{{ $camp->Camp_ID }}">{{ $camp->Camp_Name }} ({{ $camp->Start_Date }} - {{ $camp->End_Date }})</option>
+                            @foreach ($camps as $camp)
+                                <option value="{{ $camp->Camp_ID }}">{{ $camp->Camp_Name }} ({{ $camp->Start_Date }} -
+                                    {{ $camp->End_Date }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -90,7 +75,7 @@
                             <label for="sport_id" class="form-label">Sport</label>
                             <select id="sport_id" name="sport_id" class="form-input" required>
                                 <option value="">Select a sport</option>
-                                @foreach($sports as $sport)
+                                @foreach ($sports as $sport)
                                     <option value="{{ $sport->Sport_ID }}">{{ $sport->Sport_Name }}</option>
                                 @endforeach
                             </select>
@@ -110,11 +95,13 @@
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label for="registration_open" class="form-label">Registration Open</label>
-                                <input id="registration_open" name="registration_open" type="date" class="form-input" required>
+                                <input id="registration_open" name="registration_open" type="date" class="form-input"
+                                    required>
                             </div>
                             <div class="form-group">
                                 <label for="registration_close" class="form-label">Registration Close</label>
-                                <input id="registration_close" name="registration_close" type="date" class="form-input" required>
+                                <input id="registration_close" name="registration_close" type="date"
+                                    class="form-input" required>
                             </div>
                         </div>
 
@@ -122,7 +109,8 @@
                             <label for="price" class="form-label">Normal Price</label>
                             <div style="position: relative;">
                                 <span class="currency-symbol">$</span>
-                                <input id="price" name="price" type="number" step="0.01" min="0" class="form-input" style="padding-left:25px;" required>
+                                <input id="price" name="price" type="number" step="0.01" min="0"
+                                    class="form-input" style="padding-left:25px;" required>
                             </div>
                         </div>
 
@@ -137,11 +125,13 @@
                             </div>
                             <div class="form-group">
                                 <label for="min_age" class="form-label">Min Age</label>
-                                <input id="min_age" name="min_age" type="number" min="0" class="form-input" required>
+                                <input id="min_age" name="min_age" type="number" min="0" class="form-input"
+                                    required>
                             </div>
                             <div class="form-group">
                                 <label for="max_age" class="form-label">Max Age</label>
-                                <input id="max_age" name="max_age" type="number" min="0" class="form-input" required>
+                                <input id="max_age" name="max_age" type="number" min="0"
+                                    class="form-input" required>
                             </div>
                         </div>
 
@@ -154,7 +144,8 @@
                         <div id="discount-section"></div>
                         <div class="form-grid-2">
                             <div class="mt-1">
-                                <button type="button" id="add-discount" class="submit-button" style="width:auto;">Add Discount</button>
+                                <button type="button" id="add-discount" class="submit-button"
+                                    style="width:auto;">Add Discount</button>
                             </div>
                         </div>
 
@@ -209,7 +200,11 @@
                 return;
             }
 
-            fetch(`{{ url('/edit-camp') }}/${id}/data`, { headers: { 'Accept': 'application/json' } })
+            fetch(`{{ url('/edit-camp') }}/${id}/data`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
                 .then(r => {
                     if (!r.ok) throw new Error('Failed to load camp');
                     return r.json();
@@ -220,10 +215,14 @@
                     form.action = `{{ url('/edit-camp') }}/${id}`;
                     document.getElementById('name').value = data.Camp_Name || '';
                     document.getElementById('sport_id').value = data.Sport_ID || '';
-                    document.getElementById('start_date').value = data.Start_Date ? data.Start_Date.split('T')[0] : '';
-                    document.getElementById('end_date').value = data.End_Date ? data.End_Date.split('T')[0] : '';
-                    document.getElementById('registration_open').value = data.Registration_Open ? data.Registration_Open.split('T')[0] : '';
-                    document.getElementById('registration_close').value = data.Registration_Close ? data.Registration_Close.split('T')[0] : '';
+                    document.getElementById('start_date').value = data.Start_Date ? data.Start_Date.split('T')[
+                        0] : '';
+                    document.getElementById('end_date').value = data.End_Date ? data.End_Date.split('T')[0] :
+                    '';
+                    document.getElementById('registration_open').value = data.Registration_Open ? data
+                        .Registration_Open.split('T')[0] : '';
+                    document.getElementById('registration_close').value = data.Registration_Close ? data
+                        .Registration_Close.split('T')[0] : '';
                     document.getElementById('price').value = data.Price || '';
                     document.getElementById('gender').value = data.Camp_Gender || 'coed';
                     document.getElementById('min_age').value = data.Age_Min || '';
@@ -232,7 +231,8 @@
 
                     clearDiscounts();
                     if (data.discounts && data.discounts.length) {
-                        data.discounts.forEach(d => addDiscountRow(d.Discount_Amount, d.Discount_Date ? d.Discount_Date.split('T')[0] : ''));
+                        data.discounts.forEach(d => addDiscountRow(d.Discount_Amount, d.Discount_Date ? d
+                            .Discount_Date.split('T')[0] : ''));
                     }
                 })
                 .catch(e => {
@@ -241,7 +241,7 @@
                 });
         });
     </script>
-    
+
 </body>
 
 </html>
