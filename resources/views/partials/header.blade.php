@@ -10,11 +10,11 @@
 
         <div class="header-buttons">
             @guest
-                <a href="{{ route('login') }}" class="header-btn login-btn">Login</a>
-                <a href="{{ route('register') }}" class="header-btn register-btn">Register</a>
                 @if (\Illuminate\Support\Facades\Route::currentRouteName() !== 'home')
                     <a href="{{ route('home') }}" class="header-btn login-btn">Home</a>
                 @endif
+                <a href="{{ route('login') }}" class="header-btn login-btn">Login</a>
+                <a href="{{ route('register') }}" class="header-btn register-btn">Register</a>
             @else
                 @if (\Illuminate\Support\Facades\Route::currentRouteName() !== 'home')
                     <a href="{{ route('home') }}" class="header-btn login-btn">Home</a>
