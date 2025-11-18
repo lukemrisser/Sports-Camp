@@ -84,6 +84,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/manage-coaches', [App\Http\Controllers\AdminController::class, 'manageCoaches'])
         ->name('admin.manage-coaches');
 
+    Route::get('/manage-coaches/{id}/edit', [App\Http\Controllers\AdminController::class, 'editCoach'])
+        ->name('admin.edit-coach');
+
+    Route::put('/manage-coaches/{id}', [App\Http\Controllers\AdminController::class, 'updateCoach'])
+        ->name('admin.update-coach');
+
+    Route::delete('/manage-coaches/{id}', [App\Http\Controllers\AdminController::class, 'deleteCoach'])
+        ->name('admin.delete-coach');
+
     // Sports management routes
     Route::get('/sports', [App\Http\Controllers\Admin\AdminSportsController::class, 'index'])
         ->name('admin.manage-sports');

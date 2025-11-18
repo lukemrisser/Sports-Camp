@@ -23,33 +23,33 @@ class AdminController extends Controller
         $sportId = $request->get('sport_id');
         $campId = $request->get('camp_id');
         $paymentStatus = $request->get('payment_status');
-        
+
         // Get all sports and camps for the filter dropdowns
         $sports = Sport::with('camps')->get();
-        
+
         // Filter camps based on selected sport
         if ($sportId) {
             $camps = Camp::with('sport')->where('Sport_ID', $sportId)->orderBy('Camp_Name')->get();
         } else {
             $camps = Camp::with('sport')->whereNotNull('Sport_ID')->orderBy('Camp_Name')->get();
         }
-        
+
         // Start with all orders
         $query = \App\Models\Order::with(['player', 'parent', 'camp.sport']);
-        
+
         // Apply filters
         if ($sportId) {
             $query->whereHas('camp', function ($q) use ($sportId) {
                 $q->where('Sport_ID', $sportId);
             });
         }
-        
+
         if ($campId) {
             $query->where('Camp_ID', $campId);
         }
-        
+
         $orders = $query->orderBy('Order_Date', 'desc')->get();
-        
+
         // Apply payment status filter after getting orders (since it requires model methods)
         if ($paymentStatus) {
             if ($paymentStatus === 'paid') {
@@ -70,24 +70,24 @@ class AdminController extends Controller
                 });
             }
         }
-        
+
         // Calculate financial statistics
         $totalAmount = $orders->sum('Item_Amount') ?? 0;
         $totalPaid = $orders->sum('Item_Amount_Paid') ?? 0;
         $totalOutstanding = $totalAmount - $totalPaid;
-        
+
         $paidOrders = $orders->filter(function ($order) {
             return $order->isFullyPaid();
         });
-        
+
         $partiallyPaidOrders = $orders->filter(function ($order) {
             return $order->isPartiallyPaid();
         });
-        
+
         $pendingOrders = $orders->filter(function ($order) {
             return !$order->isFullyPaid() && !$order->isPartiallyPaid();
         });
-        
+
         return view('admin.finances', compact(
             'sports',
             'camps',
@@ -111,7 +111,51 @@ class AdminController extends Controller
 
     public function manageCoaches()
     {
-        return view('admin.manage-coaches');
+        $coaches = Coach::with('sport')->get();
+        return view('admin.manage-coaches', compact('coaches'));
+    }
+
+    public function editCoach($id)
+    {
+        $coach = Coach::with('sport', 'user')->findOrFail($id);
+        $sports = Sport::orderBy('Sport_Name')->get();
+        return view('admin.edit-coach', compact('coach', 'sports'));
+    }
+
+    public function updateCoach(Request $request, $id)
+    {
+        $coach = Coach::findOrFail($id);
+
+        $validated = $request->validate([
+            'coach_firstname' => 'required|string|max:255',
+            'coach_lastname' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'sport' => 'required|exists:Sports,Sport_ID',
+            'admin' => 'nullable|boolean',
+        ]);
+
+        $coach->Coach_FirstName = $validated['coach_firstname'];
+        $coach->Coach_LastName = $validated['coach_lastname'];
+        $coach->Sport_ID = $validated['sport'];
+        $coach->admin = $validated['admin'] ?? false;
+        $coach->save();
+
+        // Update the associated user's email if changed
+        if ($coach->user && $coach->user->email !== $validated['email']) {
+            $coach->user->email = $validated['email'];
+            $coach->user->save();
+        }
+
+        return redirect()->route('admin.manage-coaches')
+            ->with('success', 'Coach updated successfully!');
+    }
+
+    public function deleteCoach($id)
+    {
+        $coach = Coach::findOrFail($id);
+        $coach->delete();
+        return redirect()->route('admin.manage-coaches')
+            ->with('success', 'Coach deleted successfully!');
     }
 
     public function exportFinances(Request $request)
@@ -119,23 +163,23 @@ class AdminController extends Controller
         $sportId = $request->get('sport_id');
         $campId = $request->get('camp_id');
         $paymentStatus = $request->get('payment_status');
-        
+
         // Apply the same filters as in the finances method
         $query = \App\Models\Order::with(['player', 'parent', 'camp.sport']);
-        
+
         // Apply filters
         if ($sportId) {
             $query->whereHas('camp', function ($q) use ($sportId) {
                 $q->where('Sport_ID', $sportId);
             });
         }
-        
+
         if ($campId) {
             $query->where('Camp_ID', $campId);
         }
-        
+
         $orders = $query->orderBy('Order_Date', 'desc')->get();
-        
+
         // Apply payment status filter after getting orders (since it requires model methods)
         if ($paymentStatus) {
             if ($paymentStatus === 'paid') {
@@ -156,7 +200,7 @@ class AdminController extends Controller
                 });
             }
         }
-        
+
         return Excel::download(new FinancesExport($orders), 'finances-report.xlsx');
     }
 }

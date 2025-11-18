@@ -1339,3 +1339,94 @@ p {
 .modal-btn-confirm:hover {
     background-color: var(--danger-red-hover);
 }
+
+/* ============================================
+   MANAGE COACHES PAGE STYLES
+   ============================================ */
+
+.coaches-table-container {
+    overflow-x: auto;
+    width: 100%;
+    border: 2px solid var(--gray-300);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+}
+
+.coaches-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.coaches-table thead {
+    background: linear-gradient(135deg, var(--gray-700) 0%, var(--gray-900) 100%);
+    color: white;
+}
+
+.coaches-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.coaches-table tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.coaches-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.coaches-table td {
+    padding: 1rem;
+    color: #374151;
+}
+
+.action-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-right: 8px;
+}
+
+.btn-edit {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+    .coaches-table {
+        font-size: 0.875rem;
+    }
+
+    .coaches-table th,
+    .coaches-table td {
+        padding: 0.5rem;
+    }
+}
