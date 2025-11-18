@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Sport;
 use App\Models\FAQ;
 use App\Models\Sponsor;
+use App\Models\GalleryImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -14,13 +15,13 @@ class AdminSportsController extends Controller
 {
     public function index()
     {
-        $sports = Sport::with(['faqs', 'sponsors'])->orderBy('Sport_Name')->get();
+        $sports = Sport::with(['faqs', 'sponsors', 'galleryImages'])->orderBy('Sport_Name')->get();
         return view('admin.manage-sports', compact('sports'));
     }
 
     public function show($id)
     {
-        $sport = Sport::with(['faqs', 'sponsors'])->findOrFail($id);
+        $sport = Sport::with(['faqs', 'sponsors', 'galleryImages'])->findOrFail($id);
         return response()->json($sport);
     }
 
@@ -36,6 +37,10 @@ class AdminSportsController extends Controller
             'sponsors.*.name' => 'required_with:sponsors.*|string|max:100',
             'sponsors.*.link' => 'nullable|url|max:255',
             'sponsors.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'gallery_images' => 'nullable|array',
+            'gallery_images.*.title' => 'required_with:gallery_images.*|string|max:255',
+            'gallery_images.*.text' => 'nullable|string|max:1000',
+            'gallery_images.*.image' => 'required_with:gallery_images.*|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
         ]);
 
         DB::beginTransaction();
@@ -78,6 +83,22 @@ class AdminSportsController extends Controller
                 }
             }
 
+            // Add gallery images if provided
+            if (!empty($validated['gallery_images'])) {
+                foreach ($request->gallery_images as $index => $galleryImage) {
+                    if (!empty($galleryImage['title']) && $request->hasFile("gallery_images.{$index}.image")) {
+                        $imagePath = $request->file("gallery_images.{$index}.image")
+                            ->store('gallery-images', 'public');
+                        
+                        $sport->galleryImages()->create([
+                            'Image_Title' => $galleryImage['title'],
+                            'Image_Text' => $galleryImage['text'] ?? null,
+                            'Image_path' => $imagePath,
+                        ]);
+                    }
+                }
+            }
+
             DB::commit();
             return redirect()->route('admin.manage-sports')
                 ->with('success', 'Sport added successfully!');
@@ -102,6 +123,11 @@ class AdminSportsController extends Controller
             'sponsors.*.link' => 'nullable|url|max:255',
             'sponsors.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'sponsors.*.current_image' => 'nullable|string|max:255',
+            'gallery_images' => 'nullable|array',
+            'gallery_images.*.title' => 'required_with:gallery_images.*|string|max:255',
+            'gallery_images.*.text' => 'nullable|string|max:1000',
+            'gallery_images.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+            'gallery_images.*.current_image' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -160,6 +186,44 @@ class AdminSportsController extends Controller
                 Storage::disk('public')->delete($oldImage);
             }
 
+            // Update gallery images - remove existing and add new ones
+            // First, get old gallery image paths to delete them later
+            $oldGalleryImages = $sport->galleryImages()->whereNotNull('Image_path')->pluck('Image_path')->toArray();
+            $sport->galleryImages()->delete();
+            
+            if (!empty($validated['gallery_images'])) {
+                foreach ($request->gallery_images as $index => $galleryImage) {
+                    if (!empty($galleryImage['title'])) {
+                        $imagePath = null;
+                        
+                        // Handle image upload
+                        if ($request->hasFile("gallery_images.{$index}.image")) {
+                            $imagePath = $request->file("gallery_images.{$index}.image")
+                                ->store('gallery-images', 'public');
+                        } elseif (!empty($galleryImage['current_image'])) {
+                            // Keep existing image if no new one uploaded
+                            $imagePath = $galleryImage['current_image'];
+                            // Remove from deletion list
+                            $oldGalleryImages = array_diff($oldGalleryImages, [$imagePath]);
+                        }
+                        
+                        // Only create if we have an image (either new or existing)
+                        if ($imagePath) {
+                            $sport->galleryImages()->create([
+                                'Image_Title' => $galleryImage['title'],
+                                'Image_Text' => $galleryImage['text'] ?? null,
+                                'Image_path' => $imagePath,
+                            ]);
+                        }
+                    }
+                }
+            }
+            
+            // Delete unused old gallery images
+            foreach ($oldGalleryImages as $oldGalleryImage) {
+                Storage::disk('public')->delete($oldGalleryImage);
+            }
+
             DB::commit();
             return redirect()->route('admin.manage-sports')
                 ->with('success', 'Sport updated successfully!');
@@ -192,9 +256,16 @@ class AdminSportsController extends Controller
                 Storage::disk('public')->delete($imagePath);
             }
             
-            // Delete related FAQs and sponsors
+            // Delete gallery images
+            $galleryImages = $sport->galleryImages()->whereNotNull('Image_path')->pluck('Image_path')->toArray();
+            foreach ($galleryImages as $imagePath) {
+                Storage::disk('public')->delete($imagePath);
+            }
+            
+            // Delete related FAQs, sponsors, and gallery images
             $sport->faqs()->delete();
             $sport->sponsors()->delete();
+            $sport->galleryImages()->delete();
             
             // Then delete the sport
             $sport->delete();

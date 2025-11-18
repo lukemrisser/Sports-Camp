@@ -10,7 +10,7 @@ class SportsController extends Controller
 {
     public function show($sportId)
     {
-        $sport = Sport::with(['sponsors', 'faqs'])->findOrFail($sportId);
+        $sport = Sport::with(['sponsors', 'faqs', 'galleryImages'])->findOrFail($sportId);
         
         // Get all camps for this sport that are accepting registrations
         $camps = Camp::where('Sport_ID', $sportId)

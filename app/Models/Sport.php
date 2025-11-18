@@ -43,4 +43,10 @@ class Sport extends Model
     {
         return $this->hasMany(Sponsor::class, 'Sport_ID', 'Sport_ID');
     }
+
+    // A sport can have many gallery images
+    public function galleryImages()
+    {
+        return $this->hasMany(GalleryImage::class, 'Sport_ID', 'Sport_ID');
+    }
 }

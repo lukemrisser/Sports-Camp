@@ -10,17 +10,57 @@
 
 <body>
 
-    @include('partials.header', [
-        'title' => $sport->Sport_Name . ' Camps',
-        'subtitle' => 'Choose from our available ' . strtolower($sport->Sport_Name) . ' camps below',
-    ])
+@php
+    use Illuminate\Support\Str;
+@endphp
 
-    <div class="container">
+@include('partials.header', [
+    'title' => $sport->Sport_Name . ' Camps',
+    'subtitle' => 'Choose from our available ' . strtolower($sport->Sport_Name) . ' camps below',
+])    <div class="container">
         <!-- About Section -->
         @if ($sport->Sport_Description)
             <div class="about-section">
                 <h2>About Us</h2>
                 <p class="sport-description">{{ $sport->Sport_Description }}</p>
+            </div>
+        @endif
+
+        <!-- Gallery Section -->
+        @if ($sport->galleryImages && $sport->galleryImages->count() > 0)
+            <div class="gallery-section">
+                <div class="gallery-container">
+                    <div class="gallery-slider">
+                        @foreach ($sport->galleryImages as $index => $image)
+                            <div class="gallery-slide {{ $index === 0 ? 'active' : '' }}" data-slide="{{ $index }}">
+                                <div class="gallery-image-wrapper">
+                                    <img src="{{ asset('storage/' . $image->Image_path) }}" 
+                                         alt="{{ $image->Image_Title }}" 
+                                         class="gallery-image">
+                                    <div class="gallery-overlay">
+                                        <div class="gallery-overlay-content">
+                                            <h3>{{ $image->Image_Title }}</h3>
+                                            @if ($image->Image_Text)
+                                                <p>{{ $image->Image_Text }}</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    @if ($sport->galleryImages->count() > 1)
+                        <div class="gallery-navigation">
+                            <button class="gallery-nav-btn prev-btn" onclick="changeGallerySlide(-1)">&lt;</button>
+                            <div class="gallery-dots">
+                                @foreach ($sport->galleryImages as $index => $image)
+                                    <span class="gallery-dot {{ $index === 0 ? 'active' : '' }}" onclick="goToGallerySlide({{ $index }})"></span>
+                                @endforeach
+                            </div>
+                            <button class="gallery-nav-btn next-btn" onclick="changeGallerySlide(1)">&gt;</button>
+                        </div>
+                    @endif
+                </div>
             </div>
         @endif
 
@@ -104,7 +144,7 @@
         <!-- Sponsors Section -->
         @if ($sport->sponsors && $sport->sponsors->count() > 0)
             <div class="sponsors-section">
-                <h2>Our {{ $sport->Sport_Name }} Sponsors</h2>
+                <h2>Our {{ $sport->Sport_Name }} Partners</h2>
                 <div class="sponsors-container">
                     <div class="sponsors-grid" id="sponsorsGrid">
                         @foreach ($sport->sponsors as $index => $sponsor)
@@ -371,6 +411,133 @@
             font-size: 1rem;
         }
 
+        /* Gallery Section */
+        .gallery-section {
+            margin-bottom: 40px;
+        }
+
+        .gallery-container {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .gallery-slider {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .gallery-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .gallery-slide.active {
+            opacity: 1;
+        }
+
+        .gallery-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
+            display: flex;
+            align-items: flex-end;
+            padding: 30px;
+        }
+
+        .gallery-overlay-content h3 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .gallery-overlay-content p {
+            color: #e5e7eb;
+            font-size: 1.1rem;
+            margin: 0;
+            line-height: 1.5;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Gallery Navigation */
+        .gallery-navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 15px;
+        }
+
+        .gallery-nav-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-nav-btn:hover {
+            background: #2563eb;
+            transform: scale(1.1);
+        }
+
+        .gallery-dots {
+            display: flex;
+            gap: 10px;
+        }
+
+        .gallery-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #d1d5db;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-dot.active {
+            background: #3b82f6;
+            transform: scale(1.2);
+        }
+
+        .gallery-dot:hover {
+            background: #6b7280;
+        }
+
         /* Sponsors Section */
         .sponsors-section {
             background: white;
@@ -529,10 +696,33 @@
         @media (max-width: 768px) {
             .about-section,
             .sponsors-section,
-            .faq-section {
+            .faq-section,
+            .gallery-section {
                 padding: 30px 20px;
                 margin-left: 10px;
                 margin-right: 10px;
+            }
+
+            .gallery-slider {
+                height: 300px;
+            }
+
+            .gallery-overlay {
+                padding: 20px;
+            }
+
+            .gallery-overlay-content h3 {
+                font-size: 1.4rem;
+            }
+
+            .gallery-overlay-content p {
+                font-size: 1rem;
+            }
+
+            .gallery-nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
             }
 
             .about-section h2,
@@ -581,6 +771,22 @@
         }
 
         @media (max-width: 480px) {
+            .gallery-slider {
+                height: 250px;
+            }
+
+            .gallery-overlay {
+                padding: 15px;
+            }
+
+            .gallery-overlay-content h3 {
+                font-size: 1.2rem;
+            }
+
+            .gallery-overlay-content p {
+                font-size: 0.9rem;
+            }
+
             .sponsors-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -675,6 +881,52 @@
         window.addEventListener('resize', () => {
             location.reload(); // Simple solution to recalculate layout
         });
+
+        // Gallery Slider Functions
+        let currentGallerySlide = 0;
+        const totalGallerySlides = {{ $sport->galleryImages->count() ?? 0 }};
+
+        function showGallerySlide(slideIndex) {
+            const slides = document.querySelectorAll('.gallery-slide');
+            const dots = document.querySelectorAll('.gallery-dot');
+            
+            // Hide all slides
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            // Show current slide
+            if (slides[slideIndex]) {
+                slides[slideIndex].classList.add('active');
+            }
+            
+            // Update dots
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === slideIndex);
+            });
+        }
+
+        function changeGallerySlide(direction) {
+            currentGallerySlide += direction;
+            
+            if (currentGallerySlide >= totalGallerySlides) {
+                currentGallerySlide = 0;
+            } else if (currentGallerySlide < 0) {
+                currentGallerySlide = totalGallerySlides - 1;
+            }
+            
+            showGallerySlide(currentGallerySlide);
+        }
+
+        function goToGallerySlide(slideIndex) {
+            currentGallerySlide = slideIndex;
+            showGallerySlide(currentGallerySlide);
+        }
+
+        // Auto-rotate gallery every 6 seconds if there are multiple images
+        if (totalGallerySlides > 1) {
+            setInterval(() => {
+                changeGallerySlide(1);
+            }, 6000);
+        }
     </script>
 
     @include('partials.footer')

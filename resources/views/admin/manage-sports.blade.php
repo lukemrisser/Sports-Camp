@@ -189,6 +189,39 @@
                             <button type="button" class="add-btn" onclick="addSponsor()">Add Sponsor</button>
                         </div>
 
+                        <!-- Gallery Images Section -->
+                        <div class="subsection">
+                            <h4 class="subsection-title">Gallery Images</h4>
+                            <div id="gallery-images-container">
+                                @if(old('gallery_images'))
+                                    @foreach(old('gallery_images') as $index => $galleryImage)
+                                        <div class="gallery-image-item">
+                                            <div class="form-grid-2">
+                                                <div class="form-group">
+                                                    <label class="form-label">Image Title</label>
+                                                    <input type="text" name="gallery_images[{{ $index }}][title]" class="form-input"
+                                                        placeholder="Enter image title..." value="{{ $galleryImage['title'] ?? '' }}">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label">Image</label>
+                                                    <input type="file" name="gallery_images[{{ $index }}][image]" class="form-input"
+                                                        accept="image/*">
+                                                    <small class="form-help">Recommended: High quality images for gallery display</small>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Image Description</label>
+                                                <textarea name="gallery_images[{{ $index }}][text]" class="form-input"
+                                                    placeholder="Enter image description..." rows="2">{{ $galleryImage['text'] ?? '' }}</textarea>
+                                            </div>
+                                            <button type="button" class="remove-btn" onclick="removeGalleryImage(this)">Remove Image</button>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                            <button type="button" class="add-btn" onclick="addGalleryImage()">Add Gallery Image</button>
+                        </div>
+
                             <div class="submit-section">
                                 <button type="submit" class="submit-button">Add Sport</button>
                             </div>
@@ -241,6 +274,15 @@
                         <!-- Sponsors will be populated by JavaScript -->
                     </div>
                     <button type="button" class="add-btn" onclick="addEditSponsor()">Add Sponsor</button>
+                </div>
+
+                <!-- Gallery Images Section -->
+                <div class="subsection">
+                    <h4 class="subsection-title">Gallery Images</h4>
+                    <div id="edit-gallery-images-container">
+                        <!-- Gallery images will be populated by JavaScript -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addEditGalleryImage()">Add Gallery Image</button>
                 </div>
 
                 <div class="submit-section">
@@ -468,8 +510,8 @@
             color: #374151;
         }
 
-        /* FAQ and Sponsor Item Styles */
-        .faq-item, .sponsor-item {
+        /* FAQ, Sponsor, and Gallery Image Item Styles */
+        .faq-item, .sponsor-item, .gallery-image-item {
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
@@ -478,7 +520,7 @@
             position: relative;
         }
 
-        .faq-item:last-child, .sponsor-item:last-child {
+        .faq-item:last-child, .sponsor-item:last-child, .gallery-image-item:last-child {
             margin-bottom: 0;
         }
 
@@ -668,8 +710,10 @@
     <script>
         let faqCounter = {{ old('faqs') ? count(old('faqs')) : 0 }};
         let sponsorCounter = {{ old('sponsors') ? count(old('sponsors')) : 0 }};
+        let galleryImageCounter = {{ old('gallery_images') ? count(old('gallery_images')) : 0 }};
         let editFaqCounter = 0;
         let editSponsorCounter = 0;
+        let editGalleryImageCounter = 0;
 
         // Add FAQ functionality
         function addFaq() {
@@ -731,6 +775,40 @@
             button.parentElement.remove();
         }
 
+        // Add Gallery Image functionality
+        function addGalleryImage() {
+            const container = document.getElementById('gallery-images-container');
+            const galleryImageDiv = document.createElement('div');
+            galleryImageDiv.className = 'gallery-image-item';
+            galleryImageDiv.innerHTML = `
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Image Title</label>
+                        <input type="text" name="gallery_images[${galleryImageCounter}][title]" class="form-input"
+                            placeholder="Enter image title...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Image</label>
+                        <input type="file" name="gallery_images[${galleryImageCounter}][image]" class="form-input"
+                            accept="image/*">
+                        <small class="form-help">Recommended: High quality images for gallery display</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Image Description</label>
+                    <textarea name="gallery_images[${galleryImageCounter}][text]" class="form-input"
+                        placeholder="Enter image description..." rows="2"></textarea>
+                </div>
+                <button type="button" class="remove-btn" onclick="removeGalleryImage(this)">Remove Image</button>
+            `;
+            container.appendChild(galleryImageDiv);
+            galleryImageCounter++;
+        }
+
+        function removeGalleryImage(button) {
+            button.parentElement.remove();
+        }
+
         // Edit modal functions
         function addEditFaq() {
             const container = document.getElementById('edit-faqs-container');
@@ -782,6 +860,35 @@
             editSponsorCounter++;
         }
 
+        function addEditGalleryImage() {
+            const container = document.getElementById('edit-gallery-images-container');
+            const galleryImageDiv = document.createElement('div');
+            galleryImageDiv.className = 'gallery-image-item';
+            galleryImageDiv.innerHTML = `
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Image Title</label>
+                        <input type="text" name="gallery_images[${editGalleryImageCounter}][title]" class="form-input"
+                            placeholder="Enter image title...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Image</label>
+                        <input type="file" name="gallery_images[${editGalleryImageCounter}][image]" class="form-input"
+                            accept="image/*">
+                        <small class="form-help">High quality images for gallery display | Leave empty to keep current image</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Image Description</label>
+                    <textarea name="gallery_images[${editGalleryImageCounter}][text]" class="form-input"
+                        placeholder="Enter image description..." rows="2"></textarea>
+                </div>
+                <button type="button" class="remove-btn" onclick="removeGalleryImage(this)">Remove Image</button>
+            `;
+            container.appendChild(galleryImageDiv);
+            editGalleryImageCounter++;
+        }
+
         // Edit sport functionality
         async function editSport(sportId) {
             try {
@@ -796,11 +903,13 @@
                 document.getElementById('edit_sport_name').value = sport.Sport_Name;
                 document.getElementById('edit_sport_description').value = sport.Sport_Description || '';
                 
-                // Clear existing FAQs and sponsors
+                // Clear existing FAQs, sponsors, and gallery images
                 document.getElementById('edit-faqs-container').innerHTML = '';
                 document.getElementById('edit-sponsors-container').innerHTML = '';
+                document.getElementById('edit-gallery-images-container').innerHTML = '';
                 editFaqCounter = 0;
                 editSponsorCounter = 0;
+                editGalleryImageCounter = 0;
                 
                 // Populate FAQs
                 if (sport.faqs && sport.faqs.length > 0) {
@@ -861,6 +970,44 @@
                         `;
                         container.appendChild(sponsorDiv);
                         editSponsorCounter++;
+                    });
+                }
+                
+                // Populate gallery images
+                if (sport.gallery_images && sport.gallery_images.length > 0) {
+                    sport.gallery_images.forEach(galleryImage => {
+                        const container = document.getElementById('edit-gallery-images-container');
+                        const galleryImageDiv = document.createElement('div');
+                        galleryImageDiv.className = 'gallery-image-item';
+                        galleryImageDiv.innerHTML = `
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Image Title</label>
+                                    <input type="text" name="gallery_images[${editGalleryImageCounter}][title]" class="form-input"
+                                        value="${(galleryImage.Image_Title || '').replace(/"/g, '&quot;')}" placeholder="Enter image title...">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Image</label>
+                                    <input type="file" name="gallery_images[${editGalleryImageCounter}][image]" class="form-input"
+                                        accept="image/*">
+                                    ${galleryImage.Image_path ? 
+                                        `<div class="current-image">
+                                            <small>Current: <a href="/storage/${galleryImage.Image_path}" target="_blank">View Image</a></small>
+                                            <input type="hidden" name="gallery_images[${editGalleryImageCounter}][current_image]" value="${galleryImage.Image_path}">
+                                        </div>` : 
+                                        '<small class="form-help">No image currently uploaded</small>'
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Image Description</label>
+                                <textarea name="gallery_images[${editGalleryImageCounter}][text]" class="form-input"
+                                    placeholder="Enter image description..." rows="2">${galleryImage.Image_Text || ''}</textarea>
+                            </div>
+                            <button type="button" class="remove-btn" onclick="removeGalleryImage(this)">Remove Image</button>
+                        `;
+                        container.appendChild(galleryImageDiv);
+                        editGalleryImageCounter++;
                     });
                 }
                 
