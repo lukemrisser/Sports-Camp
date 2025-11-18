@@ -114,6 +114,7 @@
                     </div>
                     <div class="collapsible-content" id="addSportContent">
                         <form method="POST" action="{{ route('admin.sports.store') }}" class="registration-form" enctype="multipart/form-data">
+                            @csrf
                         
                         <!-- Basic Information -->
                         <div class="form-grid-2">
@@ -175,9 +176,9 @@
                                                         placeholder="https://..." value="{{ $sponsor['link'] ?? '' }}">
                                                 </div>
                                                 <div class="form-group">
-                                                    <label class="form-label">Logo Path</label>
-                                                    <input type="text" name="sponsors[{{ $index }}][image_path]" class="form-input"
-                                                        placeholder="path/to/logo.png" value="{{ $sponsor['image_path'] ?? '' }}">
+                                                    <label class="form-label">Logo Image</label>
+                                                    <input type="file" name="sponsors[{{ $index }}][image]" class="form-input"
+                                                        accept="image/*">
                                                 </div>
                                             </div>
                                             <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
@@ -717,6 +718,7 @@
                         <label class="form-label">Logo Image</label>
                         <input type="file" name="sponsors[${sponsorCounter}][image]" class="form-input"
                             accept="image/*">
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio) or similar landscape format</small>
                     </div>
                 </div>
                 <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
@@ -771,7 +773,7 @@
                         <label class="form-label">Logo Image</label>
                         <input type="file" name="sponsors[${editSponsorCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Leave empty to keep current image</small>
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio) | Leave empty to keep current image</small>
                     </div>
                 </div>
                 <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
