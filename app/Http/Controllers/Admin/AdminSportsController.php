@@ -27,6 +27,45 @@ class AdminSportsController extends Controller
 
     public function store(Request $request)
     {
+        // Check for upload errors
+        if ($request->hasFile('sponsors')) {
+            foreach ($request->file('sponsors') as $index => $sponsor) {
+                if (isset($sponsor['image']) && $sponsor['image']->getError() !== UPLOAD_ERR_OK) {
+                    $errorMessages = [
+                        UPLOAD_ERR_INI_SIZE => 'File size exceeds PHP upload_max_filesize limit.',
+                        UPLOAD_ERR_FORM_SIZE => 'File size exceeds form MAX_FILE_SIZE limit.',
+                        UPLOAD_ERR_PARTIAL => 'File was only partially uploaded.',
+                        UPLOAD_ERR_NO_FILE => 'No file was uploaded.',
+                        UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary upload directory.',
+                        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
+                        UPLOAD_ERR_EXTENSION => 'File upload stopped by extension.',
+                    ];
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Sponsor image upload error: ' . ($errorMessages[$sponsor['image']->getError()] ?? 'Unknown error'));
+                }
+            }
+        }
+
+        if ($request->hasFile('gallery_images')) {
+            foreach ($request->file('gallery_images') as $index => $galleryImage) {
+                if (isset($galleryImage['image']) && $galleryImage['image']->getError() !== UPLOAD_ERR_OK) {
+                    $errorMessages = [
+                        UPLOAD_ERR_INI_SIZE => 'File size exceeds PHP upload_max_filesize limit.',
+                        UPLOAD_ERR_FORM_SIZE => 'File size exceeds form MAX_FILE_SIZE limit.',
+                        UPLOAD_ERR_PARTIAL => 'File was only partially uploaded.',
+                        UPLOAD_ERR_NO_FILE => 'No file was uploaded.',
+                        UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary upload directory.',
+                        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
+                        UPLOAD_ERR_EXTENSION => 'File upload stopped by extension.',
+                    ];
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Gallery image upload error: ' . ($errorMessages[$galleryImage['image']->getError()] ?? 'Unknown error'));
+                }
+            }
+        }
+
         $validated = $request->validate([
             'sport_name' => 'required|string|max:100|unique:Sports,Sport_Name',
             'sport_description' => 'nullable|string|max:1000',
@@ -36,11 +75,11 @@ class AdminSportsController extends Controller
             'sponsors' => 'nullable|array',
             'sponsors.*.name' => 'required_with:sponsors.*|string|max:100',
             'sponsors.*.link' => 'nullable|url|max:255',
-            'sponsors.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'sponsors.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
             'gallery_images' => 'nullable|array',
             'gallery_images.*.title' => 'required_with:gallery_images.*|string|max:255',
             'gallery_images.*.text' => 'nullable|string|max:1000',
-            'gallery_images.*.image' => 'required_with:gallery_images.*|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+            'gallery_images.*.image' => 'required_with:gallery_images.*|image|mimes:jpeg,png,jpg,gif,svg|max:15360',
         ]);
 
         DB::beginTransaction();
@@ -121,12 +160,12 @@ class AdminSportsController extends Controller
             'sponsors' => 'nullable|array',
             'sponsors.*.name' => 'required_with:sponsors.*|string|max:100',
             'sponsors.*.link' => 'nullable|url|max:255',
-            'sponsors.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'sponsors.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
             'sponsors.*.current_image' => 'nullable|string|max:255',
             'gallery_images' => 'nullable|array',
             'gallery_images.*.title' => 'required_with:gallery_images.*|string|max:255',
             'gallery_images.*.text' => 'nullable|string|max:1000',
-            'gallery_images.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+            'gallery_images.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:15360',
             'gallery_images.*.current_image' => 'nullable|string|max:255',
         ]);
 

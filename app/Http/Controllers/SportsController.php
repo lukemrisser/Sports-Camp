@@ -10,7 +10,19 @@ class SportsController extends Controller
 {
     public function show($sportId)
     {
-        $sport = Sport::with(['sponsors', 'faqs', 'galleryImages'])->findOrFail($sportId);
+        $sport = Sport::with(['sponsors', 'galleryImages'])->findOrFail($sportId);
+        return view('sport', compact('sport'));
+    }
+
+    public function about($sportId)
+    {
+        $sport = Sport::findOrFail($sportId);
+        return view('sport-about', compact('sport'));
+    }
+
+    public function camps($sportId)
+    {
+        $sport = Sport::findOrFail($sportId);
         
         // Get all camps for this sport that are accepting registrations
         $camps = Camp::where('Sport_ID', $sportId)
@@ -53,6 +65,12 @@ class SportsController extends Controller
             ];
         })->toArray();
 
-        return view('sport', compact('sport', 'campCards'));
+        return view('sport-camps', compact('sport', 'campCards'));
+    }
+
+    public function faqs($sportId)
+    {
+        $sport = Sport::with(['faqs'])->findOrFail($sportId);
+        return view('sport-faqs', compact('sport'));
     }
 }

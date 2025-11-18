@@ -762,7 +762,7 @@
                         <label class="form-label">Logo Image</label>
                         <input type="file" name="sponsors[${sponsorCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: 300x160px (16:9 ratio) or similar landscape format</small>
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio) or similar landscape format | Max size: 10MB</small>
                     </div>
                 </div>
                 <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
@@ -791,7 +791,7 @@
                         <label class="form-label">Image</label>
                         <input type="file" name="gallery_images[${galleryImageCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: High quality images for gallery display</small>
+                        <small class="form-help">Recommended: High quality images for gallery display | Max size: 15MB</small>
                     </div>
                 </div>
                 <div class="form-group">
@@ -851,7 +851,7 @@
                         <label class="form-label">Logo Image</label>
                         <input type="file" name="sponsors[${editSponsorCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: 300x160px (16:9 ratio) | Leave empty to keep current image</small>
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio) | Max size: 10MB | Leave empty to keep current image</small>
                     </div>
                 </div>
                 <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>

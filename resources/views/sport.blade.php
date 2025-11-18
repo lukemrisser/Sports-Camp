@@ -18,13 +18,13 @@
     'title' => $sport->Sport_Name . ' Camps',
     'subtitle' => 'Choose from our available ' . strtolower($sport->Sport_Name) . ' camps below',
 ])    <div class="container">
-        <!-- About Section -->
-        @if ($sport->Sport_Description)
-            <div class="about-section">
-                <h2>About Us</h2>
-                <p class="sport-description">{{ $sport->Sport_Description }}</p>
-            </div>
-        @endif
+        <!-- Navigation -->
+    <div class="sport-navigation">
+        <a href="{{ route('sport.show', $sport->Sport_ID) }}" class="nav-link active">Home</a>
+        <a href="{{ route('sport.camps', $sport->Sport_ID) }}" class="nav-link">Register for Camp!</a>
+        <a href="{{ route('sport.about', $sport->Sport_ID) }}" class="nav-link">About Us</a>
+        <a href="{{ route('sport.faqs', $sport->Sport_ID) }}" class="nav-link">FAQs</a>
+    </div>
 
         <!-- Gallery Section -->
         @if ($sport->galleryImages && $sport->galleryImages->count() > 0)
@@ -39,10 +39,17 @@
                                          class="gallery-image">
                                     <div class="gallery-overlay">
                                         <div class="gallery-overlay-content">
-                                            <h3>{{ $image->Image_Title }}</h3>
-                                            @if ($image->Image_Text)
-                                                <p>{{ $image->Image_Text }}</p>
-                                            @endif
+                                            <div class="gallery-text">
+                                                <h3>{{ $image->Image_Title }}</h3>
+                                                @if ($image->Image_Text)
+                                                    <p>{{ $image->Image_Text }}</p>
+                                                @endif
+                                            </div>
+                                            <div class="gallery-button">
+                                                <a href="{{ route('sport.camps', $sport->Sport_ID) }}" class="camp-register-btn">
+                                                    Register Now
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -60,83 +67,6 @@
                             <button class="gallery-nav-btn next-btn" onclick="changeGallerySlide(1)">&gt;</button>
                         </div>
                     @endif
-                </div>
-            </div>
-        @endif
-
-        @if (count($campCards) > 0)
-            <div class="camps-section">
-                <h2>Available {{ $sport->Sport_Name }} Camps</h2>
-            </div>
-            <div class="cards-grid">
-                @foreach ($campCards as $camp)
-                    <div class="registration-card blue">
-                        <div class="card-icon">🏕️</div>
-                        <h3>{{ $camp['title'] }}</h3>
-                        <div class="camp-details">
-                            <p class="camp-description">
-                                <strong>Details:</strong> {{ $camp['description'] }}
-                            </p>
-                            <p class="camp-dates">
-                                <strong>Date:</strong> {{ $camp['start_date'] }} - {{ $camp['end_date'] }}
-                            </p>
-                            <p class="camp-location">
-                                <strong>Location:</strong> {{ $camp['location_name'] }}<br>
-                                <span class="location-address">{{ $camp['street_address'] }}, {{ $camp['city'] }},
-                                    {{ $camp['state'] }} {{ $camp['zip_code'] }}</span>
-                            </p>
-                            @if ($camp['has_discount'])
-                                <p class="discount-info">
-                                    <strong>Early Bird Discout! Save ${{ number_format($camp['discount_amount'], 2) }}
-                                        if you register by {{ $camp['discount_expires'] }}</strong>
-                                </p>
-                                <p class="camp-price original-price">
-                                    <strong>Original Price:</strong> <span
-                                        class="strikethrough">${{ number_format($camp['price'], 2) }}</span>
-                                </p>
-                                <p class="camp-price discounted-price">
-                                    <strong>Discounted Price:</strong> <span
-                                        class="discount-highlight">${{ number_format($camp['discounted_price'], 2) }}</span>
-                                </p>
-                            @else
-                                <p class="camp-price">
-                                    <strong>Price:</strong> ${{ number_format($camp['price'], 2) }}
-                                </p>
-                            @endif
-                            <p class="registration-due">
-                                <strong>Register By:</strong> {{ $camp['registration_due'] }}
-                            </p>
-                        </div>
-                        <a href="{{ route($camp['route'], ['camp' => $camp['id']]) }}" class="card-button">
-                            Register Now
-                        </a>
-                    </div>
-                @endforeach
-            </div>
-        @else
-            <div class="no-camps-message">
-                <h3>No camps currently available</h3>
-                <p>There are no {{ strtolower($sport->Sport_Name) }} camps accepting registrations at this time.</p>
-                <a href="{{ route('home') }}" class="card-button">← Back to Home</a>
-            </div>
-        @endif
-
-        <!-- FAQ Section -->
-        @if ($sport->faqs && $sport->faqs->count() > 0)
-            <div class="faq-section">
-                <h2>Frequently Asked Questions</h2>
-                <div class="faq-container">
-                    @foreach ($sport->faqs as $index => $faq)
-                        <div class="faq-item" data-faq="{{ $index }}">
-                            <div class="faq-question" onclick="toggleFaq({{ $index }})">
-                                <h3>{{ $faq->Question }}</h3>
-                                <span class="faq-toggle">+</span>
-                            </div>
-                            <div class="faq-answer" id="faq-{{ $index }}">
-                                <p>{{ $faq->Answer }}</p>
-                            </div>
-                        </div>
-                    @endforeach
                 </div>
             </div>
         @endif
@@ -185,6 +115,41 @@
     </div>
 
     <style>
+        /* Sport Navigation */
+        .sport-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            padding: 12px 24px;
+            text-decoration: none;
+            color: #6b7280;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .nav-link:hover {
+            color: #3b82f6;
+            background: #f8fafc;
+            border-color: #e5e7eb;
+        }
+
+        .nav-link.active {
+            color: white;
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
         .camp-details {
             text-align: left;
             margin: 15px 0;
@@ -282,134 +247,7 @@
             background-color: #4b5563 !important;
         }
 
-        /* About Section */
-        .about-section {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            margin-bottom: 40px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
 
-        /* Camps Section */
-        .camps-section {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .camps-section h2 {
-            color: #1f2937;
-            font-size: 2rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .about-section h2 {
-            color: #1f2937;
-            margin-bottom: 20px;
-            font-size: 2rem;
-            font-weight: 600;
-        }
-
-        .about-section .sport-description {
-            color: #4b5563;
-            font-size: 1.1rem;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        /* FAQ Section */
-        .faq-section {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            margin-top: 40px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .faq-section h2 {
-            color: #1f2937;
-            margin-bottom: 30px;
-            font-size: 1.8rem;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .faq-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .faq-item {
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 20px;
-        }
-
-        .faq-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .faq-question {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            padding: 20px 0;
-            transition: all 0.3s ease;
-        }
-
-        .faq-question:hover {
-            color: #3b82f6;
-        }
-
-        .faq-question h3 {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #374151;
-            flex: 1;
-            padding-right: 20px;
-        }
-
-        .faq-question:hover h3 {
-            color: #3b82f6;
-        }
-
-        .faq-toggle {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #6b7280;
-            transition: all 0.3s ease;
-            transform-origin: center;
-        }
-
-        .faq-toggle.open {
-            transform: rotate(45deg);
-            color: #3b82f6;
-        }
-
-        .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            padding: 0 0 0 0;
-        }
-
-        .faq-answer.open {
-            max-height: 200px;
-            padding: 0 0 20px 0;
-            transition: max-height 0.4s ease-in;
-        }
-
-        .faq-answer p {
-            margin: 0;
-            color: #4b5563;
-            line-height: 1.6;
-            font-size: 1rem;
-        }
 
         /* Gallery Section */
         .gallery-section {
@@ -469,7 +307,18 @@
             padding: 30px;
         }
 
-        .gallery-overlay-content h3 {
+        .gallery-overlay-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+        }
+
+        .gallery-text {
+            flex: 1;
+        }
+
+        .gallery-text h3 {
             color: white;
             font-size: 1.8rem;
             font-weight: 600;
@@ -477,12 +326,37 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
-        .gallery-overlay-content p {
+        .gallery-text p {
             color: #e5e7eb;
             font-size: 1.1rem;
             margin: 0;
             line-height: 1.5;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .gallery-button {
+            margin-left: 20px;
+        }
+
+        .camp-register-btn {
+            background: #16a34a;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+            text-shadow: none;
+            border: 2px solid transparent;
+        }
+
+        .camp-register-btn:hover {
+            background: #15803d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
         /* Gallery Navigation */
@@ -694,9 +568,17 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .about-section,
+            .sport-navigation {
+                gap: 10px;
+                padding: 15px;
+            }
+
+            .nav-link {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+
             .sponsors-section,
-            .faq-section,
             .gallery-section {
                 padding: 30px 20px;
                 margin-left: 10px;
@@ -725,22 +607,8 @@
                 font-size: 16px;
             }
 
-            .about-section h2,
-            .sponsors-section h2,
-            .faq-section h2 {
+            .sponsors-section h2 {
                 font-size: 1.5rem;
-            }
-
-            .faq-question h3 {
-                font-size: 1rem;
-            }
-
-            .faq-answer p {
-                font-size: 0.9rem;
-            }
-
-            .about-section .sport-description {
-                font-size: 1rem;
             }
 
             .sponsors-grid {
@@ -771,6 +639,17 @@
         }
 
         @media (max-width: 480px) {
+            .sport-navigation {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .nav-link {
+                width: 100%;
+                max-width: 200px;
+                text-align: center;
+            }
+
             .gallery-slider {
                 height: 250px;
             }
@@ -799,31 +678,6 @@
     </style>
 
     <script>
-        // FAQ Toggle Functionality
-        function toggleFaq(index) {
-            const answer = document.getElementById(`faq-${index}`);
-            const toggle = document.querySelector(`[data-faq="${index}"] .faq-toggle`);
-            
-            if (answer && toggle) {
-                if (answer.classList.contains('open')) {
-                    answer.classList.remove('open');
-                    toggle.classList.remove('open');
-                } else {
-                    // Close all other FAQs
-                    document.querySelectorAll('.faq-answer').forEach(item => {
-                        item.classList.remove('open');
-                    });
-                    document.querySelectorAll('.faq-toggle').forEach(item => {
-                        item.classList.remove('open');
-                    });
-                    
-                    // Open the clicked FAQ
-                    answer.classList.add('open');
-                    toggle.classList.add('open');
-                }
-            }
-        }
-
         // Sponsor Rotation Functionality
         let currentSlide = 0;
         const totalSponsors = {{ $sport->sponsors->count() ?? 0 }};
