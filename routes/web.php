@@ -89,6 +89,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         ->name('admin.manage-sports');
     Route::post('/sports', [App\Http\Controllers\Admin\AdminSportsController::class, 'store'])
         ->name('admin.sports.store');
+    Route::get('/sports/{id}/data', [App\Http\Controllers\Admin\AdminSportsController::class, 'show'])
+        ->name('admin.sports.show');
     Route::put('/sports/{id}', [App\Http\Controllers\Admin\AdminSportsController::class, 'update'])
         ->name('admin.sports.update');
     Route::delete('/sports/{id}', [App\Http\Controllers\Admin\AdminSportsController::class, 'destroy'])

@@ -31,4 +31,16 @@ class Sport extends Model
     {
         return $this->hasMany(Camp::class, 'Sport_ID', 'Sport_ID');
     }
+
+    // A sport can have many FAQs
+    public function faqs()
+    {
+        return $this->hasMany(FAQ::class, 'Sport_ID', 'Sport_ID');
+    }
+
+    // A sport can have many sponsors
+    public function sponsors()
+    {
+        return $this->hasMany(Sponsor::class, 'Sport_ID', 'Sport_ID');
+    }
 }
