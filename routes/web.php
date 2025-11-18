@@ -13,6 +13,9 @@ use App\Http\Controllers\SportsController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/sport/{sport}', [SportsController::class, 'show'])->name('sport.show');
+Route::get('/sport/{sport}/about', [SportsController::class, 'about'])->name('sport.about');
+Route::get('/sport/{sport}/camps', [SportsController::class, 'camps'])->name('sport.camps');
+Route::get('/sport/{sport}/faqs', [SportsController::class, 'faqs'])->name('sport.faqs');
 
 // Temporarily change this:
 Route::get('/user-profile', function () {
@@ -98,6 +101,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         ->name('admin.manage-sports');
     Route::post('/sports', [App\Http\Controllers\Admin\AdminSportsController::class, 'store'])
         ->name('admin.sports.store');
+    Route::get('/sports/{id}/data', [App\Http\Controllers\Admin\AdminSportsController::class, 'show'])
+        ->name('admin.sports.show');
     Route::put('/sports/{id}', [App\Http\Controllers\Admin\AdminSportsController::class, 'update'])
         ->name('admin.sports.update');
     Route::delete('/sports/{id}', [App\Http\Controllers\Admin\AdminSportsController::class, 'destroy'])

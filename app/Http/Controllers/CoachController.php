@@ -537,7 +537,9 @@ class CoachController extends Controller
     {
         $user = Auth::user();
         $coach = $user->coach; // assumes User hasOne Coach
-        $camps = $coach ? $coach->camps : collect(); // Collection of Camp models or empty
+        $camps = $coach && $coach->Sport_ID 
+            ? Camp::where('Sport_ID', $coach->Sport_ID)->get() 
+            : collect(); // Collection of Camp models or empty
 
         return view('coach.organize-teams', compact('camps'));
     }
