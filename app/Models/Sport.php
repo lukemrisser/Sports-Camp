@@ -17,6 +17,7 @@ class Sport extends Model
 
     protected $fillable = [
         'Sport_Name',
+        'Sport_Description',
     ];
 
     // A sport can have many coaches
