@@ -18,7 +18,7 @@
 <div class="container">
     <!-- Navigation -->
     <div class="sport-navigation">
-        <a href="{{ route('sport.show', $sport->Sport_ID) }}" class="nav-link">Home</a>
+        <a href="{{ route('sport.show', $sport->Sport_ID) }}" class="nav-link">{{ $sport->Sport_Name }} Home</a>
         <a href="{{ route('sport.camps', $sport->Sport_ID) }}" class="nav-link">Register for Camp!</a>
         <a href="{{ route('sport.about', $sport->Sport_ID) }}" class="nav-link">About Us</a>
         <a href="{{ route('sport.faqs', $sport->Sport_ID) }}" class="nav-link active">FAQs</a>
