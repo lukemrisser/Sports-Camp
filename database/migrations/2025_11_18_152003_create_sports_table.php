@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('coaches', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->unique();
-            $table->timestamps();
+        Schema::create('sports', function (Blueprint $table) {
+            $table->id('Sport_ID');
+            $table->string('Sport_Name', 50);
         });
     }
 
@@ -23,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('coaches');
+        Schema::dropIfExists('sports');
     }
 };
