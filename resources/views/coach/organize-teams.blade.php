@@ -50,13 +50,6 @@
                 </form>
             </div>
         </div>
-
-        <div class="navigation">
-            <a href="{{ url('/') }}">← Back to Home</a>
-            @auth
-                <a href="{{ route('coach-dashboard') }}">My Dashboard</a>
-            @endauth
-        </div>
     </div>
 
     <style>

@@ -41,7 +41,7 @@
             </div>
 
             <!-- Organize Teams Card -->
-            <div class="registration-card orange">
+            <div class="registration-card blue">
                 <div class="card-icon">👥</div>
                 <h3>Organize Teams</h3>
                 <p>Create balanced teams from your uploaded player data</p>
@@ -49,7 +49,7 @@
             </div>
 
             <!-- Create Camp Card -->
-            <div class="registration-card purple">
+            <div class="registration-card blue">
                 <div class="card-icon">🏕️</div>
                 <h3>Create New Camp</h3>
                 <p>Set up a new camp session for players to register</p>
@@ -57,7 +57,7 @@
             </div>
 
             <!-- Edit Camp Card -->
-            <div class="registration-card green">
+            <div class="registration-card blue">
                 <div class="card-icon">✏️</div>
                 <h3>Edit Existing Camps</h3>
                 <p>Modify details of your existing camp sessions</p>
