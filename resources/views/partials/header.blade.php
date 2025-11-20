@@ -11,7 +11,7 @@
         <div class="header-buttons">
             @guest
                 @if (\Illuminate\Support\Facades\Route::currentRouteName() !== 'home')
-                    <a href="{{ route('home') }}" class="header-btn login-btn">Dashboard</a>
+                    <a href="{{ route('home') }}" class="header-btn login-btn">Home</a>
                 @endif
                 <a href="{{ route('login') }}" class="header-btn login-btn">Login</a>
                 <a href="{{ route('register') }}" class="header-btn register-btn">Register</a>
