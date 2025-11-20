@@ -11,7 +11,6 @@
 <body>
     @include('partials.header', [
         'title' => 'Admin Dashboard',
-        'subtitle' => 'Welcome back, ' . Auth::user()->name . '!',
         'title_class' => 'welcome-title',
     ])
 

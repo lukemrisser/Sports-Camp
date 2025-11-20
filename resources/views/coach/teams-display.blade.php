@@ -11,7 +11,6 @@
 <body>
     @include('partials.header', [
         'title' => 'Generated Teams',
-        'subtitle' => 'Teams organized with teammate requests considered',
     ])
 
     <div class="container">

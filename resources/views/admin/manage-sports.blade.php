@@ -12,7 +12,6 @@
 
     @include('partials.header', [
         'title' => 'Manage Sports',
-        'subtitle' => 'Add, edit, and delete sports available for camps',
     ])
 
 

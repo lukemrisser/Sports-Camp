@@ -20,10 +20,16 @@
                     <a href="{{ route('home') }}" class="header-btn login-btn">Home</a>
                 @endif
                 @if (Auth::user()->isCoach() && \Illuminate\Support\Facades\Route::currentRouteName() !== 'coach-dashboard')
-                    <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn">Coach Dashboard</a>
+                    <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn" title="Coach Dashboard">
+                        <span class="label-full">Coach Dashboard</span>
+                        <span class="label-short">Coach</span>
+                    </a>
                 @endif
                 @if (Auth::user()->isCoachAdmin() && \Illuminate\Support\Facades\Route::currentRouteName() !== 'admin.dashboard')
-                    <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn">Admin Dashboard</a>
+                    <a href="{{ route('admin.dashboard') }}" class="header-btn dashboard-btn" title="Admin Dashboard">
+                        <span class="label-full">Admin Dashboard</span>
+                        <span class="label-short">Admin</span>
+                    </a>
                 @endif
                 @if (\Illuminate\Support\Facades\Route::currentRouteName() !== 'user-profile')
                     <a href="{{ route('user-profile') }}" class="header-btn login-btn">Profile</a>
@@ -73,4 +79,24 @@
             });
         }
     });
+</script>
+
+<script>
+    // Responsive header-buttons logic
+    function updateHeaderButtonsClass() {
+        var headerButtons = document.querySelector('.header-buttons');
+        if (!headerButtons) return;
+        var headerWidth = headerButtons.offsetWidth;
+        var windowWidth = window.innerWidth;
+        if (
+            (headerWidth >= 520 &&
+                windowWidth <= 1000) || windowWidth < 950
+        ) {
+            headerButtons.classList.add('header-wide');
+        } else {
+            headerButtons.classList.remove('header-wide');
+        }
+    }
+    window.addEventListener('resize', updateHeaderButtonsClass);
+    window.addEventListener('DOMContentLoaded', updateHeaderButtonsClass);
 </script>

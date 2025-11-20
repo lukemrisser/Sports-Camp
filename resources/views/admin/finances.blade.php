@@ -41,7 +41,6 @@
 <body>
     @include('partials.header', [
         'title' => 'Admin Finances',
-        'subtitle' => 'Financial reports and revenue management',
         'title_class' => 'welcome-title',
     ])
 

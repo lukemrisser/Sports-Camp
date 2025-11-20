@@ -189,9 +189,16 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
+    flex-wrap: nowrap;
+    /* keep buttons on one line until short labels are activated */
+    margin-left: 16px;
+    /* space between header content and buttons */
 }
 
 .header-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     padding: 10px 20px;
     border-radius: 8px;
     text-decoration: none;
@@ -200,6 +207,70 @@ body {
     border: none;
     cursor: pointer;
     font-size: 14px;
+    white-space: nowrap;
+    /* keep label text on one line */
+    flex-shrink: 1;
+    /* allow buttons to shrink when space is limited */
+    min-width: 0;
+    /* prevent buttons from shrinking and wrapping text */
+}
+
+/* Header button label variants: show full label by default, short label on small screens */
+.header-btn .label-full {
+    display: inline;
+}
+
+.header-btn .label-short {
+    display: none;
+}
+
+/* Styles applied when JS adds header-wide class */
+.header-buttons.header-wide .header-btn .label-full {
+    display: none !important;
+}
+
+.header-buttons.header-wide .header-btn .label-short {
+    display: inline !important;
+}
+
+.header-buttons.header-wide .header-btn {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+}
+
+@media (max-width: 980px) {
+
+    /* Swap to short labels when space is tight (first step) */
+    .header-btn .label-full {
+        display: none;
+    }
+
+    .header-btn .label-short {
+        display: inline;
+    }
+
+    /* Reduce padding slightly for tighter widths but keep text on one line */
+    .header-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 520px) {
+
+    /* If width is still too small after shortening labels, allow wrapping */
+    .header-buttons {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        margin-left: 0;
+        /* remove left spacing when stacked */
+    }
+
+    /* Slightly tighten header spacing on very small screens */
+    .header-btn {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
 }
 
 .login-btn {
@@ -607,7 +678,8 @@ body {
 
     .header-buttons {
         justify-content: center;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        /* keep on one line until short labels are active */
     }
 
     .cards-grid {
@@ -846,6 +918,29 @@ body {
     .registration-form-wrapper {
         margin: 0;
         padding: 1.5rem;
+
+        @media (max-width: 420px) {
+
+            /* At very small widths, allow header to grow and align buttons to the right */
+            .main-header {
+                padding-top: 18px;
+                padding-bottom: 18px;
+            }
+
+            .header-container {
+                align-items: stretch;
+            }
+
+            .header-buttons {
+                justify-content: flex-end;
+                gap: 10px;
+            }
+
+            .header-btn {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+        }
     }
 
     .registration-title {
@@ -1390,28 +1485,54 @@ p {
     font-weight: 600;
     text-decoration: none;
     transition: all 0.3s ease;
-    display: inline-block;
-    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     cursor: pointer;
-    border: none;
+    border: 2px solid transparent;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     margin-right: 8px;
+    background-clip: padding-box;
+}
+
+.action-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(10, 63, 148, 0.12);
 }
 
 .btn-edit {
-    background: #3b82f6;
+    background: var(--secondary-blue);
     color: white;
+    border-color: rgba(59, 130, 246, 0.85);
 }
 
 .btn-edit:hover {
     background: #2563eb;
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+    border-color: rgba(37, 99, 235, 0.9);
+}
+
+.btn-edit:focus-visible {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.16);
 }
 
 .btn-delete {
-    background: #ef4444;
+    background: var(--danger-red);
     color: white;
+    border-color: rgba(239, 68, 68, 0.85);
+}
+
+.btn-delete:hover {
+    background: var(--danger-red-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.18);
+    border-color: rgba(220, 38, 38, 0.9);
+}
+
+.btn-delete:focus-visible {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
 }
 
 .btn-delete:hover {
@@ -1429,4 +1550,52 @@ p {
     .coaches-table td {
         padding: 0.5rem;
     }
+}
+
+/* Highly specific override for coaches table action buttons to avoid cascade conflicts */
+.coaches-table-container .coaches-table a.btn.btn-edit,
+.coaches-table-container .coaches-table button.btn.btn-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.925rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    color: #fff !important;
+    border: 2px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12) !important;
+    transition: all 0.18s ease;
+    cursor: pointer;
+    background-clip: padding-box;
+}
+
+.coaches-table-container .coaches-table a.btn.btn-edit {
+    background: var(--secondary-blue) !important;
+    border-color: rgba(59, 130, 246, 0.9) !important;
+}
+
+.coaches-table-container .coaches-table a.btn.btn-edit:hover {
+    background: #2563eb !important;
+    transform: translateY(-2px) !important;
+}
+
+.coaches-table-container .coaches-table button.btn.btn-delete {
+    background: var(--danger-red) !important;
+    border-color: rgba(239, 68, 68, 0.9) !important;
+}
+
+.coaches-table-container .coaches-table button.btn.btn-delete:hover {
+    background: var(--danger-red-hover) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* ============================================
+   HEADER BUTTONS - JS-DRIVEN RESPONSIVE CLASS
+   ============================================ */
+.main-header .header-buttons.header-wide {
+    background: rgba(59, 130, 246, 0.08) !important;
+    /* Ensures JS-driven class overrides media queries */
 }

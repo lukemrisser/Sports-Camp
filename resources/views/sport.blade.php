@@ -12,7 +12,6 @@
 
     @include('partials.header', [
         'title' => $sport->Sport_Name . ' Camps',
-        'subtitle' => 'Choose from our available ' . strtolower($sport->Sport_Name) . ' camps below',
     ])
 
     <div class="container">
