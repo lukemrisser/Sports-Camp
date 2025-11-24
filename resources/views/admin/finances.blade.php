@@ -148,16 +148,16 @@
                                 ${{ number_format($totalOutstanding, 2) }}
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                {{ $orders->count() }}
+                                {{ $paginatedOrders->total() }}
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap text-sm font-semibold text-green-600">
-                                {{ $paidOrders->count() }}
+                                {{ $paidOrdersCount }}
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap text-sm font-semibold text-yellow-600">
-                                {{ $partiallyPaidOrders->count() }}
+                                {{ $partiallyPaidOrdersCount }}
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap text-sm font-semibold text-red-600">
-                                {{ $pendingOrders->count() }}
+                                {{ $pendingOrdersCount }}
                             </td>
                         </tr>
                     </tbody>
@@ -190,9 +190,6 @@
                             <tr>
                                 <th
                                     class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Order ID</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Player</th>
                                 <th
                                     class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -223,9 +220,6 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach ($orders as $order)
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        #{{ $order->Order_ID }}
-                                    </td>
                                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                                         @if ($order->player)
                                             {{ $order->player->Camper_FirstName }}
@@ -294,6 +288,20 @@
             @else
                 <div class="px-4 py-6 text-center">
                     <p class="text-gray-500">No orders found matching the selected filters.</p>
+                </div>
+            @endif
+
+            @if ($orders->count() > 0)
+                <!-- Pagination -->
+                <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm text-gray-700">
+                            Showing {{ $paginatedOrders->firstItem() ?? 0 }} to {{ $paginatedOrders->lastItem() ?? 0 }} of {{ $paginatedOrders->total() }} orders
+                        </div>
+                        <div>
+                            {{ $paginatedOrders->appends(request()->query())->links() }}
+                        </div>
+                    </div>
                 </div>
             @endif
         </div>

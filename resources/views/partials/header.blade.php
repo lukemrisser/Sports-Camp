@@ -16,8 +16,8 @@
                 <a href="{{ route('login') }}" class="header-btn login-btn">Login</a>
                 <a href="{{ route('register') }}" class="header-btn register-btn">Register</a>
             @else
-                @if (\Illuminate\Support\Facades\Route::currentRouteName() !== 'home')
-                    <a href="{{ route('home') }}" class="header-btn login-btn">Home</a>
+                @if (!Auth::user()->isCoach() && !Auth::user()->isCoachAdmin() && \Illuminate\Support\Facades\Route::currentRouteName() !== 'home')
+                    <a href="{{ route('home') }}" class="header-btn login-btn">Dashboard</a>
                 @endif
                 @if (Auth::user()->isCoach() && \Illuminate\Support\Facades\Route::currentRouteName() !== 'coach-dashboard')
                     <a href="{{ route('coach-dashboard') }}" class="header-btn dashboard-btn" title="Coach Dashboard">

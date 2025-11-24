@@ -12,6 +12,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SportsController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/help', [HomeController::class, 'help'])->name('help');
 Route::get('/sport/{sport}', [SportsController::class, 'show'])->name('sport.show');
 Route::get('/sport/{sport}/about', [SportsController::class, 'about'])->name('sport.about');
 Route::get('/sport/{sport}/camps', [SportsController::class, 'camps'])->name('sport.camps');

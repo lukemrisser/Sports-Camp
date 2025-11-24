@@ -48,56 +48,77 @@ class AdminController extends Controller
             $query->where('Camp_ID', $campId);
         }
 
-        $orders = $query->orderBy('Order_Date', 'desc')->get();
-
-        // Apply payment status filter after getting orders (since it requires model methods)
+        // Apply payment status filter at query level for better pagination
         if ($paymentStatus) {
             if ($paymentStatus === 'paid') {
-                $orders = $orders->filter(function ($order) {
-                    return $order->isFullyPaid();
-                });
+                $query->whereRaw('Item_Amount_Paid >= Item_Amount AND Item_Amount > 0');
             } elseif ($paymentStatus === 'not_paid') {
-                $orders = $orders->filter(function ($order) {
-                    return !$order->isFullyPaid();
-                });
+                $query->whereRaw('Item_Amount_Paid < Item_Amount OR Item_Amount_Paid IS NULL');
             } elseif ($paymentStatus === 'partial') {
-                $orders = $orders->filter(function ($order) {
-                    return $order->isPartiallyPaid();
-                });
+                $query->whereRaw('Item_Amount_Paid > 0 AND Item_Amount_Paid < Item_Amount');
             } elseif ($paymentStatus === 'pending') {
-                $orders = $orders->filter(function ($order) {
-                    return !$order->isFullyPaid() && !$order->isPartiallyPaid();
+                $query->where(function($q) {
+                    $q->where('Item_Amount_Paid', '=', 0)
+                      ->orWhereNull('Item_Amount_Paid');
                 });
             }
         }
 
-        // Calculate financial statistics
-        $totalAmount = $orders->sum('Item_Amount') ?? 0;
-        $totalPaid = $orders->sum('Item_Amount_Paid') ?? 0;
+        // Get paginated orders (25 per page)
+        $paginatedOrders = $query->orderBy('Order_Date', 'desc')->paginate(25);
+        $orders = $paginatedOrders->getCollection();
+
+        // Calculate financial statistics for all filtered orders (not just current page)
+        $allFilteredQuery = \App\Models\Order::query();
+        
+        // Apply the same filters for statistics calculation
+        if ($sportId) {
+            $allFilteredQuery->whereHas('camp', function ($q) use ($sportId) {
+                $q->where('Sport_ID', $sportId);
+            });
+        }
+
+        if ($campId) {
+            $allFilteredQuery->where('Camp_ID', $campId);
+        }
+
+        if ($paymentStatus) {
+            if ($paymentStatus === 'paid') {
+                $allFilteredQuery->whereRaw('Item_Amount_Paid >= Item_Amount AND Item_Amount > 0');
+            } elseif ($paymentStatus === 'not_paid') {
+                $allFilteredQuery->whereRaw('Item_Amount_Paid < Item_Amount OR Item_Amount_Paid IS NULL');
+            } elseif ($paymentStatus === 'partial') {
+                $allFilteredQuery->whereRaw('Item_Amount_Paid > 0 AND Item_Amount_Paid < Item_Amount');
+            } elseif ($paymentStatus === 'pending') {
+                $allFilteredQuery->where(function($q) {
+                    $q->where('Item_Amount_Paid', '=', 0)
+                      ->orWhereNull('Item_Amount_Paid');
+                });
+            }
+        }
+
+        $totalAmount = $allFilteredQuery->sum('Item_Amount') ?? 0;
+        $totalPaid = $allFilteredQuery->sum('Item_Amount_Paid') ?? 0;
         $totalOutstanding = $totalAmount - $totalPaid;
 
-        $paidOrders = $orders->filter(function ($order) {
-            return $order->isFullyPaid();
-        });
-
-        $partiallyPaidOrders = $orders->filter(function ($order) {
-            return $order->isPartiallyPaid();
-        });
-
-        $pendingOrders = $orders->filter(function ($order) {
-            return !$order->isFullyPaid() && !$order->isPartiallyPaid();
-        });
+        // Count orders by payment status
+        $paidOrdersCount = (clone $allFilteredQuery)->whereRaw('Item_Amount_Paid >= Item_Amount AND Item_Amount > 0')->count();
+        $partiallyPaidOrdersCount = (clone $allFilteredQuery)->whereRaw('Item_Amount_Paid > 0 AND Item_Amount_Paid < Item_Amount')->count();
+        $pendingOrdersCount = (clone $allFilteredQuery)->where(function($q) {
+            $q->where('Item_Amount_Paid', '=', 0)->orWhereNull('Item_Amount_Paid');
+        })->count();
 
         return view('admin.finances', compact(
             'sports',
             'camps',
             'orders',
+            'paginatedOrders',
             'totalAmount',
             'totalPaid',
             'totalOutstanding',
-            'paidOrders',
-            'partiallyPaidOrders',
-            'pendingOrders',
+            'paidOrdersCount',
+            'partiallyPaidOrdersCount',
+            'pendingOrdersCount',
             'sportId',
             'campId',
             'paymentStatus'
