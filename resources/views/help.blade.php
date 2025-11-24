@@ -81,6 +81,57 @@
                     </div>
                 </div>
 
+                <!-- Coach Section (Only visible to coaches) -->
+                @auth
+                    @if(auth()->user()->coach)
+                        <div class="faq-item" data-faq="3">
+                            <div class="faq-question" onclick="toggleFaq(3)">
+                                <h3>🏟️ Coach Help</h3>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer" id="faq-3">
+                                <div class="help-content">
+                                    <h4>Coach Features</h4>
+                                    <p>As a coach, you have access to specialized tools and features:</p>
+                                    <ul>
+                                        <li><strong>Team Organization:</strong> Create teams and manage player assignments</li>
+                                        <li><strong>Camp Registrations:</strong> View camp details and participant information</li>
+                                        <li><strong>Camp Management:</strong> Create new camps and edit existing ones</li>
+                                    </ul>
+                                    <h4>Getting Started</h4>
+                                    <p>Navigate to your Coach Dashboard to begin managing your camps and organizing teams. You can upload spreadsheets to quickly organize players into teams.</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @endauth
+
+                <!-- Admin Section (Only visible to admins) -->
+                @auth
+                    @if(auth()->user()->coach && auth()->user()->coach->admin)
+                        <div class="faq-item" data-faq="10">
+                            <div class="faq-question" onclick="toggleFaq(10)">
+                                <h3>⚙️ Admin Help</h3>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer" id="faq-10">
+                                <div class="help-content">
+                                    <h4>Admin Features</h4>
+                                    <p>As an administrator, you have access to comprehensive management tools:</p>
+                                    <ul>
+                                        <li><strong>Admin Dashboard:</strong> Overview of system statistics and activities</li>
+                                        <li><strong>Financial Management:</strong> View payments, outstanding balances, and generate financial reports</li>
+                                        <li><strong>Coach Management:</strong> Invite new coaches, edit coach profiles, and manage permissions</li>
+                                        <li><strong>Sports Management:</strong> Add, edit, and organize sports offerings</li>
+                                    </ul>
+                                    <h4>Getting Started</h4>
+                                    <p>Navigate to your Admin Dashboard to begin managing the platform. From there, you can access financial reports, manage coaches, and configure sports offerings.</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @endauth
+
                 <!-- Contact Information -->
                 <div class="faq-item" data-faq="4">
                     <div class="faq-question" onclick="toggleFaq(4)">
