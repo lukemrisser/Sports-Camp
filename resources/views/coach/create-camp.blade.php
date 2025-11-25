@@ -316,8 +316,6 @@
 
                         <h5 class="section-title">Early Registration Discounts</h5>
                         <p class="text-sm text-gray-600 mb-3">Optionally add early bird discounts.</p>
-
-
                         <div id="discount-section">
                             <div class="form-grid-2 discount-group">
                                 <div class="form-group">
@@ -345,6 +343,48 @@
                             </div>
                         </div>
                     </div>
+
+                        <h5 class="section-title">Promo Codes</h5>
+                        <p class="text-sm text-gray-600 mb-3">Optionally add promo codes that parents can use for discounts.</p>
+                        <div id="promo-section">
+                            <div class="form-grid-3 promo-group">
+                                <div class="form-group">
+                                    <label class="form-label">Promo Code</label>
+                                    <input type="text"
+                                        name="promo_code[]"
+                                        class="form-input"
+                                        placeholder="e.g., SUMMER2026"
+                                        value="{{ old('promo_code.0') }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Promo Discount Amount</label>
+                                    <div style="position: relative;">
+                                        <span class="currency-symbol">$</span>
+                                        <input type="number"
+                                            name="promo_amount[]"
+                                            class="form-input"
+                                            min="0.01" step="0.01"
+                                            value="{{ old('promo_amount.0') }}"
+                                            style="padding-left: 25px;">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Promo End Date (optional)</label>
+                                    <input type="date"
+                                        name="promo_date[]"
+                                        class="form-input"
+                                        value="{{ old('promo_date.0') }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="mt-1">
+                                <button type="button" id="add-promo" class="submit-button" style="width: auto;">Add
+                                    another promo code</button>
+                            </div>
+                        </div>
 
                     <div class="submit-section">
                         <button type="submit" class="submit-button">
@@ -471,7 +511,55 @@
                 }
             }
         });
-    </script>
+     // Dynamically add/remove promo code fields
+    document.getElementById('add-promo').addEventListener('click', function() {
+            const container = document.getElementById('promo-section');
+            const newPromo = document.createElement('div');
+            newPromo.classList.add('promo-section', 'form-grid-3');
+            newPromo.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Promo Code</label>
+                    <input type="text"
+                        name="promo_code[]"
+                        class="form-input"
+                        placeholder="e.g., SUMMER2026">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Promo Discount Amount</label>
+                    <div style="position: relative;">
+                        <span class="currency-symbol">$</span>
+                        <input type="number"
+                            name="promo_amount[]"  class="form-input"
+                            min="0.01" step="0.01"
+                            style="padding-left: 25px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Promo End Date (optional)</label>
+                    <input type="date"
+                        name="promo_date[]"  class="form-input">
+                </div>
+
+                <button type="button"
+                    class="remove-promo absolute right-0 top-8 px-3 text-red-500 hover:text-red-700"
+                    title="Remove promo">&times;</button>
+            `;
+            container.appendChild(newPromo);
+
+            const removeButton = newPromo.querySelector('.remove-promo');
+            removeButton.addEventListener('click', function() {
+                newPromo.remove();
+            });
+        });
+
+        document.querySelectorAll('.remove-promo').forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.promo-section').remove();
+            });
+        });
+</script>
 
     @include('partials.footer')
 </body>

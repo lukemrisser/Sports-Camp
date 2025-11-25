@@ -63,9 +63,12 @@ class CoachController extends Controller
             'street_address' => 'required|string|max:255',
             'city' => 'required|string|max:100',
             'state' => 'required|string|size:2',
-            'zip_code' => 'required|string|regex:/^[0-9]{5}(-[0-9]{4})?$/',
+            'zip_code' => 'required|string',
             'discount_amount.*' => 'nullable|numeric',
-            'discount_date.*' => 'nullable|date'
+            'discount_date.*' => 'nullable|date',
+            'promo_code.*' => 'nullable|string',
+            'promo_amount.*' => 'nullable|numeric',
+            'promo_date.*' => 'nullable|date'
         ]);
 
         DB::beginTransaction();
@@ -96,23 +99,55 @@ class CoachController extends Controller
             // Replace discounts: delete existing and insert provided
             DB::table('Camp_Discount')->where('Camp_ID', $camp->Camp_ID)->delete();
 
+            $toInsert = [];
+
+            // Early registration discounts (amount + date)
             $discountAmounts = $request->input('discount_amount', []);
             $discountDates = $request->input('discount_date', []);
-            $toInsert = [];
             foreach ($discountAmounts as $i => $amount) {
                 $date = trim($discountDates[$i] ?? '');
-                if ($amount === null && $date === null) continue;
-                if ($amount === null xor $date === null) {
+
+                if ($amount == null && $date == null) continue;
+
+                if ($amount == null || $date == null) {
                     throw ValidationException::withMessages([
                         'discount' => ['Each discount must include both an amount and a date.'],
                     ]);
                 }
+
                 $toInsert[] = [
                     'Camp_ID' => $camp->Camp_ID,
-                    'Discount_Date' => $date,
-                    'Discount_Amount' => $amount
+                    'Discount_Date' => $date ?: null,
+                    'Discount_Amount' => $amount,
+                    'Promo_Code' => null,
                 ];
             }
+
+            // Promo codes (code + amount, optional end date)
+            $promoCodes = $request->input('promo_code', []);
+            $promoAmounts = $request->input('promo_amount', []);
+            $promoDates = $request->input('promo_date', []);
+            foreach ($promoCodes as $i => $promoCode) {
+                $promoCode = trim($promoCode);
+                $promoAmount = $promoAmounts[$i] ?? null;
+                $promoDate = trim($promoDates[$i] ?? '');
+
+                if (!$promoCode && !$promoAmount) continue;
+
+                if (!$promoCode || !$promoAmount) {
+                    throw ValidationException::withMessages([
+                        'promo' => ['Each promo code must have both a code and amount.'],
+                    ]);
+                }
+
+                $toInsert[] = [
+                    'Camp_ID' => $camp->Camp_ID,
+                    'Promo_Code' => $promoCode,
+                    'Discount_Amount' => $promoAmount,
+                    'Discount_Date' => $promoDate ?: null,
+                ];
+            }
+
             if (!empty($toInsert)) {
                 DB::table('Camp_Discount')->insert($toInsert);
             }
@@ -203,6 +238,32 @@ class CoachController extends Controller
                 ];
             }
 
+            // Handle promo codes
+            $promoCodes = $request->input('promo_code', []);
+            $promoAmounts = $request->input('promo_amount', []);
+            $promoDates = $request->input('promo_date', []);
+
+            foreach ($promoCodes as $i => $promoCode) {
+                $promoCode = trim($promoCode);
+                $promoAmount = $promoAmounts[$i] ?? null;
+                $promoDate = trim($promoDates[$i] ?? '');
+
+                if (!$promoCode && !$promoAmount) continue;
+
+                if (!$promoCode || !$promoAmount) {
+                    throw ValidationException::withMessages([
+                        'promo' => ['Each promo code must have both a code and amount.'],
+                    ]);
+                }
+
+                $requestsToInsert[] = [
+                    'Camp_ID' => $camp->Camp_ID,
+                    'Promo_Code' => $promoCode,
+                    'Discount_Amount' => $promoAmount,
+                    'Discount_Date' => $promoDate ?: null
+                ];
+            }
+
             if (!empty($requestsToInsert)) {
                 DB::table('Camp_Discount')->insert($requestsToInsert);
             }
@@ -218,7 +279,7 @@ class CoachController extends Controller
         } 
         catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Camp Creation Database Error: ' . $e->getMessage()); 
+            Log::error('Camp Creation Database Error: ' . $e->getMessage()); 
 
             return redirect()->back()->withInput()->with('error', 'A critical error occurred while saving camp data. Please try again.');
         }

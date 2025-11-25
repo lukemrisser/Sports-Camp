@@ -38,7 +38,9 @@ class PlayerController extends Controller
             'Church_Name' => 'nullable|string|max:255',
             'Church_Attendance' => 'nullable|string|max:50',
             'teammate_first.*' => 'nullable|string|max:50',
-            'teammate_last.*' => 'nullable|string|max:50'
+            'teammate_last.*' => 'nullable|string|max:50',
+            'promo_code' => 'nullable|string',
+            'discount_amount' => 'nullable|numeric|min:0'
         ]);
 
         try {
@@ -124,15 +126,17 @@ class PlayerController extends Controller
                 DB::table('Teammate_Request')->insert($requestsToInsert);
             }
 
-            // Redirect to payment page instead of back to registration
+            // Redirect to payment page,
             return redirect()->route('payment.show', [
                 'player' => $playerId,
-                'camp' => $validatedData['Camp_ID']
-            ])->with('success', 'Registration completed! Please proceed with payment.');
+                'camp' => $validatedData['Camp_ID'],
+                'discountAmount' => $validatedData['discount_amount'] ?? 0
+            ])->with('success', 'Registration completed! Please proceed with payment.')
+              ->with('discount_amount', $validatedData['discount_amount'] ?? null);
         } catch (\Exception $e) {
             Log::error("Exception in PlayerController store method: " . $e->getMessage());
             Log::error("Stack trace: " . $e->getTraceAsString());
-            return redirect()->back()->withInput()->with('error', 'Registration failed: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Registration failed: ');
         }
     }
 

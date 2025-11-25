@@ -43,9 +43,12 @@
                                     <strong>Original Price:</strong> <span
                                         class="strikethrough">${{ number_format($camp['price'], 2) }}</span>
                                 </p>
+                                @php
+                                    $final_price = $camp['price'] - $camp['discount_amount'];
+                                @endphp
                                 <p class="camp-price discounted-price">
                                     <strong>Discounted Price:</strong> <span
-                                        class="discount-highlight">${{ number_format($camp['discounted_price'], 2) }}</span>
+                                        class="discount-highlight">${{ number_format($final_price, 2) }}</span>
                                 </p>
                             @else
                                 <p class="camp-price">

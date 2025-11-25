@@ -20,7 +20,8 @@ class CampDiscount extends Model
     protected $fillable = [
         'Camp_ID',
         'Discount_Amount',
-        'Discount_Date'
+        'Discount_Date',
+        'Promo_Code'
     ];
 
     // Cast Discount_Amount as decimal and Discount_Date as date
@@ -49,23 +50,6 @@ class CampDiscount extends Model
     public function getFormattedDiscountAttribute()
     {
         return '$' . number_format((float) $this->Discount_Amount, 2);
-    }
-
-    /**
-     * Apply discount to an amount
-     * 
-     * @param int $amount Amount in cents
-     * @return int Discounted amount in cents
-     */
-    public function applyDiscount($amount)
-    {
-        if (!$this->isActive()) {
-            return $amount;
-        }
-
-        // Dollar amount discount - convert to cents for calculation
-        $discountInCents = $this->Discount_Amount * 100;
-        return max(0, $amount - $discountInCents);
     }
 
     /**
@@ -105,5 +89,23 @@ class CampDiscount extends Model
                    ->forCamp($campId)
                    ->orderBy('Discount_Amount', 'desc')
                    ->get();
+    }
+
+    /**
+     * Find a promo code by code string for a specific camp
+     */
+    public static function findPromoCodeForCamp($campId, $promoCode)
+    {
+        return self::where('Camp_ID', $campId)
+                   ->where('Promo_Code', $promoCode)
+                   ->first();
+    }
+
+    public static function isPromoCodeValid($discount)
+    {
+        if($discount->Discount_Date === null) {
+            return true;
+        }
+        return $discount->Discount_Date >= now();
     }
 }
