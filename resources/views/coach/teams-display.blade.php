@@ -11,7 +11,6 @@
 <body>
     @include('partials.header', [
         'title' => 'Generated Teams',
-        'subtitle' => 'Teams organized with teammate requests considered',
     ])
 
     <div class="container">
@@ -53,7 +52,6 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #6e84e7 0%, #764ba2 100%);
             min-height: 100vh;
         }
 
@@ -131,6 +129,14 @@
 
         .btn-download:hover {
             background: #218838;
+        }
+
+        .btn-back {
+            background: #0a3f94;
+        }
+
+        .btn-back:hover {
+            background: #0069d9;
         }
 
         .teams-table-container {

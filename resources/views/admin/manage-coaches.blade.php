@@ -11,7 +11,6 @@
 <body>
     @include('partials.header', [
         'title' => 'Manage Coaches',
-        'subtitle' => 'View, edit, and manage existing coach accounts',
         'title_class' => 'welcome-title',
     ])
 
@@ -39,8 +38,8 @@
                                     style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-delete"
-                                        onclick="return confirm('Are you sure you want to delete this coach?');">Delete</button>
+                                    <button type="button" class="btn btn-delete"
+                                        onclick="openDeleteCoachModal(this)">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -54,6 +53,59 @@
         </div>
 
     </div>
+
+    <div id="delete-coach-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Confirm Delete</h2>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this coach?</p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="modal-btn modal-btn-confirm">Delete</button>
+                <button type="button" class="modal-btn modal-btn-cancel"
+                    onclick="closeDeleteCoachModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Opens the delete confirmation modal and stores the form to submit
+        function openDeleteCoachModal(button) {
+            const modal = document.getElementById('delete-coach-modal');
+            if (!modal) return;
+            const form = button.closest('form');
+            modal.style.display = 'flex';
+            // store form reference on the modal element
+            modal._targetForm = form;
+        }
+
+        function closeDeleteCoachModal() {
+            const modal = document.getElementById('delete-coach-modal');
+            if (!modal) return;
+            modal.style.display = 'none';
+            modal._targetForm = null;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmBtn = document.getElementById('confirm-delete-btn');
+            if (!confirmBtn) return;
+            confirmBtn.addEventListener('click', function() {
+                const modal = document.getElementById('delete-coach-modal');
+                if (modal && modal._targetForm) {
+                    modal._targetForm.submit();
+                }
+            });
+
+            // Close modal when clicking outside the container
+            const modal = document.getElementById('delete-coach-modal');
+            modal && modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeDeleteCoachModal();
+            });
+        });
+    </script>
 
     @include('partials.footer')
 </body>

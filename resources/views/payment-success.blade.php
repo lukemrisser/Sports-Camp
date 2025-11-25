@@ -10,8 +10,7 @@
 
 <body>
     @include('partials.header', [
-        'title' => 'Falcon Teams',
-        'subtitle' => 'Registration completed successfully!',
+        'title' => 'Payment Success',
     ])
     <div class="registration-page">
         <div class="registration-container">

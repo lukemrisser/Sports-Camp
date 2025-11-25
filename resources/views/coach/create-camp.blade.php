@@ -12,7 +12,6 @@
 
     @include('partials.header', [
         'title' => 'Falcon Teams',
-        'subtitle' => 'Enter Information to Create a New Camp',
     ])
 
     <style>

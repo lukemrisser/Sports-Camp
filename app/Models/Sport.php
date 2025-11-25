@@ -17,6 +17,7 @@ class Sport extends Model
 
     protected $fillable = [
         'Sport_Name',
+        'Sport_Description',
     ];
 
     // A sport can have many coaches
@@ -29,5 +30,23 @@ class Sport extends Model
     public function camps()
     {
         return $this->hasMany(Camp::class, 'Sport_ID', 'Sport_ID');
+    }
+
+    // A sport can have many FAQs
+    public function faqs()
+    {
+        return $this->hasMany(FAQ::class, 'Sport_ID', 'Sport_ID');
+    }
+
+    // A sport can have many sponsors
+    public function sponsors()
+    {
+        return $this->hasMany(Sponsor::class, 'Sport_ID', 'Sport_ID');
+    }
+
+    // A sport can have many gallery images
+    public function galleryImages()
+    {
+        return $this->hasMany(GalleryImage::class, 'Sport_ID', 'Sport_ID');
     }
 }

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('token')->unique();
             $table->json('additional_data')->nullable(); // For coach-specific data
             $table->timestamp('expires_at');
-            $table->timestamps();
+            $table->timestamps(); // KEEP timestamps() as they are present in the SQL dump structure
 
             // Add index for faster token lookups
             $table->index('token');

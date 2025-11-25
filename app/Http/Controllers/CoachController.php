@@ -220,7 +220,6 @@ class CoachController extends Controller
             $requestsToInsert = [];
             
             foreach ($discountAmounts as $i => $amount) {
-                $amount = $amount;
                 $date = trim($discountDates[$i] ?? ''); 
 
                 if ($amount == null && $date == null) continue;
@@ -305,22 +304,16 @@ class CoachController extends Controller
 
         $createdPlayers = collect();
         foreach ($importedRows as $row) {
-            // Format birth date from mm/dd/yyyy or Excel serial number to yyyy-mm-dd for MySQL
             $birthDate = null;
             if (!empty($row['player_birth_date'])) {
                 try {
-                    // Check if it's a numeric value (Excel serial date)
                     if (is_numeric($row['player_birth_date'])) {
-                        // Convert Excel serial date to Carbon date
-                        // Excel counts from January 1, 1900 (with a leap year bug, so we subtract 1)
                         $excelEpoch = \Carbon\Carbon::create(1900, 1, 1)->subDays(2);
                         $birthDate = $excelEpoch->addDays((int)$row['player_birth_date'])->format('Y-m-d');
                     } else {
-                        // Try to parse as formatted date string
                         $birthDate = \Carbon\Carbon::createFromFormat('m/d/Y', $row['player_birth_date'])->format('Y-m-d');
                     }
                 } catch (\Exception $e) {
-                    // If date parsing fails, leave as null
                     Log::error('Date parsing error for player birth date: ' . $row['player_birth_date'] . ' - ' . $e->getMessage());
                     $birthDate = null;
                 }
@@ -338,7 +331,6 @@ class CoachController extends Controller
 
             // Handle teammate requests
             if (!empty($row['teammate_request'])) {
-                // Normalize separators to comma
                 $normalized = str_replace([';', '.', '|', ' and '], ',', $row['teammate_request']);
                 $requests = array_filter(array_map('trim', explode(',', $normalized)));
 
@@ -364,10 +356,8 @@ class CoachController extends Controller
 
         $teams = $this->sortTeamsDatabase($createdPlayers, $numTeams, $campId);
         
-        // Prepare teams data for display and Excel
         $teamsData = $this->prepareTeamsData($teams, $createdPlayers, $campId);
         
-        // Store data in session for display page and Excel download
         session([
             'teams_display_data' => $teamsData,
             'excel_export_data' => $teamsData,
@@ -384,11 +374,8 @@ class CoachController extends Controller
         $numTeams = $request->input('num_teams');
         $players = Camp::find($campId)->players;
         $teams = $this->sortTeamsDatabase($players, $numTeams, $campId);
-        
-        // Prepare teams data for display and Excel
         $teamsData = $this->prepareTeamsData($teams, $players, $campId);
         
-        // Store data in session for display page and Excel download
         session([
             'teams_display_data' => $teamsData,
             'excel_export_data' => $teamsData,
@@ -399,47 +386,8 @@ class CoachController extends Controller
         return redirect()->route('teams-display');
     }
 
-    public function exportTeamsToExcel($teams, $delete = false, $campId = null)
-    {
-        $exportData = [];
-        foreach ($teams as $teamIndex => $team) {
-            foreach ($team as $playerId) {
-                $player = Player::find($playerId);
-                $exportData[] = [
-                    'Team' => 'Team ' . ($teamIndex + 1),
-                    'Player Name' => $player ? ($player->Camper_FirstName . ' ' . $player->Camper_LastName) : 'Unknown',
-                    //'Age' => $player ? $player->Age : '',
-                    'Teammate Requests' => DB::table('Teammate_Request')
-                        ->where('Player_ID', $playerId)
-                        ->pluck(DB::raw("CONCAT(Requested_FirstName, ' ', Requested_LastName)"))
-                        ->implode(', ')
-                ];
-            }
-        }
-
-        if($delete){
-            if($campId){
-                DB::table('Teammate_Request')->where('Camp_ID', $campId)->delete();
-                $playerIds = DB::table('Player_Camp')->where('Camp_ID', $campId)->pluck('Player_ID');
-                Player::whereIn('Player_ID', $playerIds)->delete();
-                DB::table('Player_Camp')->where('Camp_ID', $campId)->delete();
-                Camp::where('Camp_ID', $campId)->delete();
-            }
-        }
-
-        $filename = 'teams_export_' . date('Ymd_His') . '.xlsx';
-
-        return Excel::download(new class($exportData) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
-            private $data;
-            public function __construct($data) { $this->data = $data; }
-            public function collection() { return collect($this->data); }
-            public function headings(): array { return ['Team', 'Player Name', 'Teammate Requests']; }
-        }, $filename);
-    }
-
     public function sortTeamsDatabase($players, $numTeams, $campId)
     {
-        // Get all teammate requests for these players in this camp
         $playerIds = $players->pluck('Player_ID')->toArray();
         $teammateRequests = DB::table('Teammate_Request')
             ->whereIn('Player_ID', $playerIds)
@@ -474,7 +422,6 @@ class CoachController extends Controller
             $clusters[] = $cluster;
         }
 
-        // Calculate max team size
         $totalPlayers = count($players);
         $maxTeamSize = ceil($totalPlayers / $numTeams);
 
@@ -589,16 +536,13 @@ class CoachController extends Controller
         return $cluster;
     }
 
-    public function sortTeamsSpreadsheet($players, $numTeams)
-    {
-        return;
-    }
-
     public function getCampsForCoach()
     {
         $user = Auth::user();
-        $coach = $user->coach; // assumes User hasOne Coach
-        $camps = $coach ? $coach->camps : collect(); // Collection of Camp models or empty
+        $coach = $user->coach; 
+        $camps = $coach && $coach->Sport_ID 
+            ? Camp::where('Sport_ID', $coach->Sport_ID)->get() 
+            : collect(); 
 
         return view('coach.organize-teams', compact('camps'));
     }

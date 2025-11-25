@@ -11,7 +11,6 @@
 <body>
     @include('partials.header', [
         'title' => 'Edit Coach',
-        'subtitle' => 'Update coach information',
         'title_class' => 'welcome-title',
     ])
 

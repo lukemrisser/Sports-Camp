@@ -12,7 +12,6 @@
 
     @include('partials.header', [
         'title' => 'Falcon Teams',
-        'subtitle' => 'Choose a registration option below to get started',
     ])
 
     <div class="container">

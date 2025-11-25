@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    @include('partials.header', ['title' => 'Falcon Teams', 'subtitle' => 'Payment was cancelled'])
+    @include('partials.header', ['title' => 'Falcon Teams'])
     <div class="registration-page">
         <div class="registration-container">
             <div class="cancelled-wrapper">

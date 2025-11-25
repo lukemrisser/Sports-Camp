@@ -65,7 +65,7 @@ class LoginRedirectionTest extends TestCase
 
         // Redirect parent to default dashboard
         $response->assertStatus(302);
-        $response->assertRedirect(route('dashboard'));
+        $response->assertRedirect(route('home'));
 
         // Ensure the Parent is authenticated
         $this->assertAuthenticatedAs($user);

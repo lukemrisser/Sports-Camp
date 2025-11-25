@@ -122,8 +122,4 @@ class Camp extends Model
 
 		return $this->Registration_Open <= $today && $this->Registration_Close >= $today;
 	}
-	public function getSportAttribute()
-	{
-		return $this->sport->Sport_Name ?? null; // or whatever the name field is called
-	}
 }

@@ -8,11 +8,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
+@php
+    use Illuminate\Support\Str;
+@endphp
+
 <body>
 
     @include('partials.header', [
         'title' => 'Manage Sports',
-        'subtitle' => 'Add, edit, and delete sports available for camps',
     ])
 
 
@@ -46,26 +49,6 @@
                     </div>
                 @endif
 
-                <!-- Add Sport Section -->
-                <form method="POST" action="{{ route('admin.sports.store') }}" class="registration-form">
-                    @csrf
-                    <div class="form-section">
-                        <h3 class="section-title">Add New Sport</h3>
-                        <div class="form-grid-2">
-                            <div class="form-group">
-                                <label for="sport_name" class="form-label">Sport Name <span
-                                        class="text-red-500">*</span></label>
-                                <input type="text" name="sport_name" id="sport_name" class="form-input"
-                                    placeholder="e.g., Soccer, Basketball, etc." required
-                                    value="{{ old('sport_name') }}">
-                            </div>
-                            <div class="form-group" style="display: flex; align-items: end;">
-                                <button type="submit" class="submit-button">Add Sport</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-
                 <!-- Sports List -->
                 <div class="form-section">
                     <h3 class="section-title">Current Sports</h3>
@@ -76,6 +59,9 @@
                                 <thead>
                                     <tr>
                                         <th>Sport Name</th>
+                                        <th>Description</th>
+                                        <th>FAQs</th>
+                                        <th>Sponsors</th>
                                         <th>Usage</th>
                                         <th>Actions</th>
                                     </tr>
@@ -84,13 +70,18 @@
                                     @foreach ($sports as $sport)
                                         <tr>
                                             <td class="sport-name">{{ $sport->Sport_Name }}</td>
+                                            <td class="sport-description">
+                                                {{ $sport->Sport_Description ? Str::limit($sport->Sport_Description, 50) : 'No description' }}
+                                            </td>
+                                            <td class="sport-count">{{ $sport->faqs->count() }}</td>
+                                            <td class="sport-count">{{ $sport->sponsors->count() }}</td>
                                             <td class="sport-usage">
-                                                {{ $sport->camps->count() }} camps, {{ $sport->coaches->count() }}
-                                                coaches
+                                                {{ $sport->camps->count() }} camps<br>
+                                                {{ $sport->coaches->count() }} coaches
                                             </td>
                                             <td class="sport-actions">
                                                 <button class="action-btn edit-btn"
-                                                    onclick="editSport({{ $sport->Sport_ID }}, '{{ addslashes($sport->Sport_Name) }}')">
+                                                    onclick="editSport({{ $sport->Sport_ID }})">
                                                     Edit
                                                 </button>
                                                 <form method="POST"
@@ -109,9 +100,132 @@
                         </div>
                     @else
                         <div class="empty-state">
-                            <p>No sports added yet. Add your first sport above!</p>
+                            <p>No sports added yet. Add your first sport below!</p>
                         </div>
                     @endif
+                </div>
+
+                <!-- Add Sport Section -->
+                <div class="form-section">
+                    <div class="collapsible-header" onclick="toggleAddSportSection()">
+                        <h3 class="section-title">Add New Sport</h3>
+                        <span class="toggle-icon" id="addSportToggle">▼</span>
+                    </div>
+                    <div class="collapsible-content" id="addSportContent">
+                        <form method="POST" action="{{ route('admin.sports.store') }}" class="registration-form" enctype="multipart/form-data">
+                            @csrf
+                        
+                        <!-- Basic Information -->
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="sport_name" class="form-label">Sport Name <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" name="sport_name" id="sport_name" class="form-input"
+                                    placeholder="e.g., Soccer, Basketball, etc." required
+                                    value="{{ old('sport_name') }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="sport_description" class="form-label">Description</label>
+                                <textarea name="sport_description" id="sport_description" class="form-input"
+                                    placeholder="Description for the Sport's About Us page..." rows="3">{{ old('sport_description') }}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- FAQs Section -->
+                        <div class="subsection">
+                            <h4 class="subsection-title">Frequently Asked Questions</h4>
+                            <div id="faqs-container">
+                                @if(old('faqs'))
+                                    @foreach(old('faqs') as $index => $faq)
+                                        <div class="faq-item">
+                                            <div class="form-group">
+                                                <label class="form-label">Question</label>
+                                                <input type="text" name="faqs[{{ $index }}][question]" class="form-input"
+                                                    placeholder="Enter FAQ question..." value="{{ $faq['question'] ?? '' }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Answer</label>
+                                                <textarea name="faqs[{{ $index }}][answer]" class="form-input"
+                                                    placeholder="Enter FAQ answer..." rows="2">{{ $faq['answer'] ?? '' }}</textarea>
+                                            </div>
+                                            <button type="button" class="remove-btn" onclick="removeFaq(this)">Remove FAQ</button>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                            <button type="button" class="add-btn" onclick="addFaq()">Add FAQ</button>
+                        </div>
+
+                        <!-- Sponsors Section -->
+                        <div class="subsection">
+                            <h4 class="subsection-title">Sponsors</h4>
+                            <div id="sponsors-container">
+                                @if(old('sponsors'))
+                                    @foreach(old('sponsors') as $index => $sponsor)
+                                        <div class="sponsor-item">
+                                            <div class="form-grid-3">
+                                                <div class="form-group">
+                                                    <label class="form-label">Sponsor Name</label>
+                                                    <input type="text" name="sponsors[{{ $index }}][name]" class="form-input"
+                                                        placeholder="Sponsor name..." value="{{ $sponsor['name'] ?? '' }}">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label">Website Link</label>
+                                                    <input type="url" name="sponsors[{{ $index }}][link]" class="form-input"
+                                                        placeholder="https://..." value="{{ $sponsor['link'] ?? '' }}">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label">Logo Image</label>
+                                                    <input type="file" name="sponsors[{{ $index }}][image]" class="form-input"
+                                                        accept="image/*">
+                                                </div>
+                                            </div>
+                                            <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                            <button type="button" class="add-btn" onclick="addSponsor()">Add Sponsor</button>
+                        </div>
+
+                        <!-- Gallery Images Section -->
+                        <div class="subsection">
+                            <h4 class="subsection-title">Gallery Images</h4>
+                            <div id="gallery-images-container">
+                                @if(old('gallery_images'))
+                                    @foreach(old('gallery_images') as $index => $galleryImage)
+                                        <div class="gallery-image-item">
+                                            <div class="form-grid-2">
+                                                <div class="form-group">
+                                                    <label class="form-label">Image Title</label>
+                                                    <input type="text" name="gallery_images[{{ $index }}][title]" class="form-input"
+                                                        placeholder="Enter image title..." value="{{ $galleryImage['title'] ?? '' }}">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label">Image</label>
+                                                    <input type="file" name="gallery_images[{{ $index }}][image]" class="form-input"
+                                                        accept="image/*">
+                                                    <small class="form-help">Recommended: High quality images for gallery display</small>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Image Description</label>
+                                                <textarea name="gallery_images[{{ $index }}][text]" class="form-input"
+                                                    placeholder="Enter image description..." rows="2">{{ $galleryImage['text'] ?? '' }}</textarea>
+                                            </div>
+                                            <button type="button" class="remove-btn" onclick="removeGalleryImage(this)">Remove Image</button>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                            <button type="button" class="add-btn" onclick="addGalleryImage()">Add Gallery Image</button>
+                        </div>
+
+                            <div class="submit-section">
+                                <button type="submit" class="submit-button">Add Sport</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -121,18 +235,55 @@
 
     <!-- Edit Modal -->
     <div id="editModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content-large">
             <div class="modal-header">
                 <h3>Edit Sport</h3>
                 <span class="close" onclick="closeModal()">&times;</span>
             </div>
-            <form id="editForm" method="POST" class="registration-form">
+            <form id="editForm" method="POST" class="registration-form" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-                <div class="form-group">
-                    <label for="edit_sport_name" class="form-label">Sport Name</label>
-                    <input type="text" name="sport_name" id="edit_sport_name" class="form-input" required>
+                
+                <!-- Basic Information -->
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="edit_sport_name" class="form-label">Sport Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="sport_name" id="edit_sport_name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_sport_description" class="form-label">Description</label>
+                        <textarea name="sport_description" id="edit_sport_description" class="form-input"
+                            placeholder="Brief description of the sport..." rows="3"></textarea>
+                    </div>
                 </div>
+
+                <!-- FAQs Section -->
+                <div class="subsection">
+                    <h4 class="subsection-title">Frequently Asked Questions</h4>
+                    <div id="edit-faqs-container">
+                        <!-- FAQs will be populated by JavaScript -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addEditFaq()">Add FAQ</button>
+                </div>
+
+                <!-- Sponsors Section -->
+                <div class="subsection">
+                    <h4 class="subsection-title">Sponsors</h4>
+                    <div id="edit-sponsors-container">
+                        <!-- Sponsors will be populated by JavaScript -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addEditSponsor()">Add Sponsor</button>
+                </div>
+
+                <!-- Gallery Images Section -->
+                <div class="subsection">
+                    <h4 class="subsection-title">Gallery Images</h4>
+                    <div id="edit-gallery-images-container">
+                        <!-- Gallery images will be populated by JavaScript -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addEditGalleryImage()">Add Gallery Image</button>
+                </div>
+
                 <div class="submit-section">
                     <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
                     <button type="submit" class="submit-button">Update Sport</button>
@@ -183,9 +334,22 @@
             color: #1f2937;
         }
 
+        .sport-description {
+            color: #6b7280;
+            font-size: 14px;
+            max-width: 200px;
+        }
+
+        .sport-count {
+            color: #6b7280;
+            font-size: 14px;
+            text-align: center;
+        }
+
         .sport-usage {
             color: #6b7280;
             font-size: 14px;
+            white-space: nowrap;
         }
 
         .sport-actions {
@@ -257,6 +421,17 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
 
+        .modal-content-large {
+            background-color: white;
+            margin: 5% auto;
+            border-radius: 16px;
+            width: 95%;
+            max-width: 800px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -318,6 +493,166 @@
             color: #ef4444;
         }
 
+        /* Subsection Styles */
+        .subsection {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .subsection-title {
+            margin: 0 0 15px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        /* FAQ, Sponsor, and Gallery Image Item Styles */
+        .faq-item, .sponsor-item, .gallery-image-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .faq-item:last-child, .sponsor-item:last-child, .gallery-image-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Form Grid Styles */
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* Button Styles */
+        .add-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .add-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .remove-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .remove-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        /* File Input Styles */
+        input[type="file"].form-input {
+            padding: 8px;
+            border: 2px dashed #d1d5db;
+            background: #f9fafb;
+        }
+
+        input[type="file"].form-input:hover {
+            border-color: #9ca3af;
+        }
+
+        input[type="file"].form-input:focus {
+            border-color: #3b82f6;
+            background: white;
+        }
+
+        .form-help {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .current-image {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f0f9ff;
+            border-radius: 4px;
+            border: 1px solid #bae6fd;
+        }
+
+        .current-image a {
+            color: #0ea5e9;
+            text-decoration: none;
+        }
+
+        .current-image a:hover {
+            text-decoration: underline;
+        }
+
+        /* Collapsible Section Styles */
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .collapsible-header:hover {
+            background-color: #f9fafb;
+            padding: 10px 15px;
+            margin: 0 -15px 20px -15px;
+            border-radius: 8px;
+        }
+
+        .toggle-icon {
+            font-size: 1.2rem;
+            color: #6b7280;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .collapsible-content.expanded {
+            max-height: 2000px;
+            transition: max-height 0.5s ease-in;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .sports-table-wrapper {
@@ -326,7 +661,12 @@
 
             .sports-table th,
             .sports-table td {
-                padding: 12px 16px;
+                padding: 12px 8px;
+                font-size: 12px;
+            }
+
+            .sport-description {
+                max-width: 120px;
             }
 
             .action-btn {
@@ -335,9 +675,10 @@
                 margin-right: 4px;
             }
 
-            .modal-content {
+            .modal-content, .modal-content-large {
                 margin: 5% auto;
                 width: 95%;
+                max-height: 85vh;
             }
 
             .modal-header {
@@ -347,16 +688,336 @@
             .modal .registration-form {
                 padding: 24px;
             }
+
+            .form-grid-2, .form-grid-3 {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .faq-item, .sponsor-item {
+                padding: 15px;
+            }
+
+            .subsection {
+                padding: 15px;
+            }
         }
     </style>
 
 
 
     <script>
-        function editSport(sportId, sportName) {
-            document.getElementById('editModal').style.display = 'block';
-            document.getElementById('edit_sport_name').value = sportName;
-            document.getElementById('editForm').action = `{{ url('/admin/sports') }}/${sportId}`;
+        let faqCounter = {{ old('faqs') ? count(old('faqs')) : 0 }};
+        let sponsorCounter = {{ old('sponsors') ? count(old('sponsors')) : 0 }};
+        let galleryImageCounter = {{ old('gallery_images') ? count(old('gallery_images')) : 0 }};
+        let editFaqCounter = 0;
+        let editSponsorCounter = 0;
+        let editGalleryImageCounter = 0;
+
+        // Add FAQ functionality
+        function addFaq() {
+            const container = document.getElementById('faqs-container');
+            const faqDiv = document.createElement('div');
+            faqDiv.className = 'faq-item';
+            faqDiv.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Question</label>
+                    <input type="text" name="faqs[${faqCounter}][question]" class="form-input"
+                        placeholder="Enter FAQ question...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Answer</label>
+                    <textarea name="faqs[${faqCounter}][answer]" class="form-input"
+                        placeholder="Enter FAQ answer..." rows="2"></textarea>
+                </div>
+                <button type="button" class="remove-btn" onclick="removeFaq(this)">Remove FAQ</button>
+            `;
+            container.appendChild(faqDiv);
+            faqCounter++;
+        }
+
+        function removeFaq(button) {
+            button.parentElement.remove();
+        }
+
+        // Add Sponsor functionality
+        function addSponsor() {
+            const container = document.getElementById('sponsors-container');
+            const sponsorDiv = document.createElement('div');
+            sponsorDiv.className = 'sponsor-item';
+            sponsorDiv.innerHTML = `
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Sponsor Name</label>
+                        <input type="text" name="sponsors[${sponsorCounter}][name]" class="form-input"
+                            placeholder="Sponsor name...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Website Link</label>
+                        <input type="url" name="sponsors[${sponsorCounter}][link]" class="form-input"
+                            placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Logo Image</label>
+                        <input type="file" name="sponsors[${sponsorCounter}][image]" class="form-input"
+                            accept="image/*">
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio) or similar landscape format | Max size: 10MB</small>
+                    </div>
+                </div>
+                <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
+            `;
+            container.appendChild(sponsorDiv);
+            sponsorCounter++;
+        }
+
+        function removeSponsor(button) {
+            button.parentElement.remove();
+        }
+
+        // Add Gallery Image functionality
+        function addGalleryImage() {
+            const container = document.getElementById('gallery-images-container');
+            const galleryImageDiv = document.createElement('div');
+            galleryImageDiv.className = 'gallery-image-item';
+            galleryImageDiv.innerHTML = `
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Image Title</label>
+                        <input type="text" name="gallery_images[${galleryImageCounter}][title]" class="form-input"
+                            placeholder="Enter image title...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Image</label>
+                        <input type="file" name="gallery_images[${galleryImageCounter}][image]" class="form-input"
+                            accept="image/*">
+                        <small class="form-help">Recommended: High quality images for gallery display | Max size: 15MB</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Image Description</label>
+                    <textarea name="gallery_images[${galleryImageCounter}][text]" class="form-input"
+                        placeholder="Enter image description..." rows="2"></textarea>
+                </div>
+                <button type="button" class="remove-btn" onclick="removeGalleryImage(this)">Remove Image</button>
+            `;
+            container.appendChild(galleryImageDiv);
+            galleryImageCounter++;
+        }
+
+        function removeGalleryImage(button) {
+            button.parentElement.remove();
+        }
+
+        // Edit modal functions
+        function addEditFaq() {
+            const container = document.getElementById('edit-faqs-container');
+            const faqDiv = document.createElement('div');
+            faqDiv.className = 'faq-item';
+            faqDiv.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Question</label>
+                    <input type="text" name="faqs[${editFaqCounter}][question]" class="form-input"
+                        placeholder="Enter FAQ question...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Answer</label>
+                    <textarea name="faqs[${editFaqCounter}][answer]" class="form-input"
+                        placeholder="Enter FAQ answer..." rows="2"></textarea>
+                </div>
+                <button type="button" class="remove-btn" onclick="removeFaq(this)">Remove FAQ</button>
+            `;
+            container.appendChild(faqDiv);
+            editFaqCounter++;
+        }
+
+        function addEditSponsor() {
+            const container = document.getElementById('edit-sponsors-container');
+            const sponsorDiv = document.createElement('div');
+            sponsorDiv.className = 'sponsor-item';
+            sponsorDiv.innerHTML = `
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Sponsor Name</label>
+                        <input type="text" name="sponsors[${editSponsorCounter}][name]" class="form-input"
+                            placeholder="Sponsor name...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Website Link</label>
+                        <input type="url" name="sponsors[${editSponsorCounter}][link]" class="form-input"
+                            placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Logo Image</label>
+                        <input type="file" name="sponsors[${editSponsorCounter}][image]" class="form-input"
+                            accept="image/*">
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio) | Max size: 10MB | Leave empty to keep current image</small>
+                    </div>
+                </div>
+                <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
+            `;
+            container.appendChild(sponsorDiv);
+            editSponsorCounter++;
+        }
+
+        function addEditGalleryImage() {
+            const container = document.getElementById('edit-gallery-images-container');
+            const galleryImageDiv = document.createElement('div');
+            galleryImageDiv.className = 'gallery-image-item';
+            galleryImageDiv.innerHTML = `
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Image Title</label>
+                        <input type="text" name="gallery_images[${editGalleryImageCounter}][title]" class="form-input"
+                            placeholder="Enter image title...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Image</label>
+                        <input type="file" name="gallery_images[${editGalleryImageCounter}][image]" class="form-input"
+                            accept="image/*">
+                        <small class="form-help">High quality images for gallery display | Leave empty to keep current image</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Image Description</label>
+                    <textarea name="gallery_images[${editGalleryImageCounter}][text]" class="form-input"
+                        placeholder="Enter image description..." rows="2"></textarea>
+                </div>
+                <button type="button" class="remove-btn" onclick="removeGalleryImage(this)">Remove Image</button>
+            `;
+            container.appendChild(galleryImageDiv);
+            editGalleryImageCounter++;
+        }
+
+        // Edit sport functionality
+        async function editSport(sportId) {
+            try {
+                // Fetch sport data
+                const response = await fetch(`/admin/sports/${sportId}/data`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch sport data');
+                }
+                const sport = await response.json();
+                
+                // Populate basic fields
+                document.getElementById('edit_sport_name').value = sport.Sport_Name;
+                document.getElementById('edit_sport_description').value = sport.Sport_Description || '';
+                
+                // Clear existing FAQs, sponsors, and gallery images
+                document.getElementById('edit-faqs-container').innerHTML = '';
+                document.getElementById('edit-sponsors-container').innerHTML = '';
+                document.getElementById('edit-gallery-images-container').innerHTML = '';
+                editFaqCounter = 0;
+                editSponsorCounter = 0;
+                editGalleryImageCounter = 0;
+                
+                // Populate FAQs
+                if (sport.faqs && sport.faqs.length > 0) {
+                    sport.faqs.forEach(faq => {
+                        const container = document.getElementById('edit-faqs-container');
+                        const faqDiv = document.createElement('div');
+                        faqDiv.className = 'faq-item';
+                        faqDiv.innerHTML = `
+                            <div class="form-group">
+                                <label class="form-label">Question</label>
+                                <input type="text" name="faqs[${editFaqCounter}][question]" class="form-input"
+                                    value="${faq.Question}" placeholder="Enter FAQ question...">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Answer</label>
+                                <textarea name="faqs[${editFaqCounter}][answer]" class="form-input"
+                                    placeholder="Enter FAQ answer..." rows="2">${faq.Answer}</textarea>
+                            </div>
+                            <button type="button" class="remove-btn" onclick="removeFaq(this)">Remove FAQ</button>
+                        `;
+                        container.appendChild(faqDiv);
+                        editFaqCounter++;
+                    });
+                }
+                
+                // Populate sponsors
+                if (sport.sponsors && sport.sponsors.length > 0) {
+                    sport.sponsors.forEach(sponsor => {
+                        const container = document.getElementById('edit-sponsors-container');
+                        const sponsorDiv = document.createElement('div');
+                        sponsorDiv.className = 'sponsor-item';
+                        sponsorDiv.innerHTML = `
+                            <div class="form-grid-3">
+                                <div class="form-group">
+                                    <label class="form-label">Sponsor Name</label>
+                                    <input type="text" name="sponsors[${editSponsorCounter}][name]" class="form-input"
+                                        value="${(sponsor.Sponsor_Name || '').replace(/"/g, '&quot;')}" placeholder="Sponsor name...">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Website Link</label>
+                                    <input type="url" name="sponsors[${editSponsorCounter}][link]" class="form-input"
+                                        value="${(sponsor.Sponsor_Link || '').replace(/"/g, '&quot;')}" placeholder="https://...">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Logo Image</label>
+                                    <input type="file" name="sponsors[${editSponsorCounter}][image]" class="form-input"
+                                        accept="image/*">
+                                    ${sponsor.Image_Path ? 
+                                        `<div class="current-image">
+                                            <small>Current: <a href="/storage/${sponsor.Image_Path}" target="_blank">View Image</a></small>
+                                            <input type="hidden" name="sponsors[${editSponsorCounter}][current_image]" value="${sponsor.Image_Path}">
+                                        </div>` : 
+                                        '<small class="form-help">No image currently uploaded</small>'
+                                    }
+                                </div>
+                            </div>
+                            <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
+                        `;
+                        container.appendChild(sponsorDiv);
+                        editSponsorCounter++;
+                    });
+                }
+                
+                // Populate gallery images
+                if (sport.gallery_images && sport.gallery_images.length > 0) {
+                    sport.gallery_images.forEach(galleryImage => {
+                        const container = document.getElementById('edit-gallery-images-container');
+                        const galleryImageDiv = document.createElement('div');
+                        galleryImageDiv.className = 'gallery-image-item';
+                        galleryImageDiv.innerHTML = `
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Image Title</label>
+                                    <input type="text" name="gallery_images[${editGalleryImageCounter}][title]" class="form-input"
+                                        value="${(galleryImage.Image_Title || '').replace(/"/g, '&quot;')}" placeholder="Enter image title...">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Image</label>
+                                    <input type="file" name="gallery_images[${editGalleryImageCounter}][image]" class="form-input"
+                                        accept="image/*">
+                                    ${galleryImage.Image_path ? 
+                                        `<div class="current-image">
+                                            <small>Current: <a href="/storage/${galleryImage.Image_path}" target="_blank">View Image</a></small>
+                                            <input type="hidden" name="gallery_images[${editGalleryImageCounter}][current_image]" value="${galleryImage.Image_path}">
+                                        </div>` : 
+                                        '<small class="form-help">No image currently uploaded</small>'
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Image Description</label>
+                                <textarea name="gallery_images[${editGalleryImageCounter}][text]" class="form-input"
+                                    placeholder="Enter image description..." rows="2">${galleryImage.Image_Text || ''}</textarea>
+                            </div>
+                            <button type="button" class="remove-btn" onclick="removeGalleryImage(this)">Remove Image</button>
+                        `;
+                        container.appendChild(galleryImageDiv);
+                        editGalleryImageCounter++;
+                    });
+                }
+                
+                // Set form action and show modal
+                document.getElementById('editForm').action = `{{ url('/admin/sports') }}/${sportId}`;
+                document.getElementById('editModal').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error fetching sport data:', error);
+                alert('Error loading sport data. Please try again.');
+            }
         }
 
         function closeModal() {
@@ -376,6 +1037,27 @@
             if (event.key === 'Escape') {
                 closeModal();
             }
+        });
+
+        // Toggle Add Sport Section
+        function toggleAddSportSection() {
+            const content = document.getElementById('addSportContent');
+            const icon = document.getElementById('addSportToggle');
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                icon.classList.remove('rotated');
+            } else {
+                content.classList.add('expanded');
+                icon.classList.add('rotated');
+            }
+        }
+
+        // Auto-expand add sport section if there are validation errors
+        document.addEventListener('DOMContentLoaded', function() {
+            @if($errors->any() || old('sport_name'))
+                toggleAddSportSection();
+            @endif
         });
     </script>
 

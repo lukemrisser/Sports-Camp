@@ -11,7 +11,6 @@
 <body>
     @include('partials.header', [
         'title' => 'Invite Coach',
-        'subtitle' => 'Send invitations and manage coach permissions',
         'title_class' => 'welcome-title',
     ])
 

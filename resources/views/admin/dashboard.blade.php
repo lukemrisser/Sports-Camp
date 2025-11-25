@@ -11,7 +11,6 @@
 <body>
     @include('partials.header', [
         'title' => 'Admin Dashboard',
-        'subtitle' => 'Welcome back, ' . Auth::user()->name . '!',
         'title_class' => 'welcome-title',
     ])
 
@@ -19,7 +18,7 @@
         <!-- Action Cards Grid -->
         <div class="cards-grid">
             <!-- Admin Finances Card -->
-            <div class="registration-card green">
+            <div class="registration-card blue">
                 <div class="card-icon">💰</div>
                 <h3>Admin Finances</h3>
                 <p>View financial reports and manage camp revenue</p>
@@ -35,7 +34,7 @@
             </div>
 
             <!-- Manage Coaches Card -->
-            <div class="registration-card orange">
+            <div class="registration-card blue">
                 <div class="card-icon">👥</div>
                 <h3>Manage Coaches</h3>
                 <p>View, edit, and manage existing coach accounts</p>
@@ -43,7 +42,7 @@
             </div>
 
             <!-- Manage Sports Card -->
-            <div class="registration-card purple">
+            <div class="registration-card blue">
                 <div class="card-icon">⚽</div>
                 <h3>Manage Sports</h3>
                 <p>Add, edit, and delete sports available for camps</p>

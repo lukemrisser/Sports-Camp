@@ -12,7 +12,6 @@
 
     @include('partials.header', [
         'title' => 'Falcon Teams',
-        'subtitle' => 'Upload a spreadsheet or select a camp to generate teams',
     ])
 
     <div class="container">
@@ -50,13 +49,6 @@
                     <button type="submit" class="btn-primary">Select and Generate Teams</button>
                 </form>
             </div>
-        </div>
-
-        <div class="navigation">
-            <a href="{{ url('/') }}">← Back to Home</a>
-            @auth
-                <a href="{{ route('coach-dashboard') }}">My Dashboard</a>
-            @endauth
         </div>
     </div>
 
