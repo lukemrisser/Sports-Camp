@@ -217,10 +217,6 @@
                     <div class="form-section">
                         <h3 class="section-title">Medical Information</h3>
                         <div class="form-group">
-                            <label class="form-label">Allergies</label>
-                            <textarea name="Allergies" class="form-input form-textarea" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
                             <label class="form-label">Does the camper have asthma? <span
                                     class="text-red-500">*</span></label>
                             <div class="radio-group">
@@ -258,6 +254,10 @@
                                 placeholder="List the medications and dosages"></textarea>
                         </div>
                         <div class="form-group">
+                            <label class="form-label">Allergies</label>
+                            <textarea name="Allergies" class="form-input form-textarea" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
                             <label class="form-label">Recent Injuries or Health Concerns</label>
                             <textarea name="Injuries" class="form-input form-textarea" rows="3"></textarea>
                         </div>
@@ -293,6 +293,17 @@
 
                     <!-- Submit Button -->
                     <div class="submit-section">
+                        <div class="form-section">
+                            <h3 class="section-title">Promo Code</h3>
+                            <div class="form-group">
+                                <label class="form-label">Have a promo code?</label>
+                                <input type="text" id="reg_promo_code" name="promo_code" class="form-input" placeholder="Enter promo code">
+                                <input type="hidden" id="reg_discount_amount" name="discount_amount" value="0">
+                                <div id="reg-promo-message" class="field-error" style="display:none;"></div>
+                                <div id="reg-promo-success" class="success-message" style="display:none;">Discount applied: <strong id="reg-discount-amount">$0.00</strong></div>
+                            </div>
+                        </div>
+
                         <button type="submit" class="submit-button">
                             Continue to Payment →
                         </button>
@@ -446,12 +457,82 @@
 
             medicationYes.addEventListener('change', toggleMedicationDetails);
             medicationNo.addEventListener('change', toggleMedicationDetails);
+            // Promo code handling on registration
+            const regPromoInput = document.getElementById('reg_promo_code');
+            const regPromoMessage = document.getElementById('reg-promo-message');
+            const regPromoSuccess = document.getElementById('reg-promo-success');
+            const regDiscountInput = document.getElementById('reg_discount_amount');
+            let regPromoValidated = false;
+
+            async function validateRegPromoCode() {
+                regPromoMessage.style.display = 'none';
+                regPromoSuccess.style.display = 'none';
+                regPromoMessage.textContent = '';
+                const code = regPromoInput.value.trim();
+                const campSelect = document.querySelector('select[name="Camp_ID"]');
+                const campId = campSelect ? campSelect.value : null;
+                if (!code) {
+                    regDiscountInput.value = '0';
+                    regPromoValidated = false;
+                    return false;
+                }
+                if (!campId) {
+                    regPromoMessage.textContent = 'Please select a camp before applying a promo code.';
+                    regPromoMessage.style.display = 'block';
+                    regPromoValidated = false;
+                    return false;
+                }
+
+                regPromoMessage.textContent = 'Validating promo code...';
+                regPromoMessage.style.display = 'block';
+
+                try {
+                    const res = await fetch(`{{ url('/validate-promo-code') }}?camp_id=${campId}&code=${encodeURIComponent(code)}`, { headers: { 'Accept': 'application/json' } });
+                    const data = await res.json();
+                    if (data.valid) {
+                        regDiscountInput.value = data.discount_amount;
+                        document.getElementById('reg-discount-amount').textContent = '$' + parseFloat(data.discount_amount).toFixed(2);
+                        regPromoMessage.style.display = 'none';
+                        regPromoSuccess.style.display = 'block';
+                        regPromoValidated = true;
+                        return true;
+                    } else {
+                        regDiscountInput.value = '0';
+                        regPromoMessage.textContent = data.message || 'Invalid or expired promo code';
+                        regPromoMessage.style.display = 'block';
+                        regPromoValidated = false;
+                        return false;
+                    }
+                } catch (e) {
+                    regDiscountInput.value = '0';
+                    regPromoMessage.textContent = 'Error validating promo code';
+                    regPromoMessage.style.display = 'block';
+                    regPromoValidated = false;
+                    return false;
+                }
+            }
+
+            if (regPromoInput) {
+                regPromoInput.addEventListener('blur', validateRegPromoCode);
+            }
 
             // Prevent form submission if validation fails
             const form = document.querySelector('.registration-form');
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', async function(e) {
                 if (!validateAgeAndGender()) {
                     e.preventDefault();
+                    return false;
+                }
+
+                const code = regPromoInput ? regPromoInput.value.trim() : '';
+                if (code && !regPromoValidated) {
+                    // try to validate now
+                    e.preventDefault();
+                    const ok = await validateRegPromoCode();
+                    if (ok) {
+                        // submit after successful validation
+                        form.submit();
+                    }
                     return false;
                 }
             });

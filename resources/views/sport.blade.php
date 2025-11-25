@@ -17,6 +17,56 @@
 
     @include('partials.header', [
         'title' => $sport->Sport_Name . ' Camps',
+        'subtitle' => 'Choose from our available ' . strtolower($sport->Sport_Name) . ' camps below',
+    ])
+
+    <div class="container">
+        @if (count($campCards) > 0)
+            <div class="cards-grid">
+                @foreach ($campCards as $camp)
+                    <div class="registration-card blue">
+                        <div class="card-icon">🏕️</div>
+                        <h3>{{ $camp['title'] }}</h3>
+                        <div class="camp-details">
+                            <p class="camp-description">
+                                <strong>Details:</strong> {{ $camp['description'] }}
+                            </p>
+                            <p class="camp-dates">
+                                <strong>Date:</strong> {{ $camp['start_date'] }} - {{ $camp['end_date'] }}
+                            </p>
+                            <p class="camp-location">
+                                <strong>Location:</strong> {{ $camp['location_name'] }}<br>
+                                <span class="location-address">{{ $camp['street_address'] }}, {{ $camp['city'] }},
+                                    {{ $camp['state'] }} {{ $camp['zip_code'] }}</span>
+                            </p>
+                            @if ($camp['has_discount'])
+                                <p class="discount-info">
+                                    <strong>Early Bird Discout! Save ${{ number_format($camp['discount_amount'], 2) }}
+                                        if you register by {{ $camp['discount_expires'] }}</strong>
+                                </p>
+                                <p class="camp-price original-price">
+                                    <strong>Original Price:</strong> <span
+                                        class="strikethrough">${{ number_format($camp['price'], 2) }}</span>
+                                </p>
+                                @php
+                                    $final_price = $camp['price'] - $camp['discount_amount'];
+                                @endphp
+                                <p class="camp-price discounted-price">
+                                    <strong>Discounted Price:</strong> <span
+                                        class="discount-highlight">${{ number_format($final_price, 2) }}</span>
+                                </p>
+                            @else
+                                <p class="camp-price">
+                                    <strong>Price:</strong> ${{ number_format($camp['price'], 2) }}
+                                </p>
+                            @endif
+                            <p class="registration-due">
+                                <strong>Register By:</strong> {{ $camp['registration_due'] }}
+                            </p>
+                        </div>
+                        <a href="{{ route($camp['route'], ['camp' => $camp['id']]) }}" class="card-button">
+                            Register Now
+                        </a>
     ]) <div class="container">
         <!-- Navigation -->
         <div class="sport-navigation">
