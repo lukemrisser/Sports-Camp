@@ -220,6 +220,7 @@
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
+            margin-right: 20px;
         }
 
         .forgot-password-link:hover {
