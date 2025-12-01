@@ -101,7 +101,7 @@ class CoachController extends Controller
 
             $toInsert = [];
 
-            // Early registration discounts (amount + date)
+            // Early registration discounts (amount + date required)
             $discountAmounts = $request->input('discount_amount', []);
             $discountDates = $request->input('discount_date', []);
             foreach ($discountAmounts as $i => $amount) {
@@ -117,13 +117,13 @@ class CoachController extends Controller
 
                 $toInsert[] = [
                     'Camp_ID' => $camp->Camp_ID,
-                    'Discount_Date' => $date ?: null,
+                    'Discount_Date' => $date,
                     'Discount_Amount' => $amount,
                     'Promo_Code' => null,
                 ];
             }
 
-            // Promo codes (code + amount, optional end date)
+            // Promo codes (code + amount required, date optional)
             $promoCodes = $request->input('promo_code', []);
             $promoAmounts = $request->input('promo_amount', []);
             $promoDates = $request->input('promo_date', []);
@@ -132,20 +132,24 @@ class CoachController extends Controller
                 $promoAmount = $promoAmounts[$i] ?? null;
                 $promoDate = trim($promoDates[$i] ?? '');
 
-                if (!$promoCode && !$promoAmount) continue;
+                // Skip completely empty rows
+                if (!$promoCode && !$promoAmount && !$promoDate) continue;
 
-                if (!$promoCode || !$promoAmount) {
-                    throw ValidationException::withMessages([
-                        'promo' => ['Each promo code must have both a code and amount.'],
-                    ]);
+                // Only validate if there's at least some data entered
+                if ($promoCode || $promoAmount) {
+                    if (!$promoCode || !$promoAmount) {
+                        throw ValidationException::withMessages([
+                            'promo' => ['Each promo code must have both a code and amount.'],
+                        ]);
+                    }
+
+                    $toInsert[] = [
+                        'Camp_ID' => $camp->Camp_ID,
+                        'Promo_Code' => $promoCode,
+                        'Discount_Amount' => $promoAmount,
+                        'Discount_Date' => $promoDate ?: null,
+                    ];
                 }
-
-                $toInsert[] = [
-                    'Camp_ID' => $camp->Camp_ID,
-                    'Promo_Code' => $promoCode,
-                    'Discount_Amount' => $promoAmount,
-                    'Discount_Date' => $promoDate ?: null,
-                ];
             }
 
             if (!empty($toInsert)) {
@@ -187,7 +191,10 @@ class CoachController extends Controller
             'state' => 'required|string|size:2',
             'zip_code' => 'required|string|regex:/^[0-9]{5}(-[0-9]{4})?$/',
             'discount_amount.*' => 'nullable|numeric',
-            'discount_date.*' => 'nullable|date'
+            'discount_date.*' => 'nullable|date',
+            'promo_code.*' => 'nullable|string',
+            'promo_amount.*' => 'nullable|numeric',
+            'promo_date.*' => 'nullable|date'
         ]);
 
         // if the Camp is created but the discount insertion fails, everything is rolled back.
@@ -219,6 +226,7 @@ class CoachController extends Controller
 
             $requestsToInsert = [];
             
+            // Handle early registration discounts (amount + date required)
             foreach ($discountAmounts as $i => $amount) {
                 $date = trim($discountDates[$i] ?? ''); 
 
@@ -233,11 +241,12 @@ class CoachController extends Controller
                 $requestsToInsert[] = [
                     'Camp_ID' => $camp->Camp_ID,
                     'Discount_Date' => $date,
-                    'Discount_Amount' => $amount
+                    'Discount_Amount' => $amount,
+                    'Promo_Code' => null
                 ];
             }
 
-            // Handle promo codes
+            // Handle promo codes (code + amount required, date optional)
             $promoCodes = $request->input('promo_code', []);
             $promoAmounts = $request->input('promo_amount', []);
             $promoDates = $request->input('promo_date', []);
@@ -247,20 +256,24 @@ class CoachController extends Controller
                 $promoAmount = $promoAmounts[$i] ?? null;
                 $promoDate = trim($promoDates[$i] ?? '');
 
-                if (!$promoCode && !$promoAmount) continue;
+                // Skip completely empty rows
+                if (!$promoCode && !$promoAmount && !$promoDate) continue;
 
-                if (!$promoCode || !$promoAmount) {
-                    throw ValidationException::withMessages([
-                        'promo' => ['Each promo code must have both a code and amount.'],
-                    ]);
+                // Only validate if there's at least some data entered
+                if ($promoCode || $promoAmount) {
+                    if (!$promoCode || !$promoAmount) {
+                        throw ValidationException::withMessages([
+                            'promo' => ['Each promo code must have both a code and amount.'],
+                        ]);
+                    }
+                
+                    $requestsToInsert[] = [
+                        'Camp_ID' => $camp->Camp_ID,
+                        'Promo_Code' => $promoCode,
+                        'Discount_Amount' => $promoAmount,
+                        'Discount_Date' => $promoDate ?: null
+                    ];
                 }
-
-                $requestsToInsert[] = [
-                    'Camp_ID' => $camp->Camp_ID,
-                    'Promo_Code' => $promoCode,
-                    'Discount_Amount' => $promoAmount,
-                    'Discount_Date' => $promoDate ?: null
-                ];
             }
 
             if (!empty($requestsToInsert)) {
