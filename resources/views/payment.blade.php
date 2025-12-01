@@ -449,11 +449,7 @@
             display: flex;
             justify-content: space-between;
             padding: 0.5rem 0;
-            border-bottom: 1px solid #e9ecef;
-        }
 
-        .summary-item:last-child {
-            border-bottom: none;
         }
 
         .summary-item.total {
