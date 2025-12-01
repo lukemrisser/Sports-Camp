@@ -47,4 +47,9 @@ class HomeController extends Controller
 
         return view('home', compact('registrationCards'));
     }
+
+    public function help()
+    {
+        return view('help');
+    }
 }

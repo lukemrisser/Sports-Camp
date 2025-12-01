@@ -139,12 +139,55 @@
                             <textarea id="description" name="description" rows="4" class="form-input form-textarea" required></textarea>
                         </div>
 
+                        <div class="form-group">
+                            <label for="max_capacity" class="form-label">Maximum Capacity</label>
+                            <input id="max_capacity" name="max_capacity" type="number" min="1" max="1000" class="form-input" required>
+                        </div>
+
+                        <h5 class="section-title">Location Information</h5>
+                        <p class="text-sm text-gray-600 mb-3">Enter the camp location details.</p>
+
+                        <div class="form-group">
+                            <label for="location_name" class="form-label">Location Name</label>
+                            <input id="location_name" name="location_name" type="text" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="street_address" class="form-label">Street Address</label>
+                            <input id="street_address" name="street_address" type="text" class="form-input" required>
+                        </div>
+
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label for="city" class="form-label">City</label>
+                                <input id="city" name="city" type="text" class="form-input" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="state" class="form-label">State</label>
+                                <input id="state" name="state" type="text" maxlength="2" class="form-input" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="zip_code" class="form-label">ZIP Code</label>
+                                <input id="zip_code" name="zip_code" type="text" class="form-input" required>
+                            </div>
+                        </div>
+
                         <h5 class="section-title">Early Registration Discounts</h5>
                         <div id="discount-section"></div>
                         <div class="form-grid-2">
                             <div class="mt-1">
                                 <button type="button" id="add-discount" class="submit-button"
                                     style="width:auto;">Add Discount</button>
+                            </div>
+                        </div>
+
+                        <h5 class="section-title">Promo Codes</h5>
+                        <div id="promo-section"></div>
+                        <div class="form-grid-2">
+                            <div class="mt-1">
+                                <button type="button" id="add-promo" class="submit-button" style="width:auto;">Add Promo Code</button>
                             </div>
                         </div>
 
@@ -163,9 +206,14 @@
         const select = document.getElementById('camp-select');
         const form = document.getElementById('edit-camp-form');
         const discountSection = document.getElementById('discount-section');
+        const promoSection = document.getElementById('promo-section');
 
         function clearDiscounts() {
             discountSection.innerHTML = '';
+        }
+
+         function clearPromos() {
+            promoSection.innerHTML = '';
         }
 
         function addDiscountRow(amount = '', date = '') {
@@ -189,8 +237,35 @@
             const remove = wrapper.querySelector('.remove-discount');
             remove.addEventListener('click', () => wrapper.remove());
         }
+        function addPromoRow(code = '', amount = '', date = '') {
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('promo-section', 'form-grid-3');
+            wrapper.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Promo Code</label>
+                    <input type="text" name="promo_code[]" class="form-input" value="${code}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Discount Amount</label>
+                    <div style="position: relative;">
+                        <span class="currency-symbol">$</span>
+                        <input type="number" name="promo_amount[]" class="form-input" min="0.01" step="0.01" style="padding-left:25px;" value="${amount}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">End Date (Optional)</label>
+                    <input type="date" name="promo_date[]" class="form-input" value="${date}">
+                </div>
+                <button type="button" class="remove-promo absolute right-0 top-8 px-3 text-red-500 hover:text-red-700" title="Remove promo">&times;</button>
+            `;
+            promoSection.appendChild(wrapper);
+            const remove = wrapper.querySelector('.remove-promo');
+            remove.addEventListener('click', () => wrapper.remove());
+        }
 
         document.getElementById('add-discount').addEventListener('click', () => addDiscountRow());
+        document.getElementById('add-promo').addEventListener('click', () => addPromoRow());
+
 
         select.addEventListener('change', function() {
             const id = this.value;
@@ -223,15 +298,34 @@
                     document.getElementById('registration_close').value = data.Registration_Close ? data
                         .Registration_Close.split('T')[0] : '';
                     document.getElementById('price').value = data.Price || '';
-                    document.getElementById('gender').value = data.Camp_Gender || 'coed';
+                    if(data.Camp_Gender == 'mixed') {
+                        document.getElementById('gender').value = 'coed';
+                    } else {
+                        document.getElementById('gender').value = data.Camp_Gender || '';
+                    }
+                             
                     document.getElementById('min_age').value = data.Age_Min || '';
                     document.getElementById('max_age').value = data.Age_Max || '';
                     document.getElementById('description').value = data.Description || '';
+                    document.getElementById('max_capacity').value = data.Max_Capacity || '';
+                    document.getElementById('location_name').value = data.Location_Name || '';
+                    document.getElementById('street_address').value = data.Street_Address || '';
+                    document.getElementById('city').value = data.City || '';
+                    document.getElementById('state').value = data.State || '';
+                    document.getElementById('zip_code').value = data.Zip_Code || '';
 
                     clearDiscounts();
+                    clearPromos();
                     if (data.discounts && data.discounts.length) {
-                        data.discounts.forEach(d => addDiscountRow(d.Discount_Amount, d.Discount_Date ? d
-                            .Discount_Date.split('T')[0] : ''));
+                        data.discounts.forEach(d => {
+                            if (d.Promo_Code) {
+                                // This is a promo code
+                                addPromoRow(d.Promo_Code, d.Discount_Amount, d.Discount_Date ? d.Discount_Date.split('T')[0] : '');
+                            } else {
+                                // This is an early discount
+                                addDiscountRow(d.Discount_Amount, d.Discount_Date ? d.Discount_Date.split('T')[0] : '');
+                            }
+                        });
                     }
                 })
                 .catch(e => {

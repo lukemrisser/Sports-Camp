@@ -17,7 +17,10 @@
 
     @include('partials.header', [
         'title' => $sport->Sport_Name . ' Camps',
-    ]) <div class="container">
+        'subtitle' => 'Choose from our available ' . strtolower($sport->Sport_Name) . ' camps below',
+    ])
+
+    <div class="container">
         <!-- Navigation -->
         <div class="sport-navigation">
             <a href="{{ route('sport.show', $sport->Sport_ID) }}" class="nav-link active">{{ $sport->Sport_Name }}

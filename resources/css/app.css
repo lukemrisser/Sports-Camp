@@ -441,6 +441,11 @@ p {
     justify-content: center;
 }
 
+.discount-section,
+.promo-section {
+    position: relative;
+}
+
 .card h3,
 .registration-card h3 {
     font-size: 1.5rem;

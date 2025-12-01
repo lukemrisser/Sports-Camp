@@ -12,6 +12,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SportsController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/help', [HomeController::class, 'help'])->name('help');
 Route::get('/sport/{sport}', [SportsController::class, 'show'])->name('sport.show');
 Route::get('/sport/{sport}/about', [SportsController::class, 'about'])->name('sport.about');
 Route::get('/sport/{sport}/camps', [SportsController::class, 'camps'])->name('sport.camps');
@@ -25,11 +26,12 @@ Route::get('/user-profile', function () {
 Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
 
 // Payment routes
-Route::get('/payment/{player}/{camp}', [PaymentController::class, 'show'])->name('payment.show');
+Route::get('/payment/{player}/{camp}/{discountAmount}', [PaymentController::class, 'show'])->name('payment.show');
 Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/cancelled', [PaymentController::class, 'cancelled'])->name('payment.cancelled');
 Route::post('/stripe/webhook', [PaymentController::class, 'webhook'])->name('stripe.webhook');
+Route::get('/validate-promo-code', [PaymentController::class, 'validatePromoCode'])->name('validate-promo-code');
 
 // Protected routes for coaches only
 Route::middleware(['auth', 'coach'])->group(function () {

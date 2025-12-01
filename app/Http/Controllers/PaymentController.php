@@ -25,13 +25,13 @@ class PaymentController extends Controller
     /**
      * Show payment form for a registered player
      */
-    public function show($playerId, $campId)
+    public function show($playerId, $campId, $discountAmount)
     {
         $player = Player::with('parent')->where('Player_ID', $playerId)->first();
         $camp = Camp::find($campId);
                 
         // Check if there's already a paid order for this player
-        $existingOrder = $this->findOrCreateOrder($player, $campId);
+        $existingOrder = $this->findOrCreateOrder($player, $campId, $discountAmount);
         if ($existingOrder && $existingOrder->isFullyPaid()) {
             return redirect()->route('payment.success')
                 ->with('success', 'Payment has already been processed for this registration.');
@@ -54,10 +54,10 @@ class PaymentController extends Controller
         $campName = $camp->Camp_Name;
 
         // Calculate amount (in cents for Stripe)
-        $amount = $this->calculateRegistrationAmount($player, $campId);
+        $amount = $this->calculateRegistrationAmount($player, $campId, $discountAmount);
         
         // Get or create order for tracking
-        $order = $existingOrder ?: $this->findOrCreateOrder($player, $campId);
+        $order = $existingOrder ?: $this->findOrCreateOrder($player, $campId, $discountAmount);
 
         return view('payment', [
             'playerId' => $playerId,
@@ -66,7 +66,8 @@ class PaymentController extends Controller
             'player' => $player,
             'campName' => $campName,
             'order' => $order,
-            'campId' => $campId
+            'campId' => $campId,
+            'discountAmount' => $discountAmount
         ]);
     }
 
@@ -79,6 +80,7 @@ class PaymentController extends Controller
             'player_id' => 'required|exists:Players,Player_ID',
             'camp_id' => 'required|exists:Camps,Camp_ID',
             'amount' => 'required|numeric|min:1',
+            'promo_code' => 'nullable|string',
             'payment_method_id' => 'required|string',
             'cardholder_name' => 'required|string|max:255',
             'receipt_email' => 'required|email',
@@ -109,7 +111,7 @@ class PaymentController extends Controller
                 ]);
             }
 
-            // Create payment intent
+            // Create payment intent with final amount
             $paymentIntent = PaymentIntent::create([
                 'amount' => $request->amount,
                 'currency' => 'usd',
@@ -238,7 +240,7 @@ class PaymentController extends Controller
     /**
      * Calculate registration amount based on player and camp
      */
-    private function calculateRegistrationAmount($player, $campId)
+    private function calculateRegistrationAmount($player, $campId, $discount = 0)
     {
         $camp = Camp::find($campId);
 
@@ -249,15 +251,18 @@ class PaymentController extends Controller
         }
 
         $baseAmount = $camp->Price * 100; // Convert dollars to cents
-        $discountedAmount = $camp->getDiscountedPrice($baseAmount);
-
+        if ($discount > 0) {
+            $discountedAmount= $baseAmount - $discount * 100; // Apply discount in cents
+        }else {
+            $discountedAmount = $camp->getDiscountedPrice($baseAmount);
+        }
         return $discountedAmount;
     }
 
     /**
      * Find existing order or create a new one for the player
      */
-    private function findOrCreateOrder(Player $player, $campId): ?Order
+    private function findOrCreateOrder(Player $player, $campId, $discount = 0): ?Order
     {
         $order = Order::where('Player_ID', $player->Player_ID)
                      ->where('Camp_ID', $campId)
@@ -265,7 +270,7 @@ class PaymentController extends Controller
 
         if (!$order) {
             // Create new order for this specific player
-            $amount = $this->calculateRegistrationAmount($player, $campId) / 100; // Convert cents to dollars
+            $amount = $this->calculateRegistrationAmount($player, $campId, $discount) / 100; // Convert cents to dollars
             
             $order = Order::create([
                 'Player_ID' => $player->Player_ID,
@@ -372,6 +377,51 @@ class PaymentController extends Controller
 
                 Log::warning("Payment failed via webhook for player {$playerId}: {$paymentIntent['id']}");
             }
+        }
+    }
+
+    /**
+     * Validate promo code and return discount amount
+     */
+    public function validatePromoCode(Request $request)
+    {
+        $request->validate([
+            'camp_id' => 'required|exists:Camps,Camp_ID',
+            'code' => 'required|string',
+        ]);
+
+        $campId = $request->input('camp_id');
+        $code = $request->input('code');
+
+        try {
+            // Find the promo code
+            $discount = CampDiscount::findPromoCodeForCamp($campId, $code);
+
+            if (!$discount) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'Promo code not found for this camp.'
+                ]);
+            }
+
+            // Check if the promo code is valid (not expired)
+            if (!$discount->isPromoCodeValid($discount)) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'This promo code has expired.'
+                ]);
+            }
+
+            return response()->json([
+                'valid' => true,
+                'discount_amount' => $discount->Discount_Amount
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Promo code validation error: ' . $e->getMessage());
+            return response()->json([
+                'valid' => false,
+                'message' => 'An error occurred while validating the promo code.'. $e->getMessage()
+            ], 500);
         }
     }
 }

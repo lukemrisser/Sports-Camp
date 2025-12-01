@@ -77,7 +77,7 @@ class Camp extends Model
 	public function activeDiscounts()
 	{
 		return $this->discounts()
-					->where('Discount_Date', '>=', now());
+					->where('Discount_Date', '>=', now() || null);
 	}
 
 	// Get the best available discount for this camp
@@ -88,7 +88,9 @@ class Camp extends Model
 					->first();
 	}
 
-	// Calculate discounted price for this camp
+	/**
+	 * Calculate the discounted price (dollars) using the best active discount.
+	 */
 	public function getDiscountedPrice($originalPrice)
 	{
 		$discount = $this->getBestDiscount();
@@ -97,7 +99,7 @@ class Camp extends Model
 			return $originalPrice;
 		}
 
-		return $originalPrice - $discount->Discount_Amount;
+		return $originalPrice - ($discount->Discount_Amount * 100);
 	}
 
 	// Scope to get camps that are currently accepting registrations
@@ -119,9 +121,5 @@ class Camp extends Model
 		$today = now()->toDateString();
 
 		return $this->Registration_Open <= $today && $this->Registration_Close >= $today;
-	}
-	public function getSportAttribute()
-	{
-		return $this->sport->Sport_Name ?? null; // or whatever the name field is called
 	}
 }
