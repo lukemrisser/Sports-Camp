@@ -274,19 +274,27 @@
                 return;
             }
 
-            fetch(`{{ url('/edit-camp') }}/${id}/data`, {
+            fetch(`{{ route('edit-camp.data', ['id' => '__ID__']) }}`.replace('__ID__', id), {
                     headers: {
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
                 .then(r => {
-                    if (!r.ok) throw new Error('Failed to load camp');
+                    console.log('Response status:', r.status, r.statusText);
+                    if (!r.ok) {
+                        return r.text().then(text => {
+                            console.error('Error response body:', text);
+                            throw new Error(`Failed to load camp: ${r.status} - ${text}`);
+                        });
+                    }
                     return r.json();
                 })
                 .then(data => {
+                    console.log('Received camp data:', data);
                     // populate form
                     form.style.display = '';
-                    form.action = `{{ url('/edit-camp') }}/${id}`;
+                    form.action = `{{ route('edit-camp.update', ['id' => '__ID__']) }}`.replace('__ID__', id);
                     document.getElementById('name').value = data.Camp_Name || '';
                     document.getElementById('sport_id').value = data.Sport_ID || '';
                     document.getElementById('start_date').value = data.Start_Date ? data.Start_Date.split('T')[
@@ -329,8 +337,8 @@
                     }
                 })
                 .catch(e => {
-                    alert('Unable to load camp data.');
-                    console.error(e);
+                    console.error('Full error details:', e);
+                    alert(`Unable to load camp data: ${e.message}`);
                 });
         });
     </script>

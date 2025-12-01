@@ -40,8 +40,15 @@ class CoachController extends Controller
 
     public function getCampData($id)
     {
-        $camp = Camp::with('discounts')->findOrFail($id);
-        return response()->json($camp);
+        try {
+            Log::info("Fetching camp data for ID: {$id}");
+            $camp = Camp::with('discounts')->findOrFail($id);
+            Log::info("Successfully retrieved camp: {$camp->Camp_Name}");
+            return response()->json($camp);
+        } catch (\Exception $e) {
+            Log::error("Failed to fetch camp data for ID {$id}: " . $e->getMessage());
+            return response()->json(['error' => 'Camp not found'], 404);
+        }
     }
 
     public function updateCamp(Request $request, $id)
@@ -63,7 +70,7 @@ class CoachController extends Controller
             'street_address' => 'required|string|max:255',
             'city' => 'required|string|max:100',
             'state' => 'required|string|size:2',
-            'zip_code' => 'required|string',
+            'zip_code' => 'required|string|regex:/^[0-9]{5}(-[0-9]{4})?$/',
             'discount_amount.*' => 'nullable|numeric',
             'discount_date.*' => 'nullable|date',
             'promo_code.*' => 'nullable|string',
