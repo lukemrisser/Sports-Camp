@@ -84,7 +84,8 @@ class ParentSignUpTest extends TestCase
         // Check the redirection-target: the payment page
         $response->assertRedirect(route('payment.show', [
             'player' => $actualPlayerId,
-            'camp' => $campId
+            'camp' => $campId,
+            'discountAmount' => 0,
         ]));
 
         // Check for successful registration message
