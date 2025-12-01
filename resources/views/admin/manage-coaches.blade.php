@@ -24,6 +24,7 @@
                         <th>Email</th>
                         <th>Sport</th>
                         <th>Actions</th>
+                        <th>Role</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,7 +32,7 @@
                         <tr>
                             <td>{{ $coach->Coach_FirstName }} {{ $coach->Coach_LastName }}</td>
                             <td>{{ $coach->user->email ?? 'N/A' }}</td>
-                            <td>{{ $coach->sport->Sport_Name ?? 'N/A' }}</td>
+                            <td>{{ $coach->sport_name ?? 'N/A' }}</td>
                             <td>
                                 <a href="{{ route('admin.edit-coach', $coach->Coach_ID) }}" class="btn btn-edit">Edit</a>
                                 <form action="{{ route('admin.delete-coach', $coach->Coach_ID) }}" method="POST"
@@ -42,6 +43,7 @@
                                         onclick="openDeleteCoachModal(this)">Delete</button>
                                 </form>
                             </td>
+                            <td>{{ $coach->is_admin ? 'Admin' : 'Coach' }}</td>
                         </tr>
                     @empty
                         <tr>

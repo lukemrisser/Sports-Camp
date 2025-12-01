@@ -986,17 +986,19 @@ p {
    ============================================ */
 .registration-page {
     min-height: 100vh;
-    padding: 1.5rem 0;
+
     display: flex;
     flex-direction: column;
     justify-content: center;
     background-color: var(--gray-100);
+    width: 100%;
 }
 
 .registration-container {
     position: relative;
     padding: 0.75rem;
-    max-width: 64rem;
+    max-width: 80%;
+    min-width: 40%;
     margin: 0 auto;
 }
 
@@ -1009,12 +1011,17 @@ p {
     border-radius: 1.5rem;
 }
 
+.registration-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
 .registration-title {
     font-size: 2.5rem;
     font-weight: 700;
     color: var(--primary-blue);
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 0;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding-bottom: 1rem;

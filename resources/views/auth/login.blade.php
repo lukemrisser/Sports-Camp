@@ -151,6 +151,7 @@
             font-weight: 600;
             color: #374151;
             font-size: 14px;
+            text-align: left;
         }
 
         .form-input {
@@ -161,6 +162,8 @@
             font-size: 16px;
             transition: all 0.3s ease;
             background: #f9fafb;
+            align-items: center;
+            justify-content: center;
         }
 
         .form-input:focus {

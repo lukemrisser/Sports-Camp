@@ -54,9 +54,15 @@ class Coach extends Model
         return $this->coach_firstname . ' ' . $this->coach_lastname;
     }
 
-    public function getSportAttribute()
+    public function getSportNameAttribute()
     {
         return $this->sport->Sport_Name ?? null; // or whatever the name field is called
+    }
+
+    # get is admin attribute
+    public function getIsAdminAttribute()
+    {
+        return $this->admin;
     }
 
     /**
