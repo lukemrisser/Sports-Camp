@@ -40,8 +40,15 @@ class CoachController extends Controller
 
     public function getCampData($id)
     {
-        $camp = Camp::with('discounts')->findOrFail($id);
-        return response()->json($camp);
+        try {
+            Log::info("Fetching camp data for ID: {$id}");
+            $camp = Camp::with('discounts')->findOrFail($id);
+            Log::info("Successfully retrieved camp: {$camp->Camp_Name}");
+            return response()->json($camp);
+        } catch (\Exception $e) {
+            Log::error("Failed to fetch camp data for ID {$id}: " . $e->getMessage());
+            return response()->json(['error' => 'Camp not found'], 404);
+        }
     }
 
     public function updateCamp(Request $request, $id)
