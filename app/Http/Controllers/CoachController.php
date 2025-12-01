@@ -63,7 +63,7 @@ class CoachController extends Controller
             'street_address' => 'required|string|max:255',
             'city' => 'required|string|max:100',
             'state' => 'required|string|size:2',
-            'zip_code' => 'required|string',
+            'zip_code' => 'required|string|regex:/^[0-9]{5}(-[0-9]{4})?$/',
             'discount_amount.*' => 'nullable|numeric',
             'discount_date.*' => 'nullable|date',
             'promo_code.*' => 'nullable|string',
