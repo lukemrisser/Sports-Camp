@@ -354,7 +354,6 @@ p {
 .auth-card,
 .welcome-card,
 .player-card,
-.summary-card,
 .camp-selection-card,
 .players-section {
     background: white;
@@ -372,7 +371,6 @@ p {
 .registration-card,
 .auth-card,
 .welcome-card,
-.summary-card,
 .camp-selection-card {
     display: flex;
     flex-direction: column;
@@ -529,6 +527,59 @@ p {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin: 0;
+}
+
+/* ============================================
+   SUMMARY CARD
+   ============================================ */
+.payment-summary {
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.summary-card h3 {
+    margin: 0 0 1rem 0;
+    color: var(--gray-700);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.summary-item .label {
+    text-align: left;
+    color: var(--gray-600);
+}
+
+.summary-item .value {
+    text-align: right;
+    color: var(--gray-800);
+    font-weight: 500;
+}
+
+.summary-item.total {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--gray-300);
+    border-bottom: none;
+}
+
+.summary-item.total .label,
+.summary-item.total .value {
+    color: var(--primary-blue);
 }
 
 /* ============================================

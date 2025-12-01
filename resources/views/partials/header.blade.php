@@ -1,6 +1,7 @@
 <header class="main-header">
     <div class="header-container">
         <div class="header-content">
+
             {{-- title can be plain text or HTML; title_class optional --}}
             <h1 class="{{ $title_class ?? '' }}">{{ $title ?? 'Falcon Teams' }}</h1>
             @if (!empty($subtitle))
@@ -16,7 +17,10 @@
                 <a href="{{ route('login') }}" class="header-btn login-btn">Login</a>
                 <a href="{{ route('register') }}" class="header-btn register-btn">Register</a>
             @else
-                @if (!Auth::user()->isCoach() && !Auth::user()->isCoachAdmin() && \Illuminate\Support\Facades\Route::currentRouteName() !== 'home')
+                @if (
+                    !Auth::user()->isCoach() &&
+                        !Auth::user()->isCoachAdmin() &&
+                        \Illuminate\Support\Facades\Route::currentRouteName() !== 'home')
                     <a href="{{ route('home') }}" class="header-btn login-btn">Dashboard</a>
                 @endif
                 @if (Auth::user()->isCoach() && \Illuminate\Support\Facades\Route::currentRouteName() !== 'coach-dashboard')

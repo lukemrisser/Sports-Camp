@@ -30,10 +30,10 @@
                                 <span class="label">Camp:</span>
                                 <span class="value">{{ $campName ?? 'N/A' }}</span>
                             </div>
-                            
-                            @if($discountAmount > 0)
+
+                            @if ($discountAmount > 0)
                                 @php
-                                    $originalAmount = $amount + $discountAmount*100;
+                                    $originalAmount = $amount + $discountAmount * 100;
                                 @endphp
                                 <div class="summary-item">
                                     <span class="label">Original Price:</span>
@@ -44,12 +44,12 @@
                                     <span class="value">- ${{ number_format($discountAmount, 2) }}</span>
                                 </div>
                                 <div class="summary-item total">
-                                    <span class="label">Total After Discount:</span>
+                                    <span class="label">Final Total:</span>
                                     <span class="value">${{ number_format($amount / 100, 2) }}</span>
                                 </div>
                             @else
                                 <div class="summary-item total">
-                                    <span class="label">Total Amount:</span>
+                                    <span class="label">Final Total:</span>
                                     <span class="value">${{ number_format($amount / 100, 2) }}</span>
                                 </div>
                             @endif
@@ -140,7 +140,9 @@
                         </button>
                         <p class="payment-security">
                             <svg class="security-icon" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                                <path fill-rule="evenodd"
+                                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                                    clip-rule="evenodd"></path>
                             </svg>
                             Your payment information is secure and encrypted
                         </p>
