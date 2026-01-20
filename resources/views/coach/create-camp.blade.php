@@ -385,6 +385,38 @@
                             </div>
                         </div>
 
+                        <h5 class="section-title">Extra Fees</h5>
+                        <p class="text-sm text-gray-600 mb-3">Optional add-ons like lunch, shirts, or rentals.</p>
+                        <div id="extra-fee-section">
+                            <div class="form-grid-3 extra-fee-group">
+                                <div class="form-group">
+                                    <label class="form-label">Fee Name</label>
+                                    <input type="text" name="extra_fee_name[]" class="form-input"
+                                        placeholder="e.g., Lunch" value="{{ old('extra_fee_name.0') }}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Fee Amount</label>
+                                    <div style="position: relative;">
+                                        <span class="currency-symbol">$</span>
+                                        <input type="number" name="extra_fee_amount[]" class="form-input"
+                                            min="0" step="0.01" value="{{ old('extra_fee_amount.0') }}"
+                                            style="padding-left: 25px;">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Fee Description (optional)</label>
+                                    <input type="text" name="extra_fee_description[]" class="form-input"
+                                        placeholder="Short description" value="{{ old('extra_fee_description.0') }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="mt-1">
+                                <button type="button" id="add-extra-fee" class="submit-button" style="width: auto;">Add
+                                    another fee</button>
+                            </div>
+                        </div>
+
                     <div class="submit-section">
                         <button type="submit" class="submit-button">
                             Create Camp
@@ -556,6 +588,39 @@
         document.querySelectorAll('.remove-promo').forEach(button => {
             button.addEventListener('click', function() {
                 this.closest('.promo-section').remove();
+            });
+        });
+
+        // Dynamically add/remove extra fee fields
+        document.getElementById('add-extra-fee').addEventListener('click', function() {
+            const container = document.getElementById('extra-fee-section');
+            const newFee = document.createElement('div');
+            newFee.classList.add('extra-fee-group', 'form-grid-3');
+            newFee.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Fee Name</label>
+                    <input type="text" name="extra_fee_name[]" class="form-input" placeholder="e.g., Lunch">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fee Amount</label>
+                    <div style="position: relative;">
+                        <span class="currency-symbol">$</span>
+                        <input type="number" name="extra_fee_amount[]" class="form-input" min="0" step="0.01" style="padding-left: 25px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fee Description (optional)</label>
+                    <input type="text" name="extra_fee_description[]" class="form-input" placeholder="Short description">
+                </div>
+                <button type="button"
+                    class="remove-extra-fee absolute right-0 top-8 px-3 text-red-500 hover:text-red-700"
+                    title="Remove fee">&times;</button>
+            `;
+            container.appendChild(newFee);
+
+            const removeButton = newFee.querySelector('.remove-extra-fee');
+            removeButton.addEventListener('click', function() {
+                newFee.remove();
             });
         });
 </script>

@@ -191,6 +191,15 @@
                             </div>
                         </div>
 
+                        <h5 class="section-title">Extra Fees</h5>
+                        <p class="text-sm text-gray-600 mb-3">Optional add-ons like lunch, shirts, or rentals.</p>
+                        <div id="extra-fee-section"></div>
+                        <div class="form-grid-2">
+                            <div class="mt-1">
+                                <button type="button" id="add-extra-fee" class="submit-button" style="width:auto;">Add Extra Fee</button>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="submit-section">
@@ -207,6 +216,7 @@
         const form = document.getElementById('edit-camp-form');
         const discountSection = document.getElementById('discount-section');
         const promoSection = document.getElementById('promo-section');
+        const extraFeeSection = document.getElementById('extra-fee-section');
 
         function clearDiscounts() {
             discountSection.innerHTML = '';
@@ -214,6 +224,10 @@
 
          function clearPromos() {
             promoSection.innerHTML = '';
+        }
+
+        function clearExtraFees() {
+            extraFeeSection.innerHTML = '';
         }
 
         function addDiscountRow(amount = '', date = '') {
@@ -263,8 +277,35 @@
             remove.addEventListener('click', () => wrapper.remove());
         }
 
+        function addExtraFeeRow(name = '', amount = '', description = '') {
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('extra-fee-section', 'form-grid-3');
+            wrapper.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Fee Name</label>
+                    <input type="text" name="extra_fee_name[]" class="form-input" value="${name}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fee Amount</label>
+                    <div style="position: relative;">
+                        <span class="currency-symbol">$</span>
+                        <input type="number" name="extra_fee_amount[]" class="form-input" min="0" step="0.01" style="padding-left:25px;" value="${amount}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fee Description (optional)</label>
+                    <input type="text" name="extra_fee_description[]" class="form-input" value="${description}">
+                </div>
+                <button type="button" class="remove-extra-fee absolute right-0 top-8 px-3 text-red-500 hover:text-red-700" title="Remove fee">&times;</button>
+            `;
+            extraFeeSection.appendChild(wrapper);
+            const remove = wrapper.querySelector('.remove-extra-fee');
+            remove.addEventListener('click', () => wrapper.remove());
+        }
+
         document.getElementById('add-discount').addEventListener('click', () => addDiscountRow());
         document.getElementById('add-promo').addEventListener('click', () => addPromoRow());
+        document.getElementById('add-extra-fee').addEventListener('click', () => addExtraFeeRow());
 
 
         select.addEventListener('change', function() {
@@ -324,6 +365,7 @@
 
                     clearDiscounts();
                     clearPromos();
+                    clearExtraFees();
                     if (data.discounts && data.discounts.length) {
                         data.discounts.forEach(d => {
                             if (d.Promo_Code) {
@@ -333,6 +375,16 @@
                                 // This is an early discount
                                 addDiscountRow(d.Discount_Amount, d.Discount_Date ? d.Discount_Date.split('T')[0] : '');
                             }
+                        });
+                    }
+
+                    if (data.extra_fees && data.extra_fees.length) {
+                        data.extra_fees.forEach(fee => {
+                            addExtraFeeRow(
+                                fee.Fee_Name || '',
+                                fee.Fee_Amount || '',
+                                fee.Fee_Description || ''
+                            );
                         });
                     }
                 })

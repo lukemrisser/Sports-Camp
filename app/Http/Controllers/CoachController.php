@@ -8,6 +8,7 @@ use App\Models\Camp;
 use App\Models\Sport;
 use App\Models\User;
 use App\Models\Player;
+use App\Models\ExtraFee;
 use App\Imports\PlayersImport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +43,7 @@ class CoachController extends Controller
     {
         try {
             Log::info("Fetching camp data for ID: {$id}");
-            $camp = Camp::with('discounts')->findOrFail($id);
+            $camp = Camp::with(['discounts', 'extraFees'])->findOrFail($id);
             Log::info("Successfully retrieved camp: {$camp->Camp_Name}");
             return response()->json($camp);
         } catch (\Exception $e) {
@@ -75,7 +76,10 @@ class CoachController extends Controller
             'discount_date.*' => 'nullable|date',
             'promo_code.*' => 'nullable|string',
             'promo_amount.*' => 'nullable|numeric',
-            'promo_date.*' => 'nullable|date'
+            'promo_date.*' => 'nullable|date',
+            'extra_fee_name.*' => 'nullable|string|max:100',
+            'extra_fee_description.*' => 'nullable|string',
+            'extra_fee_amount.*' => 'nullable|numeric|min:0'
         ]);
 
         DB::beginTransaction();
@@ -163,6 +167,42 @@ class CoachController extends Controller
                 DB::table('Camp_Discount')->insert($toInsert);
             }
 
+            // Replace extra fees: delete existing and insert provided
+            ExtraFee::where('Camp_ID', $camp->Camp_ID)->delete();
+
+            $extraNames = $request->input('extra_fee_name', []);
+            $extraAmounts = $request->input('extra_fee_amount', []);
+            $extraDescriptions = $request->input('extra_fee_description', []);
+            $feeRows = [];
+
+            foreach ($extraNames as $i => $feeName) {
+                $name = trim($feeName ?? '');
+                $amount = $extraAmounts[$i] ?? null;
+                $description = trim($extraDescriptions[$i] ?? '');
+
+                // Skip completely empty rows
+                if ($name === '' && ($amount === null || $amount === '')) {
+                    continue;
+                }
+
+                if ($name === '' || $amount === null || $amount === '') {
+                    throw ValidationException::withMessages([
+                        'extra_fee' => ['Each extra fee must include both a name and amount.'],
+                    ]);
+                }
+
+                $feeRows[] = [
+                    'Camp_ID' => $camp->Camp_ID,
+                    'Fee_Name' => $name,
+                    'Fee_Description' => $description ?: null,
+                    'Fee_Amount' => $amount,
+                ];
+            }
+
+            if (!empty($feeRows)) {
+                ExtraFee::insert($feeRows);
+            }
+
             DB::commit();
 
             return redirect()->route('edit-camp')->with('success', 'Camp updated successfully');
@@ -201,7 +241,10 @@ class CoachController extends Controller
             'discount_date.*' => 'nullable|date',
             'promo_code.*' => 'nullable|string',
             'promo_amount.*' => 'nullable|numeric',
-            'promo_date.*' => 'nullable|date'
+            'promo_date.*' => 'nullable|date',
+            'extra_fee_name.*' => 'nullable|string|max:100',
+            'extra_fee_description.*' => 'nullable|string',
+            'extra_fee_amount.*' => 'nullable|numeric|min:0'
         ]);
 
         // if the Camp is created but the discount insertion fails, everything is rolled back.
@@ -285,6 +328,40 @@ class CoachController extends Controller
 
             if (!empty($requestsToInsert)) {
                 DB::table('Camp_Discount')->insert($requestsToInsert);
+            }
+
+            // Handle extra fees
+            $extraNames = $request->input('extra_fee_name', []);
+            $extraAmounts = $request->input('extra_fee_amount', []);
+            $extraDescriptions = $request->input('extra_fee_description', []);
+            $feeRows = [];
+
+            foreach ($extraNames as $i => $feeName) {
+                $name = trim($feeName ?? '');
+                $amount = $extraAmounts[$i] ?? null;
+                $description = trim($extraDescriptions[$i] ?? '');
+
+                // Skip completely empty rows
+                if ($name === '' && ($amount === null || $amount === '')) {
+                    continue;
+                }
+
+                if ($name === '' || $amount === null || $amount === '') {
+                    throw ValidationException::withMessages([
+                        'extra_fee' => ['Each extra fee must include both a name and amount.'],
+                    ]);
+                }
+
+                $feeRows[] = [
+                    'Camp_ID' => $camp->Camp_ID,
+                    'Fee_Name' => $name,
+                    'Fee_Description' => $description ?: null,
+                    'Fee_Amount' => $amount,
+                ];
+            }
+
+            if (!empty($feeRows)) {
+                ExtraFee::insert($feeRows);
             }
             
             DB::commit(); 
