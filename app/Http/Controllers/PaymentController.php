@@ -9,6 +9,8 @@ use App\Models\Player;
 use App\Models\Camp;
 use App\Models\CampDiscount;
 use App\Models\Order;
+use App\Models\ExtraFee;
+use App\Models\OrderExtraFee;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use Stripe\Exception\CardException;
@@ -25,7 +27,7 @@ class PaymentController extends Controller
     /**
      * Show payment form for a registered player
      */
-    public function show($playerId, $campId, $discountAmount)
+    public function show($playerId, $campId, $discountAmount, $addOns = '')
     {
         $player = Player::with('parent')->where('Player_ID', $playerId)->first();
         $camp = Camp::find($campId);
@@ -53,8 +55,19 @@ class PaymentController extends Controller
         // Get the camp name for display
         $campName = $camp->Camp_Name;
 
+        // Parse selected add-ons
+        $selectedAddOns = [];
+        $addOnsTotal = 0;
+        if ($addOns) {
+            $addOnIds = array_filter(explode(',', $addOns));
+            if (!empty($addOnIds)) {
+                $selectedAddOns = ExtraFee::whereIn('Fee_ID', $addOnIds)->get();
+                $addOnsTotal = $selectedAddOns->sum('Fee_Amount');
+            }
+        }
+
         // Calculate amount (in cents for Stripe)
-        $amount = $this->calculateRegistrationAmount($player, $campId, $discountAmount);
+        $amount = $this->calculateRegistrationAmount($player, $campId, $discountAmount, $addOnsTotal);
         
         // Get or create order for tracking
         $order = $existingOrder ?: $this->findOrCreateOrder($player, $campId, $discountAmount);
@@ -67,7 +80,10 @@ class PaymentController extends Controller
             'campName' => $campName,
             'order' => $order,
             'campId' => $campId,
-            'discountAmount' => $discountAmount
+            'discountAmount' => $discountAmount,
+            'selectedAddOns' => $selectedAddOns,
+            'addOnsTotal' => $addOnsTotal,
+            'addOnsString' => $addOns
         ]);
     }
 
@@ -88,6 +104,7 @@ class PaymentController extends Controller
             'billing_city' => 'required|string|max:100',
             'billing_state' => 'required|string|max:100',
             'billing_zip' => 'required|string|max:20',
+            'selected_add_ons' => 'nullable|string',
         ]);
 
         DB::beginTransaction();
@@ -143,6 +160,20 @@ class PaymentController extends Controller
             } else if ($paymentIntent->status === 'succeeded') {
                 // Payment successful
                 $this->updatePlayerPaymentStatus($player, $paymentIntent, $request);
+                
+                // Save selected add-ons to OrderExtraFee
+                $addOnsString = $request->input('selected_add_ons', '');
+                if ($addOnsString) {
+                    $addOnIds = array_filter(explode(',', $addOnsString));
+                    if (!empty($addOnIds) && $order) {
+                        foreach ($addOnIds as $feeId) {
+                            OrderExtraFee::create([
+                                'Order_ID' => $order->Order_ID,
+                                'Fee_ID' => $feeId,
+                            ]);
+                        }
+                    }
+                }
                 
                 DB::commit();
 
@@ -240,7 +271,7 @@ class PaymentController extends Controller
     /**
      * Calculate registration amount based on player and camp
      */
-    private function calculateRegistrationAmount($player, $campId, $discount = 0)
+    private function calculateRegistrationAmount($player, $campId, $discount = 0, $addOnsTotal = 0)
     {
         $camp = Camp::find($campId);
 
@@ -251,10 +282,12 @@ class PaymentController extends Controller
         }
 
         $baseAmount = $camp->Price * 100; // Convert dollars to cents
+        $addOnsAmount = $addOnsTotal * 100; // Convert add-ons to cents
+        
         if ($discount > 0) {
-            $discountedAmount= $baseAmount - $discount * 100; // Apply discount in cents
-        }else {
-            $discountedAmount = $camp->getDiscountedPrice($baseAmount);
+            $discountedAmount = ($baseAmount + $addOnsAmount) - ($discount * 100); // Apply discount in cents
+        } else {
+            $discountedAmount = $camp->getDiscountedPrice($baseAmount) + $addOnsAmount;
         }
         return $discountedAmount;
     }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\ParentModel;
 use App\Models\Camp;
 use App\Models\Player;
+use App\Models\ExtraFee;
 
 class PlayerController extends Controller
 {
@@ -126,13 +127,16 @@ class PlayerController extends Controller
                 DB::table('Teammate_Request')->insert($requestsToInsert);
             }
 
-            // Redirect to payment page,
+            // Redirect to payment page with add-ons
+            $addOnsString = $request->input('selected_add_ons', '');
             return redirect()->route('payment.show', [
                 'player' => $playerId,
                 'camp' => $validatedData['Camp_ID'],
-                'discountAmount' => $validatedData['discount_amount'] ?? 0
+                'discountAmount' => $validatedData['discount_amount'] ?? 0,
+                'addOns' => $addOnsString
             ])->with('success', 'Registration completed! Please proceed with payment.')
-              ->with('discount_amount', $validatedData['discount_amount'] ?? null);
+              ->with('discount_amount', $validatedData['discount_amount'] ?? null)
+              ->with('selected_add_ons', $addOnsString);
         } catch (\Exception $e) {
             Log::error("Exception in PlayerController store method: " . $e->getMessage());
             Log::error("Stack trace: " . $e->getTraceAsString());
@@ -301,6 +305,28 @@ class PlayerController extends Controller
                 'success' => false,
                 'message' => 'An error occurred while adding the player. Please try again.'
             ], 500);
+        }
+    }
+
+    /**
+     * Get add-ons (extra fees) for a camp
+     */
+    public function getAddOns($campId)
+    {
+        try {
+            $camp = Camp::find($campId);
+            if (!$camp) {
+                return response()->json(['add_ons' => []], 404);
+            }
+
+            $addOns = ExtraFee::where('Camp_ID', $campId)->get();
+            
+            return response()->json([
+                'add_ons' => $addOns
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching add-ons: ' . $e->getMessage());
+            return response()->json(['add_ons' => []], 500);
         }
     }
 }

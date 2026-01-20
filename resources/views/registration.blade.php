@@ -291,6 +291,19 @@
                         </div>
                     </div>
 
+                    <!-- Add Ons / Extra Fees -->
+                    <div class="form-section" id="add-ons-section" style="display: none;">
+                        <h3 class="section-title">Add Ons</h3>
+                        <p class="text-sm text-gray-600 mb-3">Select any optional add-ons you'd like to include.</p>
+                        <div id="add-ons-list" class="add-ons-container">
+                            <!-- Add-ons will be populated here via JavaScript -->
+                        </div>
+                        <div id="add-ons-total" class="mt-3" style="display: none;">
+                            <strong>Add Ons Total: <span id="add-ons-amount">$0.00</span></strong>
+                        </div>
+                        <input type="hidden" id="selected_add_ons" name="selected_add_ons" value="">
+                    </div>
+
                     <!-- Submit Button -->
                     <div class="submit-section">
                         <div class="form-section">
@@ -329,6 +342,91 @@
             @endforeach
 
             const phoneInput = document.getElementById('phone');
+            const addOnsSection = document.getElementById('add-ons-section');
+            const campSelect = document.querySelector('select[name="Camp_ID"]');
+
+            // Function to load add-ons for selected camp
+            async function loadAddOns(campId) {
+                if (!campId) {
+                    addOnsSection.style.display = 'none';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`{{ url('/camps') }}/${campId}/add-ons`, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await response.json();
+
+                    if (data.add_ons && data.add_ons.length > 0) {
+                        const addOnsList = document.getElementById('add-ons-list');
+                        addOnsList.innerHTML = '';
+
+                        data.add_ons.forEach(fee => {
+                            const checkboxContainer = document.createElement('div');
+                            checkboxContainer.className = 'form-group add-on-item';
+                            checkboxContainer.innerHTML = `
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="add-on-checkbox" 
+                                        data-fee-id="${fee.Fee_ID}" 
+                                        data-fee-name="${fee.Fee_Name}"
+                                        data-fee-amount="${fee.Fee_Amount}"
+                                        value="${fee.Fee_ID}">
+                                    <span class="checkbox-text">${fee.Fee_Name} - $${parseFloat(fee.Fee_Amount).toFixed(2)}</span>
+                                    ${fee.Fee_Description ? `<span class="text-sm text-gray-600 ml-2">${fee.Fee_Description}</span>` : ''}
+                                </label>
+                            `;
+                            addOnsList.appendChild(checkboxContainer);
+                        });
+
+                        addOnsSection.style.display = 'block';
+                        updateAddOnsTotal();
+
+                        // Add event listeners to checkboxes
+                        document.querySelectorAll('.add-on-checkbox').forEach(checkbox => {
+                            checkbox.addEventListener('change', updateAddOnsTotal);
+                        });
+                    } else {
+                        addOnsSection.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error loading add-ons:', error);
+                    addOnsSection.style.display = 'none';
+                }
+            }
+
+            // Function to update add-ons total and hidden field
+            function updateAddOnsTotal() {
+                const checkboxes = document.querySelectorAll('.add-on-checkbox:checked');
+                let total = 0;
+                const selectedIds = [];
+
+                checkboxes.forEach(checkbox => {
+                    total += parseFloat(checkbox.dataset.feeAmount);
+                    selectedIds.push(checkbox.dataset.feeId);
+                });
+
+                document.getElementById('add-ons-amount').textContent = '$' + total.toFixed(2);
+                document.getElementById('selected_add_ons').value = selectedIds.join(',');
+
+                if (checkboxes.length > 0) {
+                    document.getElementById('add-ons-total').style.display = 'block';
+                } else {
+                    document.getElementById('add-ons-total').style.display = 'none';
+                }
+            }
+
+            // Load add-ons when camp selection changes
+            if (campSelect) {
+                campSelect.addEventListener('change', function() {
+                    loadAddOns(this.value);
+                });
+
+                // Load add-ons if a camp is already selected
+                if (campSelect.value) {
+                    loadAddOns(campSelect.value);
+                }
+            }
 
             function formatPhone(value) {
                 value = value.replace(/\D/g, '').substring(0, 10);
