@@ -367,13 +367,13 @@
                             checkboxContainer.className = 'form-group add-on-item';
                             checkboxContainer.innerHTML = `
                                 <label class="checkbox-label">
-                                    <input type="checkbox" class="add-on-checkbox" 
+                                    <input type="checkbox" class="checkbox-input add-on-checkbox" 
                                         data-fee-id="${fee.Fee_ID}" 
                                         data-fee-name="${fee.Fee_Name}"
                                         data-fee-amount="${fee.Fee_Amount}"
                                         value="${fee.Fee_ID}">
                                     <span class="checkbox-text">${fee.Fee_Name} - $${parseFloat(fee.Fee_Amount).toFixed(2)}</span>
-                                    ${fee.Fee_Description ? `<span class="text-sm text-gray-600 ml-2">${fee.Fee_Description}</span>` : ''}
+                                    ${fee.Fee_Description ? `<span class="text-sm text-gray-600" style="margin-left: 8px;">${fee.Fee_Description}</span>` : ''}
                                 </label>
                             `;
                             addOnsList.appendChild(checkboxContainer);
