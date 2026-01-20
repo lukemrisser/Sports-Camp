@@ -24,15 +24,39 @@ class RegistrationController extends Controller
         }
 
         $parent = null;
+        $playersForJs = [];
 
-        // If user is authenticated, try to load parent info by email
+        // If user is authenticated, try to load parent info by email and related players
         if (Auth::check()) {
             $user = Auth::user();
             if ($user && $user->email) {
-                $parent = ParentModel::where('Email', $user->email)->first();
+                $parent = ParentModel::where('Email', $user->email)
+                    ->with('players.camps')
+                    ->first();
+
+                if ($parent) {
+                    // Prepare a JS-safe array of players and their camp ids for the view
+                    $playersForJs = $parent->players->map(function ($p) {
+                        return [
+                            'Player_ID' => $p->Player_ID,
+                            'Camper_FirstName' => $p->Camper_FirstName,
+                            'Camper_LastName' => $p->Camper_LastName,
+                            'Gender' => $p->Gender,
+                            'Birth_Date' => $p->Birth_Date,
+                            'Shirt_Size' => $p->Shirt_Size,
+                            'Allergies' => $p->Allergies,
+                            'Asthma' => $p->Asthma,
+                            'Medication_Status' => $p->Medication_Status,
+                            'Injuries' => $p->Injuries,
+                            'camps' => $p->camps->map(function ($c) {
+                                return ['Camp_ID' => $c->Camp_ID];
+                            })->toArray()
+                        ];
+                    })->toArray();
+                }
             }
         }
 
-        return view('registration', compact('availableCamps', 'selectedCampId', 'parent'));
+        return view('registration', compact('availableCamps', 'selectedCampId', 'parent', 'playersForJs'));
     }
 }
