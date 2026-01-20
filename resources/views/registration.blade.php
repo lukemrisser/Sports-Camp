@@ -112,6 +112,20 @@
                     <!-- Camper Information -->
                     <div class="form-section">
                         <h3 class="section-title">Camper Information</h3>
+                        <!-- Existing player selector (loads data into fields) -->
+                        @if (isset($parent) && count($parent->players ?? []) > 0)
+                            <div class="form-group">
+                                <label for="existing_player">Load Existing Player</label>
+                                <select id="existing_player" name="existing_player_id" class="form-control">
+                                    <option value="">-- Use New Camper / Select One --</option>
+                                    @foreach ($parent->players as $p)
+                                        <option value="{{ $p->Player_ID }}">{{ $p->Camper_FirstName }} {{ $p->Camper_LastName }}</option>
+                                    @endforeach
+                                </select>
+                                <p id="existing-player-error" class="text-red-600 mt-1" style="display:none;"></p>
+                            </div>
+
+                        @endif
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label class="form-label">Camper First Name <span class="text-red-500">*</span></label>
@@ -327,6 +341,88 @@
                     name: '{{ $camp->Camp_Name }}'
                 };
             @endforeach
+
+                // Players data for authenticated parent (id => fields + camps)
+                const playersData = {!! json_encode($playersForJs ?? []) !!};
+                const playersIndex = {};
+                playersData.forEach(p => { playersIndex[p.Player_ID] = p; });
+
+                // If an existing player is selected, populate fields and check camp registration
+                const existingSelect = document.getElementById('existing_player');
+                const existingError = document.getElementById('existing-player-error');
+                if (existingSelect) {
+                    existingSelect.addEventListener('change', function() {
+                        existingError.style.display = 'none';
+                        const pid = this.value;
+
+                        // helper to clear camper fields
+                        function clearCamperFields() {
+                            const fields = ['Camper_FirstName','Camper_LastName','Gender','Birth_Date','Shirt_Size','Allergies','Asthma','Medication_Status','Injuries'];
+                            fields.forEach(name => {
+                                const el = document.querySelector('[name="' + name + '"]');
+                                if (el) {
+                                    if (el.tagName === 'SELECT' || el.type === 'text' || el.type === 'date' || el.tagName === 'TEXTAREA' || el.type === 'tel') {
+                                        el.value = '';
+                                    } else if (el.type === 'radio' || el.type === 'checkbox') {
+                                        el.checked = false;
+                                    }
+                                }
+                            });
+                        }
+
+                        if (!pid) {
+                            clearCamperFields();
+                            return;
+                        }
+
+                        const player = playersIndex[pid];
+                        if (!player) {
+                            clearCamperFields();
+                            return;
+                        }
+
+                        // Check if player already registered for selected camp
+                        const campSelect = document.querySelector('select[name="Camp_ID"]');
+                        const selectedCampId = campSelect ? campSelect.value : null;
+                        if (selectedCampId && player.camps && player.camps.some(c => String(c.Camp_ID) === String(selectedCampId))) {
+                            existingError.textContent = 'This player is already registered for the selected camp.';
+                            existingError.style.display = 'block';
+                            // reset selection
+                            this.value = '';
+                            return;
+                        }
+
+                        // Populate form fields
+                        const setIf = (name, value) => { const el = document.querySelector('[name="'+name+'"]'); if(el) el.value = value ?? ''; };
+                        setIf('Camper_FirstName', player.Camper_FirstName);
+                        setIf('Camper_LastName', player.Camper_LastName);
+                        setIf('Gender', player.Gender);
+                        setIf('Birth_Date', player.Birth_Date);
+                        setIf('Shirt_Size', player.Shirt_Size);
+                        setIf('Allergies', player.Allergies);
+                        setIf('Asthma', player.Asthma);
+                        setIf('Medication_Status', player.Medication_Status);
+                        setIf('Injuries', player.Injuries);
+                    });
+
+                    // Also re-validate if camp changes while an existing player is selected
+                    const campSel = document.querySelector('select[name="Camp_ID"]');
+                    if (campSel) {
+                        campSel.addEventListener('change', function() {
+                            if (!existingSelect.value) return;
+                            const pid = existingSelect.value;
+                            const player = playersIndex[pid];
+                            if (!player) return;
+                            const selectedCampId = this.value;
+                            if (selectedCampId && player.camps && player.camps.some(c => String(c.Camp_ID) === String(selectedCampId))) {
+                                existingError.textContent = 'The selected player is already registered for this camp. Please choose another camper or a different camp.';
+                                existingError.style.display = 'block';
+                            } else {
+                                existingError.style.display = 'none';
+                            }
+                        });
+                    }
+                }
 
             const phoneInput = document.getElementById('phone');
 
