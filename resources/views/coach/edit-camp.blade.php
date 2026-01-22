@@ -104,15 +104,6 @@
                             </div>
                         </div>
 
-                        <div class="form-group" style="position:relative;">
-                            <label for="price" class="form-label">Normal Price</label>
-                            <div style="position: relative;">
-                                <span class="currency-symbol">$</span>
-                                <input id="price" name="price" type="number" step="0.01" min="0"
-                                    class="form-input" style="padding-left:25px;" required>
-                            </div>
-                        </div>
-
                         <div class="form-grid-3">
                             <div class="form-group">
                                 <label for="gender" class="form-label">Gender</label>
@@ -171,6 +162,16 @@
                             <div class="form-group">
                                 <label for="zip_code" class="form-label">ZIP Code</label>
                                 <input id="zip_code" name="zip_code" type="text" class="form-input" required>
+                            </div>
+                        </div>
+
+                        <h5 class="section-title">Financials</h5>
+                        <div class="form-group" style="position:relative;">
+                            <label for="price" class="form-label">Normal Price</label>
+                            <div style="position: relative;">
+                                <span class="currency-symbol">$</span>
+                                <input id="price" name="price" type="number" step="0.01" min="0"
+                                    class="form-input" style="padding-left:25px;" required>
                             </div>
                         </div>
 

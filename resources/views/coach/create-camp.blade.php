@@ -110,18 +110,6 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="price" class="form-label">
-                                Normal Price <span class="text-red-500">*</span>
-                            </label>
-                            <div style="position: relative;">
-                                <span class="currency-symbol">$</span>
-                                <input type="number" name="price" id="price" required class="form-input"
-                                    min=".01" step=".01" value="{{ old('price') }}"
-                                    style="padding-left: 25px;">
-                            </div>
-                        </div>
-
                         <div class="form-grid-3">
                             <div class="form-group">
                                 <label for="gender" class="form-label">
@@ -311,6 +299,19 @@
                             </div>
 
 
+                        </div>
+
+                        <h5 class="section-title">Financials</h5>
+                        <div class="form-group">
+                            <label for="price" class="form-label">
+                                Normal Price <span class="text-red-500">*</span>
+                            </label>
+                            <div style="position: relative;">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" name="price" id="price" required class="form-input"
+                                    min=".01" step=".01" value="{{ old('price') }}"
+                                    style="padding-left: 25px;">
+                            </div>
                         </div>
 
                         <h5 class="section-title">Early Registration Discounts</h5>
