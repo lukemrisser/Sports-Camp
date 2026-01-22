@@ -70,6 +70,12 @@ Route::middleware(['auth', 'coach'])->group(function () {
 
     Route::post('/create-camp', [CoachController::class, 'storeCamp'])
         ->name('store-camp');
+
+    Route::get('/mass-emails', [CoachController::class, 'selectCampForEmail'])
+        ->name('select-camp-for-email');
+
+    Route::post('/mass-emails/send', [CoachController::class, 'sendMassEmails'])
+        ->name('send-mass-email');
 });
 
 // Protected routes for admin users only
