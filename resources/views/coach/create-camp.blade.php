@@ -119,7 +119,7 @@
                                     <option value="" disabled selected>Select gender</option>
                                     <option value="girls">Girls</option>
                                     <option value="boys">Boys</option>
-                                    <option value="mixed">Co-ed</option>
+                                    <option value="coed">Co-ed</option>
                                 </select>
                             </div>
 

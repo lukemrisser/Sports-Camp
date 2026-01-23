@@ -87,6 +87,9 @@ class CoachController extends Controller
             $camp = Camp::findOrFail($id);
 
 
+            // Normalize legacy value 'mixed' -> 'coed'
+            $normalizedGender = ($validated['gender'] === 'mixed') ? 'coed' : $validated['gender'];
+
             $camp->update([
                 'Sport_ID' => $validated['sport_id'],
                 'Camp_Name' => $validated['name'],
@@ -96,7 +99,7 @@ class CoachController extends Controller
                 'Registration_Open' => $validated['registration_open'],
                 'Registration_Close' => $validated['registration_close'],
                 'Price' => $validated['price'],
-                'Camp_Gender' => $validated['gender'],
+                'Camp_Gender' => $normalizedGender,
                 'Age_Min' => $validated['min_age'],
                 'Age_Max' => $validated['max_age'],
                 'Max_Capacity' => $validated['max_capacity'],
@@ -209,11 +212,23 @@ class CoachController extends Controller
 
         } catch (ValidationException $e) {
             DB::rollBack();
-            return redirect()->back()->withInput()->withErrors($e->errors());
+            $errorMessage = 'Error updating camp: ';
+            $allErrors = $e->errors();
+            if (!empty($allErrors)) {
+                $errorList = [];
+                foreach ($allErrors as $field => $messages) {
+                    $errorList[] = implode(', ', $messages);
+                }
+                $errorMessage .= implode(' | ', $errorList);
+            } else {
+                $errorMessage .= 'Unknown validation error';
+            }
+            return redirect()->route('organize-teams')->with('error', $errorMessage);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Camp Update Error: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'Failed to update camp');
+            return redirect()->route('organize-teams')
+                ->with('error', 'Failed to update camp: ' . $e->getMessage());
         }
     }
 
@@ -251,6 +266,9 @@ class CoachController extends Controller
         DB::beginTransaction();
 
         try {
+            // Normalize legacy value 'mixed' -> 'coed'
+            $normalizedGender = ($validated['gender'] === 'mixed') ? 'coed' : $validated['gender'];
+
             $camp = Camp::create([
                 'Sport_ID' => $validated['sport_id'],
                 'Camp_Name' => $validated['name'],
@@ -260,7 +278,7 @@ class CoachController extends Controller
                 'Registration_Open' => $validated['registration_open'],
                 'Registration_Close' => $validated['registration_close'],
                 'Price' => $validated['price'],
-                'Camp_Gender' => $validated['gender'],
+                'Camp_Gender' => $normalizedGender,
                 'Age_Min' => $validated['min_age'],
                 'Age_Max' => $validated['max_age'],
                 'Max_Capacity' => $validated['max_capacity'],

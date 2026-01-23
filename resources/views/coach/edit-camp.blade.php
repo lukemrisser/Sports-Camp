@@ -13,7 +13,7 @@
     @include('partials.header', [
         'title' => 'Falcon Teams',
     ])
-
+    
     <style>
         .currency-symbol {
             position: absolute;
@@ -30,22 +30,6 @@
                 <div class="registration-header">
                     <h2 class="registration-title">Edit Camp</h2>
                 </div>
-
-                @if (session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="alert alert-error">
-                        <ul class="error-list">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
 
                 <div class="form-section">
                     <div class="form-group">
@@ -213,6 +197,26 @@
     </div>
 
     <script>
+        // Auto-scroll to errors if they exist
+        window.addEventListener('load', function() {
+            const errorDisplay = document.getElementById('error-display');
+            if (errorDisplay) {
+                errorDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Add a pulse animation to draw attention
+                errorDisplay.style.animation = 'pulse 0.5s ease-in-out 3';
+            }
+        });
+
+        // Pulse animation
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.7; }
+            }
+        `;
+        document.head.appendChild(style);
+
         const select = document.getElementById('camp-select');
         const form = document.getElementById('edit-camp-form');
         const discountSection = document.getElementById('discount-section');
