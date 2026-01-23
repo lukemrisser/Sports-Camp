@@ -27,7 +27,7 @@ class CoachController extends Controller
         $sports = Sport::orderBy('Sport_Name')->get();
         $coach = Auth::user()->coach;
         $defaultSportId = $coach ? $coach->Sport_ID : null;
-        
+
         return view('coach.create-camp', compact('sports', 'defaultSportId'));
     }
 
@@ -209,7 +209,6 @@ class CoachController extends Controller
             DB::commit();
 
             return redirect()->route('edit-camp')->with('success', 'Camp updated successfully');
-
         } catch (ValidationException $e) {
             DB::rollBack();
             $errorMessage = 'Error updating camp: ';
@@ -293,14 +292,14 @@ class CoachController extends Controller
             $discountDates = $request->input('discount_date', []);
 
             $requestsToInsert = [];
-            
+
             // Handle early registration discounts (amount + date required)
             foreach ($discountAmounts as $i => $amount) {
-                $date = trim($discountDates[$i] ?? ''); 
+                $date = trim($discountDates[$i] ?? '');
 
                 if ($amount == null && $date == null) continue;
 
-                if ($amount == null XOR $date == null) {
+                if ($amount == null xor $date == null) {
                     throw ValidationException::withMessages([
                         'discount' => ['Each discount must include both an amount and a date.'],
                     ]);
@@ -334,7 +333,7 @@ class CoachController extends Controller
                             'promo' => ['Each promo code must have both a code and amount.'],
                         ]);
                     }
-                
+
                     $requestsToInsert[] = [
                         'Camp_ID' => $camp->Camp_ID,
                         'Promo_Code' => $promoCode,
@@ -386,14 +385,12 @@ class CoachController extends Controller
 
             return redirect()->route('create-camp')
                 ->with('success', 'Camp created successfully!');
-
         } catch (ValidationException $e) {
-            DB::rollBack(); 
-            return redirect()->back()->withInput()->withErrors($e->errors());
-        } 
-        catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Camp Creation Database Error: ' . $e->getMessage()); 
+            return redirect()->back()->withInput()->withErrors($e->errors());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Camp Creation Database Error: ' . $e->getMessage());
 
             return redirect()->back()->withInput()->with('error', 'A critical error occurred while saving camp data. Please try again.');
         }
@@ -470,16 +467,16 @@ class CoachController extends Controller
         }
 
         $teams = $this->sortTeamsDatabase($createdPlayers, $numTeams, $campId);
-        
+
         $teamsData = $this->prepareTeamsData($teams, $createdPlayers, $campId);
-        
+
         session([
             'teams_display_data' => $teamsData,
             'excel_export_data' => $teamsData,
             'delete_after_export' => true,
             'camp_id_for_cleanup' => $campId
         ]);
-        
+
         return redirect()->route('teams-display');
     }
 
@@ -490,14 +487,14 @@ class CoachController extends Controller
         $players = Camp::find($campId)->players;
         $teams = $this->sortTeamsDatabase($players, $numTeams, $campId);
         $teamsData = $this->prepareTeamsData($teams, $players, $campId);
-        
+
         session([
             'teams_display_data' => $teamsData,
             'excel_export_data' => $teamsData,
             'delete_after_export' => false,
             'camp_id_for_cleanup' => $campId
         ]);
-        
+
         return redirect()->route('teams-display');
     }
 
@@ -654,10 +651,10 @@ class CoachController extends Controller
     public function getCampsForCoach()
     {
         $user = Auth::user();
-        $coach = $user->coach; 
-        $camps = $coach && $coach->Sport_ID 
-            ? Camp::where('Sport_ID', $coach->Sport_ID)->get() 
-            : collect(); 
+        $coach = $user->coach;
+        $camps = $coach && $coach->Sport_ID
+            ? Camp::where('Sport_ID', $coach->Sport_ID)->get()
+            : collect();
 
         return view('coach.organize-teams', compact('camps'));
     }
@@ -673,7 +670,7 @@ class CoachController extends Controller
                     ->where('Camp_ID', $campId)
                     ->pluck(DB::raw("CONCAT(Requested_FirstName, ' ', Requested_LastName)"))
                     ->implode(', ');
-                
+
                 $teamsData[] = [
                     'Team' => 'Team ' . ($teamIndex + 1),
                     'Player Name' => $player ? ($player->Camper_FirstName . ' ' . $player->Camper_LastName) : 'Unknown',
@@ -690,7 +687,7 @@ class CoachController extends Controller
         $teamsData = session('teams_display_data', []);
         $deleteAfterExport = session('delete_after_export', false);
         $campId = session('camp_id_for_cleanup');
-        
+
         if (empty($teamsData)) {
             return redirect()->route('organize-teams')->with('error', 'No team data available. Please generate teams first.');
         }
@@ -702,7 +699,7 @@ class CoachController extends Controller
             Player::whereIn('Player_ID', $playerIds)->delete();
             DB::table('Player_Camp')->where('Camp_ID', $campId)->delete();
             Camp::where('Camp_ID', $campId)->delete();
-            
+
             // Clear the cleanup flags from session since we've already cleaned up
             session()->forget(['delete_after_export', 'camp_id_for_cleanup']);
         }
@@ -713,7 +710,7 @@ class CoachController extends Controller
     public function downloadTeamsExcel()
     {
         $teamsData = session('excel_export_data', []);
-        
+
         if (empty($teamsData)) {
             return redirect()->route('organize-teams')->with('error', 'No team data available for export.');
         }
@@ -722,9 +719,126 @@ class CoachController extends Controller
 
         return Excel::download(new class($teamsData) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
             private $data;
-            public function __construct($data) { $this->data = $data; }
-            public function collection() { return collect($this->data); }
-            public function headings(): array { return ['Team', 'Player Name', 'Age', 'Teammate Requests']; }
+            public function __construct($data)
+            {
+                $this->data = $data;
+            }
+            public function collection()
+            {
+                return collect($this->data);
+            }
+            public function headings(): array
+            {
+                return ['Team', 'Player Name', 'Age', 'Teammate Requests'];
+            }
         }, $filename);
+    }
+
+    public function selectCampForEmail(Request $request)
+    {
+        $user = Auth::user();
+        $coach = $user->coach;
+
+        if (!$coach) {
+            return redirect()->route('home')->with('error', 'You must be a coach to send mass emails.');
+        }
+
+        $camps = Camp::where('Sport_ID', $coach->Sport_ID)->get();
+
+        $campStatusOptions = [
+            'past' => 'Past Camps',
+            'current' => 'Current Camps',
+            'upcoming' => 'Upcoming Camps'
+        ];
+
+        return view('admin.mass-emails', compact('camps', 'campStatusOptions'));
+    }
+
+    public function sendMassEmails(Request $request)
+    {
+        $validated = $request->validate([
+            'camp_id' => 'required|integer|exists:Camps,Camp_ID',
+            'camp_status' => 'required|string|in:past,current,upcoming',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string',
+        ]);
+
+        try {
+            $user = Auth::user();
+            $coach = $user->coach;
+
+            if (!$coach) {
+                return redirect()->route('home')->with('error', 'You must be a coach to send mass emails.');
+            }
+
+            $camp = Camp::findOrFail($validated['camp_id']);
+
+            // Verify the camp belongs to the coach's sport
+            if ($camp->Sport_ID !== $coach->Sport_ID) {
+                return redirect()->back()->with('error', 'You do not have permission to send emails for this camp.');
+            }
+
+            // Get all parents for the selected camp based on status
+            $now = now();
+            $query = DB::table('Player_Camp')
+                ->join('Players', 'Player_Camp.Player_ID', '=', 'Players.Player_ID')
+                ->join('Parents', 'Players.Player_ID', '=', 'Parents.Player_ID')
+                ->join('Users', 'Parents.Parent_ID', '=', 'Users.User_ID')
+                ->where('Player_Camp.Camp_ID', $camp->Camp_ID)
+                ->distinct()
+                ->select('Users.Email', 'Users.First_Name', 'Users.Last_Name');
+
+            // Filter by camp status
+            if ($validated['camp_status'] === 'past') {
+                $query->where('Camps.End_Date', '<', $now);
+            } elseif ($validated['camp_status'] === 'current') {
+                $query->where('Camps.Start_Date', '<=', $now)
+                    ->where('Camps.End_Date', '>=', $now);
+            } elseif ($validated['camp_status'] === 'upcoming') {
+                $query->where('Camps.Start_Date', '>', $now);
+            }
+
+            $query->join('Camps', 'Player_Camp.Camp_ID', '=', 'Camps.Camp_ID');
+
+            $parents = $query->get();
+
+            if ($parents->isEmpty()) {
+                return redirect()->back()->with('warning', 'No parents found for the selected camp and status.');
+            }
+
+            // Send emails to all parents
+            $failedEmails = [];
+            foreach ($parents as $parent) {
+                try {
+                    // Use Laravel's Mail facade to send emails
+                    \Illuminate\Support\Facades\Mail::send('emails.mass-email', [
+                        'subject' => $validated['subject'],
+                        'message' => $validated['message'],
+                        'parentName' => $parent->First_Name . ' ' . $parent->Last_Name,
+                        'campName' => $camp->Camp_Name,
+                    ], function ($mail) use ($parent, $validated, $camp) {
+                        $mail->to($parent->Email)
+                            ->subject($validated['subject'])
+                            ->from(config('mail.from.address'), config('mail.from.name'));
+                    });
+                } catch (\Exception $e) {
+                    Log::error("Failed to send email to {$parent->Email}: " . $e->getMessage());
+                    $failedEmails[] = $parent->Email;
+                }
+            }
+
+            // Prepare success message
+            $successCount = count($parents) - count($failedEmails);
+            $message = "Mass email sent successfully to {$successCount} parent(s).";
+
+            if (!empty($failedEmails)) {
+                $message .= " Failed to send to: " . implode(', ', $failedEmails);
+            }
+
+            return redirect()->route('select-camp-for-email')->with('success', $message);
+        } catch (\Exception $e) {
+            Log::error('Mass Email Send Error: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'An error occurred while sending emails. Please try again.');
+        }
     }
 }

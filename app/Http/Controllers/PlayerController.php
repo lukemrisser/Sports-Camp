@@ -40,8 +40,9 @@ class PlayerController extends Controller
             'Church_Attendance' => 'nullable|string|max:50',
             'teammate_first.*' => 'nullable|string|max:50',
             'teammate_last.*' => 'nullable|string|max:50',
-            'promo_code' => 'nullable|string',
-            'discount_amount' => 'nullable|numeric|min:0'
+              'promo_code' => 'nullable|string',
+              'discount_amount' => 'nullable|numeric|min:0',
+              'existing_player_id' => 'nullable|integer|exists:Players,Player_ID'
         ]);
 
         try {
@@ -164,7 +165,7 @@ class PlayerController extends Controller
                 'Asthma' => 'required|boolean',
             ]);
 
-            // Verify the player belongs to the logged-in parent
+            // Verify the player belongs to the logged-in parent and load it
             $player = Player::where('Player_ID', $request->player_id)
                 ->where('Parent_ID', Auth::user()->parent->Parent_ID)
                 ->firstOrFail();

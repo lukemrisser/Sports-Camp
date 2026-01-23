@@ -63,6 +63,14 @@
                 <p>Modify details of your existing camp sessions</p>
                 <a href="{{ route('edit-camp') }}" class="card-button">Edit Camps</a>
             </div>
+
+            <!-- Mass Emails Card -->
+            <div class="registration-card blue">
+                <div class="card-icon">📧</div>
+                <h3>Mass Emails</h3>
+                <p>Send mass emails to parents</p>
+                <a href="{{ route('select-camp-for-email') }}" class="card-button">Send Emails</a>
+            </div>
         </div>
     </div>
     @include('partials.footer')

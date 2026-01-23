@@ -23,8 +23,6 @@ return new class extends Migration
 
             // Foreign Key constraint based on SQL dump
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
-
-            // NOTE: Removed $table->timestamps() as they are NOT in the SQL dump for Coaches.
         });
     }
 
