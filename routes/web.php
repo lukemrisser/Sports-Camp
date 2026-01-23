@@ -24,9 +24,10 @@ Route::get('/user-profile', function () {
 })->middleware(['auth'])->name('user-profile');  // Removed 'verified' temporarily
 
 Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
+Route::get('/camps/{campId}/add-ons', [PlayerController::class, 'getAddOns'])->name('camps.add-ons');
 
 // Payment routes
-Route::get('/payment/{player}/{camp}/{discountAmount}', [PaymentController::class, 'show'])->name('payment.show');
+Route::get('/payment/{player}/{camp}/{discountAmount}/{addOns?}', [PaymentController::class, 'show'])->name('payment.show');
 Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/cancelled', [PaymentController::class, 'cancelled'])->name('payment.cancelled');

@@ -110,18 +110,6 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="price" class="form-label">
-                                Normal Price <span class="text-red-500">*</span>
-                            </label>
-                            <div style="position: relative;">
-                                <span class="currency-symbol">$</span>
-                                <input type="number" name="price" id="price" required class="form-input"
-                                    min=".01" step=".01" value="{{ old('price') }}"
-                                    style="padding-left: 25px;">
-                            </div>
-                        </div>
-
                         <div class="form-grid-3">
                             <div class="form-group">
                                 <label for="gender" class="form-label">
@@ -131,7 +119,7 @@
                                     <option value="" disabled selected>Select gender</option>
                                     <option value="girls">Girls</option>
                                     <option value="boys">Boys</option>
-                                    <option value="mixed">Co-ed</option>
+                                    <option value="coed">Co-ed</option>
                                 </select>
                             </div>
 
@@ -313,6 +301,19 @@
 
                         </div>
 
+                        <h5 class="section-title">Financials</h5>
+                        <div class="form-group">
+                            <label for="price" class="form-label">
+                                Normal Price <span class="text-red-500">*</span>
+                            </label>
+                            <div style="position: relative;">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" name="price" id="price" required class="form-input"
+                                    min=".01" step=".01" value="{{ old('price') }}"
+                                    style="padding-left: 25px;">
+                            </div>
+                        </div>
+
                         <h5 class="section-title">Early Registration Discounts</h5>
                         <p class="text-sm text-gray-600 mb-3">Optionally add early bird discounts.</p>
                         <div id="discount-section">
@@ -385,6 +386,38 @@
                             </div>
                         </div>
 
+                        <h5 class="section-title">Extra Fees</h5>
+                        <p class="text-sm text-gray-600 mb-3">Optional add-ons like lunch, shirts, or rentals.</p>
+                        <div id="extra-fee-section">
+                            <div class="form-grid-3 extra-fee-group">
+                                <div class="form-group">
+                                    <label class="form-label">Fee Name</label>
+                                    <input type="text" name="extra_fee_name[]" class="form-input"
+                                        placeholder="e.g., Lunch" value="{{ old('extra_fee_name.0') }}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Fee Amount</label>
+                                    <div style="position: relative;">
+                                        <span class="currency-symbol">$</span>
+                                        <input type="number" name="extra_fee_amount[]" class="form-input"
+                                            min="0" step="0.01" value="{{ old('extra_fee_amount.0') }}"
+                                            style="padding-left: 25px;">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Fee Description (optional)</label>
+                                    <input type="text" name="extra_fee_description[]" class="form-input"
+                                        placeholder="Short description" value="{{ old('extra_fee_description.0') }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="mt-1">
+                                <button type="button" id="add-extra-fee" class="submit-button" style="width: auto;">Add
+                                    another fee</button>
+                            </div>
+                        </div>
+
                     <div class="submit-section">
                         <button type="submit" class="submit-button">
                             Create Camp
@@ -401,6 +434,7 @@
             const container = document.getElementById('discount-section');
             const newRequest = document.createElement('div');
             newRequest.classList.add('discount-section', 'form-grid-2');
+            newRequest.style.position = 'relative';
             newRequest.innerHTML = `
                 <div class="form-group">
                     <label class="form-label">Early Discount Amount</label>
@@ -419,7 +453,8 @@
                         name="discount_date[]"  class="form-input">
                 </div>
                 <button type="button"
-                    class="remove-discount absolute right-0 top-8 px-3 text-red-500 hover:text-red-700"
+                    class="remove-discount"
+                    style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;"
                     title="Remove discount">&times;</button>
             `;
             container.appendChild(newRequest);
@@ -515,6 +550,7 @@
             const container = document.getElementById('promo-section');
             const newPromo = document.createElement('div');
             newPromo.classList.add('promo-section', 'form-grid-3');
+            newPromo.style.position = 'relative';
             newPromo.innerHTML = `
                 <div class="form-group">
                     <label class="form-label">Promo Code</label>
@@ -542,7 +578,8 @@
                 </div>
 
                 <button type="button"
-                    class="remove-promo absolute right-0 top-8 px-3 text-red-500 hover:text-red-700"
+                    class="remove-promo"
+                    style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;"
                     title="Remove promo">&times;</button>
             `;
             container.appendChild(newPromo);
@@ -556,6 +593,41 @@
         document.querySelectorAll('.remove-promo').forEach(button => {
             button.addEventListener('click', function() {
                 this.closest('.promo-section').remove();
+            });
+        });
+
+        // Dynamically add/remove extra fee fields
+        document.getElementById('add-extra-fee').addEventListener('click', function() {
+            const container = document.getElementById('extra-fee-section');
+            const newFee = document.createElement('div');
+            newFee.classList.add('extra-fee-group', 'form-grid-3');
+            newFee.style.position = 'relative';
+            newFee.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Fee Name</label>
+                    <input type="text" name="extra_fee_name[]" class="form-input" placeholder="e.g., Lunch">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fee Amount</label>
+                    <div style="position: relative;">
+                        <span class="currency-symbol">$</span>
+                        <input type="number" name="extra_fee_amount[]" class="form-input" min="0" step="0.01" style="padding-left: 25px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fee Description (optional)</label>
+                    <input type="text" name="extra_fee_description[]" class="form-input" placeholder="Short description">
+                </div>
+                <button type="button"
+                    class="remove-extra-fee"
+                    style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;"
+                    title="Remove fee">&times;</button>
+            `;
+            container.appendChild(newFee);
+
+            const removeButton = newFee.querySelector('.remove-extra-fee');
+            removeButton.addEventListener('click', function() {
+                newFee.remove();
             });
         });
 </script>

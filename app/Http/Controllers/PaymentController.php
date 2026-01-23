@@ -9,6 +9,8 @@ use App\Models\Player;
 use App\Models\Camp;
 use App\Models\CampDiscount;
 use App\Models\Order;
+use App\Models\ExtraFee;
+use App\Models\OrderExtraFee;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use Stripe\Exception\CardException;
@@ -25,13 +27,24 @@ class PaymentController extends Controller
     /**
      * Show payment form for a registered player
      */
-    public function show($playerId, $campId, $discountAmount)
+    public function show($playerId, $campId, $discountAmount, $addOns = '')
     {
         $player = Player::with('parent')->where('Player_ID', $playerId)->first();
         $camp = Camp::find($campId);
+
+        // Parse selected add-ons FIRST before creating order
+        $selectedAddOns = [];
+        $addOnsTotal = 0;
+        if ($addOns) {
+            $addOnIds = array_filter(explode(',', $addOns));
+            if (!empty($addOnIds)) {
+                $selectedAddOns = ExtraFee::whereIn('Fee_ID', $addOnIds)->get();
+                $addOnsTotal = $selectedAddOns->sum('Fee_Amount');
+            }
+        }
                 
         // Check if there's already a paid order for this player
-        $existingOrder = $this->findOrCreateOrder($player, $campId, $discountAmount);
+        $existingOrder = $this->findOrCreateOrder($player, $campId, $discountAmount, $addOnsTotal);
         if ($existingOrder && $existingOrder->isFullyPaid()) {
             return redirect()->route('payment.success')
                 ->with('success', 'Payment has already been processed for this registration.');
@@ -54,10 +67,10 @@ class PaymentController extends Controller
         $campName = $camp->Camp_Name;
 
         // Calculate amount (in cents for Stripe)
-        $amount = $this->calculateRegistrationAmount($player, $campId, $discountAmount);
+        $amount = $this->calculateRegistrationAmount($player, $campId, $discountAmount, $addOnsTotal);
         
         // Get or create order for tracking
-        $order = $existingOrder ?: $this->findOrCreateOrder($player, $campId, $discountAmount);
+        $order = $existingOrder ?: $this->findOrCreateOrder($player, $campId, $discountAmount, $addOnsTotal);
 
         return view('payment', [
             'playerId' => $playerId,
@@ -67,7 +80,10 @@ class PaymentController extends Controller
             'campName' => $campName,
             'order' => $order,
             'campId' => $campId,
-            'discountAmount' => $discountAmount
+            'discountAmount' => $discountAmount,
+            'selectedAddOns' => $selectedAddOns,
+            'addOnsTotal' => $addOnsTotal,
+            'addOnsString' => $addOns
         ]);
     }
 
@@ -88,6 +104,7 @@ class PaymentController extends Controller
             'billing_city' => 'required|string|max:100',
             'billing_state' => 'required|string|max:100',
             'billing_zip' => 'required|string|max:20',
+            'selected_add_ons' => 'nullable|string',
         ]);
 
         DB::beginTransaction();
@@ -102,8 +119,18 @@ class PaymentController extends Controller
                 ]);
             }
             
+            // Calculate add-ons total from selected add-ons
+            $addOnsTotal = 0;
+            $addOnsString = $request->input('selected_add_ons', '');
+            if ($addOnsString) {
+                $addOnIds = array_filter(explode(',', $addOnsString));
+                if (!empty($addOnIds)) {
+                    $addOnsTotal = ExtraFee::whereIn('Fee_ID', $addOnIds)->sum('Fee_Amount');
+                }
+            }
+            
             // Check if already paid using Order model
-            $order = $this->findOrCreateOrder($player, $request->camp_id);
+            $order = $this->findOrCreateOrder($player, $request->camp_id, 0, $addOnsTotal);
             if ($order && $order->isFullyPaid()) {
                 return response()->json([
                     'success' => false,
@@ -143,6 +170,20 @@ class PaymentController extends Controller
             } else if ($paymentIntent->status === 'succeeded') {
                 // Payment successful
                 $this->updatePlayerPaymentStatus($player, $paymentIntent, $request);
+                
+                // Save selected add-ons to OrderExtraFee
+                $addOnsString = $request->input('selected_add_ons', '');
+                if ($addOnsString) {
+                    $addOnIds = array_filter(explode(',', $addOnsString));
+                    if (!empty($addOnIds) && $order) {
+                        foreach ($addOnIds as $feeId) {
+                            OrderExtraFee::create([
+                                'Order_ID' => $order->Order_ID,
+                                'Fee_ID' => $feeId,
+                            ]);
+                        }
+                    }
+                }
                 
                 DB::commit();
 
@@ -240,7 +281,7 @@ class PaymentController extends Controller
     /**
      * Calculate registration amount based on player and camp
      */
-    private function calculateRegistrationAmount($player, $campId, $discount = 0)
+    private function calculateRegistrationAmount($player, $campId, $discount = 0, $addOnsTotal = 0)
     {
         $camp = Camp::find($campId);
 
@@ -251,10 +292,12 @@ class PaymentController extends Controller
         }
 
         $baseAmount = $camp->Price * 100; // Convert dollars to cents
+        $addOnsAmount = $addOnsTotal * 100; // Convert add-ons to cents
+        
         if ($discount > 0) {
-            $discountedAmount= $baseAmount - $discount * 100; // Apply discount in cents
-        }else {
-            $discountedAmount = $camp->getDiscountedPrice($baseAmount);
+            $discountedAmount = ($baseAmount + $addOnsAmount) - ($discount * 100); // Apply discount in cents
+        } else {
+            $discountedAmount = $camp->getDiscountedPrice($baseAmount) + $addOnsAmount;
         }
         return $discountedAmount;
     }
@@ -262,7 +305,7 @@ class PaymentController extends Controller
     /**
      * Find existing order or create a new one for the player
      */
-    private function findOrCreateOrder(Player $player, $campId, $discount = 0): ?Order
+    private function findOrCreateOrder(Player $player, $campId, $discount = 0, $addOnsTotal = 0): ?Order
     {
         $order = Order::where('Player_ID', $player->Player_ID)
                      ->where('Camp_ID', $campId)
@@ -270,7 +313,7 @@ class PaymentController extends Controller
 
         if (!$order) {
             // Create new order for this specific player
-            $amount = $this->calculateRegistrationAmount($player, $campId, $discount) / 100; // Convert cents to dollars
+            $amount = $this->calculateRegistrationAmount($player, $campId, $discount, $addOnsTotal) / 100; // Convert cents to dollars
             
             $order = Order::create([
                 'Player_ID' => $player->Player_ID,
@@ -286,25 +329,22 @@ class PaymentController extends Controller
     }
 
     /**
-     * Get order details for a player
-     */
-    public function getOrderDetails($playerId, $campId): ?Order
-    {
-        $player = Player::where('Player_ID', $playerId)->first();
-        if (!$player) {
-            return null;
-        }
-
-        return $this->findOrCreateOrder($player, $campId);
-    }
-
-    /**
      * Update player payment status after successful payment
      */
     private function updatePlayerPaymentStatus($player, $paymentIntent, $request)
     {
+        // Calculate add-ons total from selected add-ons
+        $addOnsTotal = 0;
+        $addOnsString = $request->input('selected_add_ons', '');
+        if ($addOnsString) {
+            $addOnIds = array_filter(explode(',', $addOnsString));
+            if (!empty($addOnIds)) {
+                $addOnsTotal = ExtraFee::whereIn('Fee_ID', $addOnIds)->sum('Fee_Amount');
+            }
+        }
+        
         // Update the Order record with payment
-        $order = $this->findOrCreateOrder($player, $request->camp_id);
+        $order = $this->findOrCreateOrder($player, $request->camp_id, 0, $addOnsTotal);
         
         if ($order) {
             // Add payment to the order
@@ -343,7 +383,10 @@ class PaymentController extends Controller
             $player = Player::where('Player_ID', $playerId)->first();
             
             if ($player) {
-                $order = $this->findOrCreateOrder($player, $campId);
+                // Note: Webhook doesn't have add-ons info, so we find existing order only
+                $order = Order::where('Player_ID', $playerId)
+                             ->where('Camp_ID', $campId)
+                             ->first();
                 
                 if ($order && !$order->isFullyPaid()) {
                     // Add payment to the order

@@ -13,7 +13,7 @@
     @include('partials.header', [
         'title' => 'Falcon Teams',
     ])
-
+    
     <style>
         .currency-symbol {
             position: absolute;
@@ -30,22 +30,6 @@
                 <div class="registration-header">
                     <h2 class="registration-title">Edit Camp</h2>
                 </div>
-
-                @if (session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="alert alert-error">
-                        <ul class="error-list">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
 
                 <div class="form-section">
                     <div class="form-group">
@@ -101,15 +85,6 @@
                                 <label for="registration_close" class="form-label">Registration Close</label>
                                 <input id="registration_close" name="registration_close" type="date"
                                     class="form-input" required>
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="position:relative;">
-                            <label for="price" class="form-label">Normal Price</label>
-                            <div style="position: relative;">
-                                <span class="currency-symbol">$</span>
-                                <input id="price" name="price" type="number" step="0.01" min="0"
-                                    class="form-input" style="padding-left:25px;" required>
                             </div>
                         </div>
 
@@ -174,6 +149,16 @@
                             </div>
                         </div>
 
+                        <h5 class="section-title">Financials</h5>
+                        <div class="form-group" style="position:relative;">
+                            <label for="price" class="form-label">Normal Price</label>
+                            <div style="position: relative;">
+                                <span class="currency-symbol">$</span>
+                                <input id="price" name="price" type="number" step="0.01" min="0"
+                                    class="form-input" style="padding-left:25px;" required>
+                            </div>
+                        </div>
+
                         <h5 class="section-title">Early Registration Discounts</h5>
                         <div id="discount-section"></div>
                         <div class="form-grid-2">
@@ -191,6 +176,15 @@
                             </div>
                         </div>
 
+                        <h5 class="section-title">Extra Fees</h5>
+                        <p class="text-sm text-gray-600 mb-3">Optional add-ons like lunch, shirts, or rentals.</p>
+                        <div id="extra-fee-section"></div>
+                        <div class="form-grid-2">
+                            <div class="mt-1">
+                                <button type="button" id="add-extra-fee" class="submit-button" style="width:auto;">Add Extra Fee</button>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="submit-section">
@@ -203,10 +197,31 @@
     </div>
 
     <script>
+        // Auto-scroll to errors if they exist
+        window.addEventListener('load', function() {
+            const errorDisplay = document.getElementById('error-display');
+            if (errorDisplay) {
+                errorDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Add a pulse animation to draw attention
+                errorDisplay.style.animation = 'pulse 0.5s ease-in-out 3';
+            }
+        });
+
+        // Pulse animation
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.7; }
+            }
+        `;
+        document.head.appendChild(style);
+
         const select = document.getElementById('camp-select');
         const form = document.getElementById('edit-camp-form');
         const discountSection = document.getElementById('discount-section');
         const promoSection = document.getElementById('promo-section');
+        const extraFeeSection = document.getElementById('extra-fee-section');
 
         function clearDiscounts() {
             discountSection.innerHTML = '';
@@ -216,9 +231,14 @@
             promoSection.innerHTML = '';
         }
 
+        function clearExtraFees() {
+            extraFeeSection.innerHTML = '';
+        }
+
         function addDiscountRow(amount = '', date = '') {
             const wrapper = document.createElement('div');
             wrapper.classList.add('discount-section', 'form-grid-2');
+            wrapper.style.position = 'relative';
             wrapper.innerHTML = `
                 <div class="form-group">
                     <label class="form-label">Early Discount Amount</label>
@@ -231,7 +251,7 @@
                     <label class="form-label">Early Discount Deadline</label>
                     <input type="date" name="discount_date[]" class="form-input" value="${date}">
                 </div>
-                <button type="button" class="remove-discount absolute right-0 top-8 px-3 text-red-500 hover:text-red-700" title="Remove discount">&times;</button>
+                <button type="button" class="remove-discount" style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;" title="Remove discount">&times;</button>
             `;
             discountSection.appendChild(wrapper);
             const remove = wrapper.querySelector('.remove-discount');
@@ -240,6 +260,7 @@
         function addPromoRow(code = '', amount = '', date = '') {
             const wrapper = document.createElement('div');
             wrapper.classList.add('promo-section', 'form-grid-3');
+            wrapper.style.position = 'relative';
             wrapper.innerHTML = `
                 <div class="form-group">
                     <label class="form-label">Promo Code</label>
@@ -256,15 +277,43 @@
                     <label class="form-label">End Date (Optional)</label>
                     <input type="date" name="promo_date[]" class="form-input" value="${date}">
                 </div>
-                <button type="button" class="remove-promo absolute right-0 top-8 px-3 text-red-500 hover:text-red-700" title="Remove promo">&times;</button>
+                <button type="button" class="remove-promo" style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;" title="Remove promo">&times;</button>
             `;
             promoSection.appendChild(wrapper);
             const remove = wrapper.querySelector('.remove-promo');
             remove.addEventListener('click', () => wrapper.remove());
         }
 
+        function addExtraFeeRow(name = '', amount = '', description = '') {
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('extra-fee-section', 'form-grid-3');
+            wrapper.style.position = 'relative';
+            wrapper.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Fee Name</label>
+                    <input type="text" name="extra_fee_name[]" class="form-input" value="${name}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fee Amount</label>
+                    <div style="position: relative;">
+                        <span class="currency-symbol">$</span>
+                        <input type="number" name="extra_fee_amount[]" class="form-input" min="0" step="0.01" style="padding-left:25px;" value="${amount}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fee Description (optional)</label>
+                    <input type="text" name="extra_fee_description[]" class="form-input" value="${description}">
+                </div>
+                <button type="button" class="remove-extra-fee" style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;" title="Remove fee">&times;</button>
+            `;
+            extraFeeSection.appendChild(wrapper);
+            const remove = wrapper.querySelector('.remove-extra-fee');
+            remove.addEventListener('click', () => wrapper.remove());
+        }
+
         document.getElementById('add-discount').addEventListener('click', () => addDiscountRow());
         document.getElementById('add-promo').addEventListener('click', () => addPromoRow());
+        document.getElementById('add-extra-fee').addEventListener('click', () => addExtraFeeRow());
 
 
         select.addEventListener('change', function() {
@@ -324,6 +373,7 @@
 
                     clearDiscounts();
                     clearPromos();
+                    clearExtraFees();
                     if (data.discounts && data.discounts.length) {
                         data.discounts.forEach(d => {
                             if (d.Promo_Code) {
@@ -333,6 +383,16 @@
                                 // This is an early discount
                                 addDiscountRow(d.Discount_Amount, d.Discount_Date ? d.Discount_Date.split('T')[0] : '');
                             }
+                        });
+                    }
+
+                    if (data.extra_fees && data.extra_fees.length) {
+                        data.extra_fees.forEach(fee => {
+                            addExtraFeeRow(
+                                fee.Fee_Name || '',
+                                fee.Fee_Amount || '',
+                                fee.Fee_Description || ''
+                            );
                         });
                     }
                 })
