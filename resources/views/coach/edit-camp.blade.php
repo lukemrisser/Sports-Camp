@@ -234,6 +234,7 @@
         function addDiscountRow(amount = '', date = '') {
             const wrapper = document.createElement('div');
             wrapper.classList.add('discount-section', 'form-grid-2');
+            wrapper.style.position = 'relative';
             wrapper.innerHTML = `
                 <div class="form-group">
                     <label class="form-label">Early Discount Amount</label>
@@ -246,7 +247,7 @@
                     <label class="form-label">Early Discount Deadline</label>
                     <input type="date" name="discount_date[]" class="form-input" value="${date}">
                 </div>
-                <button type="button" class="remove-discount absolute right-0 top-8 px-3 text-red-500 hover:text-red-700" title="Remove discount">&times;</button>
+                <button type="button" class="remove-discount" style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;" title="Remove discount">&times;</button>
             `;
             discountSection.appendChild(wrapper);
             const remove = wrapper.querySelector('.remove-discount');
@@ -255,6 +256,7 @@
         function addPromoRow(code = '', amount = '', date = '') {
             const wrapper = document.createElement('div');
             wrapper.classList.add('promo-section', 'form-grid-3');
+            wrapper.style.position = 'relative';
             wrapper.innerHTML = `
                 <div class="form-group">
                     <label class="form-label">Promo Code</label>
@@ -271,7 +273,7 @@
                     <label class="form-label">End Date (Optional)</label>
                     <input type="date" name="promo_date[]" class="form-input" value="${date}">
                 </div>
-                <button type="button" class="remove-promo absolute right-0 top-8 px-3 text-red-500 hover:text-red-700" title="Remove promo">&times;</button>
+                <button type="button" class="remove-promo" style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;" title="Remove promo">&times;</button>
             `;
             promoSection.appendChild(wrapper);
             const remove = wrapper.querySelector('.remove-promo');
@@ -281,6 +283,7 @@
         function addExtraFeeRow(name = '', amount = '', description = '') {
             const wrapper = document.createElement('div');
             wrapper.classList.add('extra-fee-section', 'form-grid-3');
+            wrapper.style.position = 'relative';
             wrapper.innerHTML = `
                 <div class="form-group">
                     <label class="form-label">Fee Name</label>
@@ -297,7 +300,7 @@
                     <label class="form-label">Fee Description (optional)</label>
                     <input type="text" name="extra_fee_description[]" class="form-input" value="${description}">
                 </div>
-                <button type="button" class="remove-extra-fee absolute right-0 top-8 px-3 text-red-500 hover:text-red-700" title="Remove fee">&times;</button>
+                <button type="button" class="remove-extra-fee" style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;" title="Remove fee">&times;</button>
             `;
             extraFeeSection.appendChild(wrapper);
             const remove = wrapper.querySelector('.remove-extra-fee');

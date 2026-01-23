@@ -434,6 +434,7 @@
             const container = document.getElementById('discount-section');
             const newRequest = document.createElement('div');
             newRequest.classList.add('discount-section', 'form-grid-2');
+            newRequest.style.position = 'relative';
             newRequest.innerHTML = `
                 <div class="form-group">
                     <label class="form-label">Early Discount Amount</label>
@@ -452,7 +453,8 @@
                         name="discount_date[]"  class="form-input">
                 </div>
                 <button type="button"
-                    class="remove-discount absolute right-0 top-8 px-3 text-red-500 hover:text-red-700"
+                    class="remove-discount"
+                    style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;"
                     title="Remove discount">&times;</button>
             `;
             container.appendChild(newRequest);
@@ -548,6 +550,7 @@
             const container = document.getElementById('promo-section');
             const newPromo = document.createElement('div');
             newPromo.classList.add('promo-section', 'form-grid-3');
+            newPromo.style.position = 'relative';
             newPromo.innerHTML = `
                 <div class="form-group">
                     <label class="form-label">Promo Code</label>
@@ -575,7 +578,8 @@
                 </div>
 
                 <button type="button"
-                    class="remove-promo absolute right-0 top-8 px-3 text-red-500 hover:text-red-700"
+                    class="remove-promo"
+                    style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;"
                     title="Remove promo">&times;</button>
             `;
             container.appendChild(newPromo);
@@ -597,6 +601,7 @@
             const container = document.getElementById('extra-fee-section');
             const newFee = document.createElement('div');
             newFee.classList.add('extra-fee-group', 'form-grid-3');
+            newFee.style.position = 'relative';
             newFee.innerHTML = `
                 <div class="form-group">
                     <label class="form-label">Fee Name</label>
@@ -614,7 +619,8 @@
                     <input type="text" name="extra_fee_description[]" class="form-input" placeholder="Short description">
                 </div>
                 <button type="button"
-                    class="remove-extra-fee absolute right-0 top-8 px-3 text-red-500 hover:text-red-700"
+                    class="remove-extra-fee"
+                    style="position: absolute; right: -40px; top: 0; background: none; border: none; color: #dc2626; font-size: 32px; cursor: pointer; padding: 0; line-height: 1;"
                     title="Remove fee">&times;</button>
             `;
             container.appendChild(newFee);
