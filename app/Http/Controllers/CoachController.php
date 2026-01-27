@@ -380,8 +380,8 @@ class CoachController extends Controller
             if (!empty($feeRows)) {
                 ExtraFee::insert($feeRows);
             }
-            
-            DB::commit(); 
+
+            DB::commit();
 
             return redirect()->route('create-camp')
                 ->with('success', 'Camp created successfully!');
@@ -743,7 +743,21 @@ class CoachController extends Controller
             return redirect()->route('home')->with('error', 'You must be a coach to send mass emails.');
         }
 
-        $camps = Camp::where('Sport_ID', $coach->Sport_ID)->get();
+        $allCamps = Camp::where('Sport_ID', $coach->Sport_ID)->get();
+        $today = now()->toDateString();
+
+        // Separate camps by date
+        $pastCamps = $allCamps->filter(function ($camp) use ($today) {
+            return $camp->End_Date < $today;
+        });
+
+        $currentCamps = $allCamps->filter(function ($camp) use ($today) {
+            return $camp->Start_Date <= $today && $camp->End_Date >= $today;
+        });
+
+        $upcomingCamps = $allCamps->filter(function ($camp) use ($today) {
+            return $camp->Start_Date > $today;
+        });
 
         $campStatusOptions = [
             'past' => 'Past Camps',
@@ -751,7 +765,7 @@ class CoachController extends Controller
             'upcoming' => 'Upcoming Camps'
         ];
 
-        return view('admin.mass-emails', compact('camps', 'campStatusOptions'));
+        return view('admin.mass-emails', compact('pastCamps', 'currentCamps', 'upcomingCamps', 'campStatusOptions'));
     }
 
     public function sendMassEmails(Request $request)

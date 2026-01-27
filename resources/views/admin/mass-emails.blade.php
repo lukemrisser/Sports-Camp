@@ -47,19 +47,6 @@
                     @csrf
 
                     <div class="form-group">
-                        <label for="camp_id" class="form-label">Select Camp</label>
-                        <select id="camp_id" name="camp_id" class="form-select" required>
-                            <option value="">-- Choose a Camp --</option>
-                            @foreach ($camps as $camp)
-                                <option value="{{ $camp->Camp_ID }}">{{ $camp->Camp_Name }}</option>
-                            @endforeach
-                        </select>
-                        @error('camp_id')
-                            <span class="form-error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
                         <label for="camp_status" class="form-label">Camp Status</label>
                         <select id="camp_status" name="camp_status" class="form-select" required>
                             <option value="">-- Choose Camp Status --</option>
@@ -68,6 +55,16 @@
                             @endforeach
                         </select>
                         @error('camp_status')
+                            <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group" id="camp_selection_group" style="display: none;">
+                        <label for="camp_id" class="form-label">Select Camp</label>
+                        <select id="camp_id" name="camp_id" class="form-select">
+                            <option value="">-- Choose a Camp --</option>
+                        </select>
+                        @error('camp_id')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
@@ -89,10 +86,76 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Send Email</button>
+                        <button type="submit" class="btn btn-primary" id="submit_btn" disabled>Send Email</button>
                         <a href="{{ route('home') }}" class="btn btn-secondary">Cancel</a>
                     </div>
                 </form>
+
+                <script>
+                    // Camp data organized by status
+                    const campData = {
+                        past: [
+                            @foreach ($pastCamps as $camp)
+                                {
+                                    id: {{ $camp->Camp_ID }},
+                                    name: '{{ $camp->Camp_Name }}'
+                                },
+                            @endforeach
+                        ],
+                        current: [
+                            @foreach ($currentCamps as $camp)
+                                {
+                                    id: {{ $camp->Camp_ID }},
+                                    name: '{{ $camp->Camp_Name }}'
+                                },
+                            @endforeach
+                        ],
+                        upcoming: [
+                            @foreach ($upcomingCamps as $camp)
+                                {
+                                    id: {{ $camp->Camp_ID }},
+                                    name: '{{ $camp->Camp_Name }}'
+                                },
+                            @endforeach
+                        ]
+                    };
+
+                    const campStatusSelect = document.getElementById('camp_status');
+                    const campIdSelect = document.getElementById('camp_id');
+                    const campSelectionGroup = document.getElementById('camp_selection_group');
+                    const submitBtn = document.getElementById('submit_btn');
+
+                    campStatusSelect.addEventListener('change', function() {
+                        const selectedStatus = this.value;
+
+                        // Clear previous options
+                        campIdSelect.innerHTML = '<option value="">-- Choose a Camp --</option>';
+
+                        if (selectedStatus && campData[selectedStatus]) {
+                            // Populate camps for selected status
+                            campData[selectedStatus].forEach(camp => {
+                                const option = document.createElement('option');
+                                option.value = camp.id;
+                                option.textContent = camp.name;
+                                campIdSelect.appendChild(option);
+                            });
+
+                            // Show camp selection dropdown
+                            campSelectionGroup.style.display = 'block';
+                            submitBtn.disabled = false;
+                        } else {
+                            // Hide camp selection dropdown
+                            campSelectionGroup.style.display = 'none';
+                            submitBtn.disabled = true;
+                            campIdSelect.value = '';
+                        }
+                    });
+
+                    // Clear camp selection when camp status changes
+                    campStatusSelect.addEventListener('change', function() {
+                        campIdSelect.value = '';
+                    });
+                </script>
             </div>
         </div>
     </div>
