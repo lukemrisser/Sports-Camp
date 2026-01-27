@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\OrderExtraFee;
 
 class Order extends Model
 {
@@ -35,6 +37,7 @@ class Order extends Model
         'Order_Date',
         'Item_Amount',
         'Item_Amount_Paid',
+        'Item_Description',
     ];
 
     /**
@@ -68,6 +71,14 @@ class Order extends Model
     public function player(): BelongsTo
     {
         return $this->belongsTo(Player::class, 'Player_ID', 'Player_ID');
+    }
+
+    /**
+     * Get the extra fee charges attached to this order.
+     */
+    public function orderExtraFees(): HasMany
+    {
+        return $this->hasMany(OrderExtraFee::class, 'Order_ID', 'Order_ID');
     }
 
     /**

@@ -8,6 +8,71 @@
     <title>Payment - {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .payment-summary {
+            margin: 0 0 1.5rem 0;
+        }
+        
+        .summary-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            border-left: 4px solid #2563eb;
+        }
+
+        .summary-card h3 {
+            margin: 0 0 0.75rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.95rem;
+        }
+
+        .summary-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .summary-item.total {
+            padding: 0.6rem 0;
+            border-top: 2px solid #2563eb;
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-top: 0.5rem;
+        }
+
+        .summary-item .label {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .summary-item .value {
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .summary-item.discount {
+            padding: 0.5rem 0;
+            background: #f0fdf4;
+        }
+
+        .summary-item.discount .value {
+            color: #15803d;
+        }
+
+        .add-on-line {
+            padding-left: 1rem;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+    </style>
 </head>
 
 <body>
@@ -31,28 +96,40 @@
                                 <span class="value">{{ $campName ?? 'N/A' }}</span>
                             </div>
 
-                            @if ($discountAmount > 0)
-                                @php
-                                    $originalAmount = $amount + $discountAmount * 100;
-                                @endphp
+                            @php
+                                $campPrice = \App\Models\Camp::find($campId)->Price ?? 0;
+                                $discountAmt = (float)($discountAmount ?? 0);
+                            @endphp
+
+                            <div class="summary-item">
+                                <span class="label">Camp Price:</span>
+                                <span class="value">${{ number_format($campPrice, 2) }}</span>
+                            </div>
+
+                            @if ($addOnsTotal > 0)
+                                @foreach ($selectedAddOns as $addOn)
+                                    <div class="summary-item add-on-line">
+                                        <span class="label">• {{ $addOn->Fee_Name }}</span>
+                                        <span class="value">${{ number_format($addOn->Fee_Amount, 2) }}</span>
+                                    </div>
+                                @endforeach
                                 <div class="summary-item">
-                                    <span class="label">Original Price:</span>
-                                    <span class="value">${{ number_format($originalAmount / 100, 2) }}</span>
-                                </div>
-                                <div class="summary-item">
-                                    <span class="label">Discount Applied:</span>
-                                    <span class="value">- ${{ number_format($discountAmount, 2) }}</span>
-                                </div>
-                                <div class="summary-item total">
-                                    <span class="label">Final Total:</span>
-                                    <span class="value">${{ number_format($amount / 100, 2) }}</span>
-                                </div>
-                            @else
-                                <div class="summary-item total">
-                                    <span class="label">Final Total:</span>
-                                    <span class="value">${{ number_format($amount / 100, 2) }}</span>
+                                    <span class="label" style="padding-left: 1rem;">Add Ons Subtotal:</span>
+                                    <span class="value">${{ number_format($addOnsTotal, 2) }}</span>
                                 </div>
                             @endif
+
+                            @if ($discountAmt > 0)
+                                <div class="summary-item discount">
+                                    <span class="label">Discount:</span>
+                                    <span class="value">-${{ number_format($discountAmt, 2) }}</span>
+                                </div>
+                            @endif
+
+                            <div class="summary-item total">
+                                <span class="label">Total Due:</span>
+                                <span class="value">${{ number_format($amount / 100, 2) }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -79,6 +156,7 @@
                     <input type="hidden" name="player_id" value="{{ $playerId }}">
                     <input type="hidden" name="camp_id" value="{{ $campId }}">
                     <input type="hidden" name="amount" value="{{ $amount }}">
+                    <input type="hidden" name="selected_add_ons" value="{{ $addOnsString ?? '' }}">
 
                     <!-- Payment Information -->
                     <div class="form-section">

@@ -8,6 +8,7 @@ use App\Models\Camp;
 use App\Models\Sport;
 use App\Models\User;
 use App\Models\Player;
+use App\Models\ExtraFee;
 use App\Imports\PlayersImport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +43,7 @@ class CoachController extends Controller
     {
         try {
             Log::info("Fetching camp data for ID: {$id}");
-            $camp = Camp::with('discounts')->findOrFail($id);
+            $camp = Camp::with(['discounts', 'extraFees'])->findOrFail($id);
             Log::info("Successfully retrieved camp: {$camp->Camp_Name}");
             return response()->json($camp);
         } catch (\Exception $e) {
@@ -75,13 +76,19 @@ class CoachController extends Controller
             'discount_date.*' => 'nullable|date',
             'promo_code.*' => 'nullable|string',
             'promo_amount.*' => 'nullable|numeric',
-            'promo_date.*' => 'nullable|date'
+            'promo_date.*' => 'nullable|date',
+            'extra_fee_name.*' => 'nullable|string|max:100',
+            'extra_fee_description.*' => 'nullable|string',
+            'extra_fee_amount.*' => 'nullable|numeric|min:0'
         ]);
 
         DB::beginTransaction();
         try {
             $camp = Camp::findOrFail($id);
 
+
+            // Normalize legacy value 'mixed' -> 'coed'
+            $normalizedGender = ($validated['gender'] === 'mixed') ? 'coed' : $validated['gender'];
 
             $camp->update([
                 'Sport_ID' => $validated['sport_id'],
@@ -92,7 +99,7 @@ class CoachController extends Controller
                 'Registration_Open' => $validated['registration_open'],
                 'Registration_Close' => $validated['registration_close'],
                 'Price' => $validated['price'],
-                'Camp_Gender' => $validated['gender'],
+                'Camp_Gender' => $normalizedGender,
                 'Age_Min' => $validated['min_age'],
                 'Age_Max' => $validated['max_age'],
                 'Max_Capacity' => $validated['max_capacity'],
@@ -163,16 +170,64 @@ class CoachController extends Controller
                 DB::table('Camp_Discount')->insert($toInsert);
             }
 
+            // Replace extra fees: delete existing and insert provided
+            ExtraFee::where('Camp_ID', $camp->Camp_ID)->delete();
+
+            $extraNames = $request->input('extra_fee_name', []);
+            $extraAmounts = $request->input('extra_fee_amount', []);
+            $extraDescriptions = $request->input('extra_fee_description', []);
+            $feeRows = [];
+
+            foreach ($extraNames as $i => $feeName) {
+                $name = trim($feeName ?? '');
+                $amount = $extraAmounts[$i] ?? null;
+                $description = trim($extraDescriptions[$i] ?? '');
+
+                // Skip completely empty rows
+                if ($name === '' && ($amount === null || $amount === '')) {
+                    continue;
+                }
+
+                if ($name === '' || $amount === null || $amount === '') {
+                    throw ValidationException::withMessages([
+                        'extra_fee' => ['Each extra fee must include both a name and amount.'],
+                    ]);
+                }
+
+                $feeRows[] = [
+                    'Camp_ID' => $camp->Camp_ID,
+                    'Fee_Name' => $name,
+                    'Fee_Description' => $description ?: null,
+                    'Fee_Amount' => $amount,
+                ];
+            }
+
+            if (!empty($feeRows)) {
+                ExtraFee::insert($feeRows);
+            }
+
             DB::commit();
 
             return redirect()->route('edit-camp')->with('success', 'Camp updated successfully');
         } catch (ValidationException $e) {
             DB::rollBack();
-            return redirect()->back()->withInput()->withErrors($e->errors());
+            $errorMessage = 'Error updating camp: ';
+            $allErrors = $e->errors();
+            if (!empty($allErrors)) {
+                $errorList = [];
+                foreach ($allErrors as $field => $messages) {
+                    $errorList[] = implode(', ', $messages);
+                }
+                $errorMessage .= implode(' | ', $errorList);
+            } else {
+                $errorMessage .= 'Unknown validation error';
+            }
+            return redirect()->route('organize-teams')->with('error', $errorMessage);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Camp Update Error: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'Failed to update camp');
+            return redirect()->route('organize-teams')
+                ->with('error', 'Failed to update camp: ' . $e->getMessage());
         }
     }
 
@@ -200,13 +255,19 @@ class CoachController extends Controller
             'discount_date.*' => 'nullable|date',
             'promo_code.*' => 'nullable|string',
             'promo_amount.*' => 'nullable|numeric',
-            'promo_date.*' => 'nullable|date'
+            'promo_date.*' => 'nullable|date',
+            'extra_fee_name.*' => 'nullable|string|max:100',
+            'extra_fee_description.*' => 'nullable|string',
+            'extra_fee_amount.*' => 'nullable|numeric|min:0'
         ]);
 
         // if the Camp is created but the discount insertion fails, everything is rolled back.
         DB::beginTransaction();
 
         try {
+            // Normalize legacy value 'mixed' -> 'coed'
+            $normalizedGender = ($validated['gender'] === 'mixed') ? 'coed' : $validated['gender'];
+
             $camp = Camp::create([
                 'Sport_ID' => $validated['sport_id'],
                 'Camp_Name' => $validated['name'],
@@ -216,7 +277,7 @@ class CoachController extends Controller
                 'Registration_Open' => $validated['registration_open'],
                 'Registration_Close' => $validated['registration_close'],
                 'Price' => $validated['price'],
-                'Camp_Gender' => $validated['gender'],
+                'Camp_Gender' => $normalizedGender,
                 'Age_Min' => $validated['min_age'],
                 'Age_Max' => $validated['max_age'],
                 'Max_Capacity' => $validated['max_capacity'],
@@ -286,7 +347,41 @@ class CoachController extends Controller
                 DB::table('Camp_Discount')->insert($requestsToInsert);
             }
 
-            DB::commit();
+            // Handle extra fees
+            $extraNames = $request->input('extra_fee_name', []);
+            $extraAmounts = $request->input('extra_fee_amount', []);
+            $extraDescriptions = $request->input('extra_fee_description', []);
+            $feeRows = [];
+
+            foreach ($extraNames as $i => $feeName) {
+                $name = trim($feeName ?? '');
+                $amount = $extraAmounts[$i] ?? null;
+                $description = trim($extraDescriptions[$i] ?? '');
+
+                // Skip completely empty rows
+                if ($name === '' && ($amount === null || $amount === '')) {
+                    continue;
+                }
+
+                if ($name === '' || $amount === null || $amount === '') {
+                    throw ValidationException::withMessages([
+                        'extra_fee' => ['Each extra fee must include both a name and amount.'],
+                    ]);
+                }
+
+                $feeRows[] = [
+                    'Camp_ID' => $camp->Camp_ID,
+                    'Fee_Name' => $name,
+                    'Fee_Description' => $description ?: null,
+                    'Fee_Amount' => $amount,
+                ];
+            }
+
+            if (!empty($feeRows)) {
+                ExtraFee::insert($feeRows);
+            }
+            
+            DB::commit(); 
 
             return redirect()->route('create-camp')
                 ->with('success', 'Camp created successfully!');

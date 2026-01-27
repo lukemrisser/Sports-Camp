@@ -8,6 +8,7 @@ use App\Models\CampDiscount;
 use App\Models\Player;
 use App\Models\Coach;
 use App\Models\Sport;
+use App\Models\ExtraFee;
 
 class Camp extends Model
 {
@@ -57,6 +58,12 @@ class Camp extends Model
 	public function players()
 	{
 		return $this->belongsToMany(Player::class, 'Player_Camp', 'Camp_ID', 'Player_ID');
+	}
+
+	// A camp can have many extra fees
+	public function extraFees()
+	{
+		return $this->hasMany(ExtraFee::class, 'Camp_ID', 'Camp_ID');
 	}
 
 	public function coaches()
