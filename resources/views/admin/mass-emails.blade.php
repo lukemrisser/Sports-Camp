@@ -61,7 +61,7 @@
 
                     <div class="form-group" id="camp_selection_group" style="display: none;">
                         <label for="camp_id" class="form-label">Select Camp</label>
-                        <select id="camp_id" name="camp_id" class="form-select">
+                        <select id="camp_id" name="camp_id" class="form-select" required>
                             <option value="">-- Choose a Camp --</option>
                         </select>
                         @error('camp_id')
@@ -69,20 +69,22 @@
                         @enderror
                     </div>
 
-                    <div class="form-group">
-                        <label for="subject" class="form-label">Email Subject</label>
-                        <input type="text" id="subject" name="subject" class="form-input" required>
-                        @error('subject')
-                            <span class="form-error">{{ $message }}</span>
-                        @enderror
-                    </div>
+                    <div id="email_fields_group" style="display: none;">
+                        <div class="form-group">
+                            <label for="subject" class="form-label">Email Subject</label>
+                            <input type="text" id="subject" name="subject" class="form-input" required>
+                            @error('subject')
+                                <span class="form-error">{{ $message }}</span>
+                            @enderror
+                        </div>
 
-                    <div class="form-group">
-                        <label for="message" class="form-label">Email Message</label>
-                        <textarea id="message" name="message" class="form-textarea" rows="8" required></textarea>
-                        @error('message')
-                            <span class="form-error">{{ $message }}</span>
-                        @enderror
+                        <div class="form-group">
+                            <label for="message" class="form-label">Email Message</label>
+                            <textarea id="message" name="message" class="form-textarea" rows="8" required></textarea>
+                            @error('message')
+                                <span class="form-error">{{ $message }}</span>
+                            @enderror
+                        </div>
                     </div>
 
                     <div class="form-actions">
@@ -123,13 +125,29 @@
                     const campStatusSelect = document.getElementById('camp_status');
                     const campIdSelect = document.getElementById('camp_id');
                     const campSelectionGroup = document.getElementById('camp_selection_group');
+                    const emailFieldsGroup = document.getElementById('email_fields_group');
                     const submitBtn = document.getElementById('submit_btn');
+
+                    function updateFormVisibility() {
+                        const statusSelected = campStatusSelect.value !== '';
+                        const campSelected = campIdSelect.value !== '';
+
+                        // Show email fields only when both status and camp are selected
+                        if (statusSelected && campSelected) {
+                            emailFieldsGroup.style.display = 'block';
+                            submitBtn.disabled = false;
+                        } else {
+                            emailFieldsGroup.style.display = 'none';
+                            submitBtn.disabled = true;
+                        }
+                    }
 
                     campStatusSelect.addEventListener('change', function() {
                         const selectedStatus = this.value;
 
-                        // Clear previous options
+                        // Clear previous options and camp selection
                         campIdSelect.innerHTML = '<option value="">-- Choose a Camp --</option>';
+                        campIdSelect.value = '';
 
                         if (selectedStatus && campData[selectedStatus]) {
                             // Populate camps for selected status
@@ -142,18 +160,18 @@
 
                             // Show camp selection dropdown
                             campSelectionGroup.style.display = 'block';
-                            submitBtn.disabled = false;
                         } else {
                             // Hide camp selection dropdown
                             campSelectionGroup.style.display = 'none';
-                            submitBtn.disabled = true;
-                            campIdSelect.value = '';
                         }
+
+                        // Update overall form visibility
+                        updateFormVisibility();
                     });
 
-                    // Clear camp selection when camp status changes
-                    campStatusSelect.addEventListener('change', function() {
-                        campIdSelect.value = '';
+                    campIdSelect.addEventListener('change', function() {
+                        // Update overall form visibility
+                        updateFormVisibility();
                     });
                 </script>
             </div>
