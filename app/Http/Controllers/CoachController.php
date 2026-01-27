@@ -746,17 +746,38 @@ class CoachController extends Controller
         $allCamps = Camp::where('Sport_ID', $coach->Sport_ID)->get();
         $today = now()->toDateString();
 
-        // Separate camps by date
+        // Separate camps by date and format with dates
         $pastCamps = $allCamps->filter(function ($camp) use ($today) {
             return $camp->End_Date < $today;
+        })->map(function ($camp) {
+            return [
+                'id' => $camp->Camp_ID,
+                'name' => $camp->Camp_Name,
+                'start_date' => $camp->Start_Date->format('m/d/Y'),
+                'end_date' => $camp->End_Date->format('m/d/Y')
+            ];
         });
 
         $currentCamps = $allCamps->filter(function ($camp) use ($today) {
             return $camp->Start_Date <= $today && $camp->End_Date >= $today;
+        })->map(function ($camp) {
+            return [
+                'id' => $camp->Camp_ID,
+                'name' => $camp->Camp_Name,
+                'start_date' => $camp->Start_Date->format('m/d/Y'),
+                'end_date' => $camp->End_Date->format('m/d/Y')
+            ];
         });
 
         $upcomingCamps = $allCamps->filter(function ($camp) use ($today) {
             return $camp->Start_Date > $today;
+        })->map(function ($camp) {
+            return [
+                'id' => $camp->Camp_ID,
+                'name' => $camp->Camp_Name,
+                'start_date' => $camp->Start_Date->format('m/d/Y'),
+                'end_date' => $camp->End_Date->format('m/d/Y')
+            ];
         });
 
         $campStatusOptions = [

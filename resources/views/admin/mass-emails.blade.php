@@ -154,7 +154,8 @@
                             campData[selectedStatus].forEach(camp => {
                                 const option = document.createElement('option');
                                 option.value = camp.id;
-                                option.textContent = camp.name;
+                                option.textContent = camp.name + " - " + "(Date: " + camp.start_date + " - " + camp
+                                    .end_date + ")";
                                 campIdSelect.appendChild(option);
                             });
 
