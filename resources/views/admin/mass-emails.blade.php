@@ -43,7 +43,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('send-mass-email') }}" class="registration-form">
+                <form method="POST" action="{{ route('send-mass-email') }}">
                     @csrf
 
                     <div class="form-group">
