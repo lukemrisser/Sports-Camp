@@ -99,24 +99,30 @@
                         past: [
                             @foreach ($pastCamps as $camp)
                                 {
-                                    id: {{ $camp->Camp_ID }},
-                                    name: '{{ $camp->Camp_Name }}'
+                                    id: {{ $camp['id'] }},
+                                    name: '{{ $camp['name'] }}',
+                                    start_date: '{{ $camp['start_date'] }}',
+                                    end_date: '{{ $camp['end_date'] }}'
                                 },
                             @endforeach
                         ],
                         current: [
                             @foreach ($currentCamps as $camp)
                                 {
-                                    id: {{ $camp->Camp_ID }},
-                                    name: '{{ $camp->Camp_Name }}'
+                                    id: {{ $camp['id'] }},
+                                    name: '{{ $camp['name'] }}',
+                                    start_date: '{{ $camp['start_date'] }}',
+                                    end_date: '{{ $camp['end_date'] }}'
                                 },
                             @endforeach
                         ],
                         upcoming: [
                             @foreach ($upcomingCamps as $camp)
                                 {
-                                    id: {{ $camp->Camp_ID }},
-                                    name: '{{ $camp->Camp_Name }}'
+                                    id: {{ $camp['id'] }},
+                                    name: '{{ $camp['name'] }}',
+                                    start_date: '{{ $camp['start_date'] }}',
+                                    end_date: '{{ $camp['end_date'] }}'
                                 },
                             @endforeach
                         ]
