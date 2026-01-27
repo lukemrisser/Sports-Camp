@@ -756,7 +756,7 @@ class CoachController extends Controller
                 'start_date' => $camp->Start_Date->format('m/d/Y'),
                 'end_date' => $camp->End_Date->format('m/d/Y')
             ];
-        });
+        })->values()->toArray();
 
         $currentCamps = $allCamps->filter(function ($camp) use ($today) {
             return $camp->Start_Date <= $today && $camp->End_Date >= $today;
@@ -767,7 +767,7 @@ class CoachController extends Controller
                 'start_date' => $camp->Start_Date->format('m/d/Y'),
                 'end_date' => $camp->End_Date->format('m/d/Y')
             ];
-        });
+        })->values()->toArray();
 
         $upcomingCamps = $allCamps->filter(function ($camp) use ($today) {
             return $camp->Start_Date > $today;
@@ -778,7 +778,7 @@ class CoachController extends Controller
                 'start_date' => $camp->Start_Date->format('m/d/Y'),
                 'end_date' => $camp->End_Date->format('m/d/Y')
             ];
-        });
+        })->values()->toArray();
 
         $campStatusOptions = [
             'past' => 'Past Camps',

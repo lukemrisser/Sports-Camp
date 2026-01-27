@@ -96,36 +96,9 @@
                 <script>
                     // Camp data organized by status
                     const campData = {
-                        past: [
-                            @foreach ($pastCamps as $camp)
-                                {
-                                    id: {{ $camp['id'] }},
-                                    name: '{{ $camp['name'] }}',
-                                    start_date: '{{ $camp['start_date'] }}',
-                                    end_date: '{{ $camp['end_date'] }}'
-                                },
-                            @endforeach
-                        ],
-                        current: [
-                            @foreach ($currentCamps as $camp)
-                                {
-                                    id: {{ $camp['id'] }},
-                                    name: '{{ $camp['name'] }}',
-                                    start_date: '{{ $camp['start_date'] }}',
-                                    end_date: '{{ $camp['end_date'] }}'
-                                },
-                            @endforeach
-                        ],
-                        upcoming: [
-                            @foreach ($upcomingCamps as $camp)
-                                {
-                                    id: {{ $camp['id'] }},
-                                    name: '{{ $camp['name'] }}',
-                                    start_date: '{{ $camp['start_date'] }}',
-                                    end_date: '{{ $camp['end_date'] }}'
-                                },
-                            @endforeach
-                        ]
+                        past: {!! json_encode($pastCamps) !!},
+                        current: {!! json_encode($currentCamps) !!},
+                        upcoming: {!! json_encode($upcomingCamps) !!}
                     };
 
                     const campStatusSelect = document.getElementById('camp_status');
