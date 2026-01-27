@@ -35,7 +35,7 @@
 
                 @if ($errors->any())
                     <div class="alert alert-error">
-                        <ul class="error-list">
+                        <ul>
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
@@ -48,43 +48,43 @@
 
                     <div class="form-group">
                         <label for="camp_id" class="form-label">Select Camp</label>
-                        <select id="camp_id" name="camp_id" class="form-control" required>
+                        <select id="camp_id" name="camp_id" class="form-select" required>
                             <option value="">-- Choose a Camp --</option>
                             @foreach ($camps as $camp)
                                 <option value="{{ $camp->Camp_ID }}">{{ $camp->Camp_Name }}</option>
                             @endforeach
                         </select>
                         @error('camp_id')
-                            <span class="error-text">{{ $message }}</span>
+                            <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="form-group">
                         <label for="camp_status" class="form-label">Camp Status</label>
-                        <select id="camp_status" name="camp_status" class="form-control" required>
+                        <select id="camp_status" name="camp_status" class="form-select" required>
                             <option value="">-- Choose Camp Status --</option>
                             @foreach ($campStatusOptions as $key => $label)
                                 <option value="{{ $key }}">{{ $label }}</option>
                             @endforeach
                         </select>
                         @error('camp_status')
-                            <span class="error-text">{{ $message }}</span>
+                            <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="form-group">
                         <label for="subject" class="form-label">Email Subject</label>
-                        <input type="text" id="subject" name="subject" class="form-control" required>
+                        <input type="text" id="subject" name="subject" class="form-input" required>
                         @error('subject')
-                            <span class="error-text">{{ $message }}</span>
+                            <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="form-group">
                         <label for="message" class="form-label">Email Message</label>
-                        <textarea id="message" name="message" class="form-control" rows="8" required></textarea>
+                        <textarea id="message" name="message" class="form-textarea" rows="8" required></textarea>
                         @error('message')
-                            <span class="error-text">{{ $message }}</span>
+                            <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
 
