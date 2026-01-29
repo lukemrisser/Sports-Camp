@@ -355,7 +355,7 @@
                     document.getElementById('registration_close').value = data.Registration_Close ? data
                         .Registration_Close.split('T')[0] : '';
                     document.getElementById('price').value = data.Price || '';
-                    if(data.Camp_Gender == 'mixed') {
+                    if(data.Camp_Gender == 'coed') {
                         document.getElementById('gender').value = 'coed';
                     } else {
                         document.getElementById('gender').value = data.Camp_Gender || '';
