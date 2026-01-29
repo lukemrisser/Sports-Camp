@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('Registration_Open')->nullable();
             $table->date('Registration_Close')->nullable();
             $table->decimal('Price', 10, 2)->nullable();
-            $table->enum('Camp_Gender', ['girls', 'boys', 'mixed']);
+            $table->enum('Camp_Gender', ['girls', 'boys', 'coed']);
             $table->tinyInteger('Age_Min')->nullable();
             $table->tinyInteger('Age_Max')->nullable();
             $table->integer('Sport_ID')->nullable();

@@ -615,14 +615,14 @@
                 };
                 const camperGender = genderMap[selectedGender];
 
-                if (camp.gender !== 'mixed' && camp.gender !== camperGender) {
-                    const campGenderName = camp.gender === 'boys' ? 'Boys' : 'Girls';
-                    const camperGenderName = selectedGender === 'M' ? 'Male' : 'Female';
-                    validationMessage.textContent =
-                        `This camp is for ${campGenderName} only, but you selected ${camperGenderName}.`;
-                    validationError.style.display = 'block';
-                    validation = false;
-                }
+                // if (camp.gender !== 'coed' && camp.gender !== camperGender) {
+                //     const campGenderName = camp.gender === 'boys' ? 'boys' : 'girls';
+                //     const camperGenderName = selectedGender === 'M' ? 'Male' : '';
+                //     validationMessage.textContent =
+                //         `This camp is for ${campGenderName} only, but you selected ${camperGenderName}.`;
+                //     validationError.style.display = 'block';
+                //     validation = false;
+                // }
 
                 return validation;
             }
