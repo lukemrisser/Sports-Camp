@@ -8,17 +8,7 @@
     <title>Process Refunds - {{ config('app.name', 'Falcon Camps') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        .refund-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        .search-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .refund-search-section {
             margin-bottom: 2rem;
         }
 
@@ -42,48 +32,15 @@
             font-size: 1rem;
         }
 
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-
-        .btn-success {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #218838;
-        }
-
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #c82333;
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
         }
 
         .orders-table {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: none;
+            margin-top: 2rem;
         }
 
         .orders-table.show {
@@ -106,16 +63,35 @@
         table th {
             background-color: #f8f9fa;
             font-weight: 600;
+            color: #333;
         }
 
         table tr:hover {
             background-color: #f8f9fa;
         }
 
+        table small {
+            color: #666;
+            font-size: 0.875rem;
+        }
+
+        .session-status,
         .alert {
             padding: 1rem;
             border-radius: 4px;
             margin-bottom: 1rem;
+        }
+
+        .session-status {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
 
         .alert-success {
@@ -161,10 +137,13 @@
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
 
         .modal-header {
             margin-bottom: 1.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 1rem;
         }
 
         .modal-header h2 {
@@ -172,22 +151,25 @@
             color: #333;
         }
 
-        .modal-footer {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 1.5rem;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 1rem;
-            color: #666;
-        }
-
         .no-refund {
             color: #dc3545;
             font-weight: 600;
+        }
+
+        .refund-details {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .refund-details p {
+            margin: 0.5rem 0;
+            color: #333;
+        }
+
+        .refund-details strong {
+            color: #333;
         }
     </style>
 </head>
@@ -195,58 +177,66 @@
 <body>
     @include('partials.header', [
         'title' => 'Process Refunds',
-        'title_class' => 'welcome-text',
+        'title_class' => 'welcome-title',
     ])
 
-    <div class="refund-container">
-        <!-- Messages -->
-        <div id="messageContainer"></div>
-
-        @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="alert alert-error">
-                {{ session('error') }}
-            </div>
-        @endif
-
-        <!-- Search Section -->
-        <div class="search-section">
-            <h2 style="margin-top: 0;">Search for Orders</h2>
-            <p style="color: #666; margin-bottom: 1.5rem;">Select a camp and search for a parent by name or email to
-                view their orders.</p>
-
-            <form id="searchForm">
-                <div class="form-group">
-                    <label for="camp_id">Select Camp</label>
-                    <select id="camp_id" name="camp_id" required>
-                        <option value="">-- Select a Camp --</option>
-                        @foreach ($camps as $camp)
-                            <option value="{{ $camp->Camp_ID }}">{{ $camp->Camp_Name }} -
-                                {{ $camp->Start_Date->format('M d, Y') }}</option>
-                        @endforeach
-                    </select>
+    <div class="registration-page">
+        <div class="registration-container">
+            <div class="registration-form-wrapper">
+                <div class="registration-header">
+                    <h2 class="registration-title">Process Refunds</h2>
                 </div>
 
-                <div class="form-group">
-                    <label for="search_term">Search Parent (Name or Email)</label>
-                    <input type="text" id="search_term" name="search_term" placeholder="Enter parent name or email"
-                        required>
+                <!-- Messages -->
+                <div id="messageContainer"></div>
+
+                @if (session('success'))
+                    <div class="alert alert-success">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="alert alert-error">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                <!-- Search Section -->
+                <div class="refund-search-section">
+                    <p style="color: #666; margin-bottom: 1.5rem;">Select a camp and search for a parent by name or email to view their orders.</p>
+
+                    <form id="searchForm">
+                        <div class="form-group">
+                            <label for="camp_id" class="form-label">Select Camp</label>
+                            <select id="camp_id" name="camp_id" class="form-control" required>
+                                <option value="">-- Select a Camp --</option>
+                                @foreach ($camps as $camp)
+                                    <option value="{{ $camp->Camp_ID }}">{{ $camp->Camp_Name }} -
+                                        {{ $camp->Start_Date->format('M d, Y') }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="search_term" class="form-label">Search Parent (Name or Email)</label>
+                            <input type="text" id="search_term" name="search_term" class="form-control" placeholder="Enter parent name or email"
+                                required>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Search Orders</button>
+                        </div>
+                    </form>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Search Orders</button>
-            </form>
-        </div>
-
-        <!-- Orders Table -->
-        <div class="orders-table" id="ordersTable">
-            <h2 style="margin-top: 0;">Found Orders</h2>
-            <div id="ordersTableContent">
-                <!-- Table will be populated by JavaScript -->
+                <!-- Orders Table -->
+                <div class="orders-table" id="ordersTable">
+                    <h3 style="margin-top: 1rem; margin-bottom: 1rem;">Found Orders</h3>
+                    <div id="ordersTableContent">
+                        <!-- Table will be populated by JavaScript -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -263,20 +253,19 @@
                 <div id="refundDetails"></div>
 
                 <div class="form-group">
-                    <label for="refund_amount">Refund Amount ($)</label>
-                    <input type="number" id="refund_amount" name="refund_amount" step="0.01" min="0.01"
+                    <label for="refund_amount" class="form-label">Refund Amount ($)</label>
+                    <input type="number" id="refund_amount" name="refund_amount" class="form-control" step="0.01" min="0.01"
                         required>
                 </div>
 
                 <div class="form-group">
-                    <label for="refund_reason">Refund Reason (Optional)</label>
-                    <textarea id="refund_reason" name="refund_reason" rows="3"
-                        style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                    <label for="refund_reason" class="form-label">Refund Reason (Optional)</label>
+                    <textarea id="refund_reason" name="refund_reason" class="form-control" rows="3"></textarea>
                 </div>
 
-                <div class="modal-footer">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Process Refund</button>
                     <button type="button" class="btn btn-secondary" onclick="closeRefundModal()">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Process Refund</button>
                 </div>
             </form>
         </div>
@@ -364,7 +353,7 @@
                         <td>$${order.refundable_amount}</td>
                         <td>
                             ${order.can_refund ? 
-                                `<button class="btn btn-danger" onclick='openRefundModal(${JSON.stringify(order)})'>Refund</button>` :
+                                `<button class="btn btn-primary" onclick='openRefundModal(${JSON.stringify(order)})'>Create Refund</button>` :
                                 `<span class="no-refund">N/A</span>`
                             }
                         </td>
@@ -395,7 +384,7 @@
 
             const refundDetails = document.getElementById('refundDetails');
             refundDetails.innerHTML = `
-                <div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                <div class="refund-details">
                     <p><strong>Parent:</strong> ${order.parent_name}</p>
                     <p><strong>Player:</strong> ${order.player_name}</p>
                     <p><strong>Camp:</strong> ${order.camp_name}</p>
