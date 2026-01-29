@@ -60,10 +60,12 @@
                     </div>
 
                     <div class="form-group" id="camp_selection_group" style="display: none;">
-                        <label for="camp_id" class="form-label">Select Camp</label>
-                        <select id="camp_id" name="camp_id" class="form-select" required>
-                            <option value="">-- Choose a Camp --</option>
+                        <label for="camp_id" class="form-label">Select Camp(s)</label>
+                        <select id="camp_id" name="camp_id[]" class="form-select" multiple required>
+                            <option value="">-- Choose Camp(s) --</option>
                         </select>
+                        <small style="color: #6b7280; margin-top: 6px; display: block;">Hold Ctrl (or Cmd on Mac) to
+                            select multiple camps</small>
                         @error('camp_id')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
@@ -109,10 +111,10 @@
 
                     function updateFormVisibility() {
                         const statusSelected = campStatusSelect.value !== '';
-                        const campSelected = campIdSelect.value !== '';
+                        const selectedCamps = Array.from(campIdSelect.selectedOptions).length > 0;
 
-                        // Show email fields only when both status and camp are selected
-                        if (statusSelected && campSelected) {
+                        // Show email fields only when both status and at least one camp are selected
+                        if (statusSelected && selectedCamps) {
                             emailFieldsGroup.style.display = 'block';
                             submitBtn.disabled = false;
                         } else {

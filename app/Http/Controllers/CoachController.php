@@ -792,7 +792,8 @@ class CoachController extends Controller
     public function sendMassEmails(Request $request)
     {
         $validated = $request->validate([
-            'camp_id' => 'required|integer|exists:Camps,Camp_ID',
+            'camp_id' => 'required|array|min:1',
+            'camp_id.*' => 'integer|exists:Camps,Camp_ID',
             'camp_status' => 'required|string|in:past,current,upcoming',
             'subject' => 'required|string|max:255',
             'message' => 'required|string',
@@ -806,22 +807,25 @@ class CoachController extends Controller
                 return redirect()->route('home')->with('error', 'You must be a coach to send mass emails.');
             }
 
-            $camp = Camp::findOrFail($validated['camp_id']);
+            // Get all selected camps and verify they belong to coach's sport
+            $camps = Camp::whereIn('Camp_ID', $validated['camp_id'])->get();
 
-            // Verify the camp belongs to the coach's sport
-            if ($camp->Sport_ID !== $coach->Sport_ID) {
-                return redirect()->back()->with('error', 'You do not have permission to send emails for this camp.');
+            foreach ($camps as $camp) {
+                if ($camp->Sport_ID !== $coach->Sport_ID) {
+                    return redirect()->back()->with('error', 'You do not have permission to send emails for one or more selected camps.');
+                }
             }
 
-            // Get all parents for the selected camp based on status
+            // Get all parents for the selected camps based on status
             $now = now();
             $query = DB::table('Player_Camp')
                 ->join('Players', 'Player_Camp.Player_ID', '=', 'Players.Player_ID')
                 ->join('Parents', 'Players.Player_ID', '=', 'Parents.Player_ID')
                 ->join('Users', 'Parents.Parent_ID', '=', 'Users.User_ID')
-                ->where('Player_Camp.Camp_ID', $camp->Camp_ID)
+                ->join('Camps', 'Player_Camp.Camp_ID', '=', 'Camps.Camp_ID')
+                ->whereIn('Player_Camp.Camp_ID', $validated['camp_id'])
                 ->distinct()
-                ->select('Users.Email', 'Users.First_Name', 'Users.Last_Name');
+                ->select('Users.Email', 'Users.First_Name', 'Users.Last_Name', 'Camps.Camp_Name');
 
             // Filter by camp status
             if ($validated['camp_status'] === 'past') {
@@ -832,8 +836,6 @@ class CoachController extends Controller
             } elseif ($validated['camp_status'] === 'upcoming') {
                 $query->where('Camps.Start_Date', '>', $now);
             }
-
-            $query->join('Camps', 'Player_Camp.Camp_ID', '=', 'Camps.Camp_ID');
 
             $parents = $query->get();
 
@@ -850,8 +852,8 @@ class CoachController extends Controller
                         'subject' => $validated['subject'],
                         'message' => $validated['message'],
                         'parentName' => $parent->First_Name . ' ' . $parent->Last_Name,
-                        'campName' => $camp->Camp_Name,
-                    ], function ($mail) use ($parent, $validated, $camp) {
+                        'campName' => $parent->Camp_Name,
+                    ], function ($mail) use ($parent, $validated) {
                         $mail->to($parent->Email)
                             ->subject($validated['subject'])
                             ->from(config('mail.from.address'), config('mail.from.name'));
