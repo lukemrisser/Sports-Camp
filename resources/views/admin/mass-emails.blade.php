@@ -106,7 +106,7 @@
                     // Camp data organized by status
                     const campData = {
                         past: {!! json_encode($pastCamps) !!},
-                        current: {!! json_encode($currentCamps) !!},
+                        live: {!! json_encode($liveCamps) !!},
                         upcoming: {!! json_encode($upcomingCamps) !!}
                     };
 

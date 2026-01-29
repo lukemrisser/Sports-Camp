@@ -758,7 +758,7 @@ class CoachController extends Controller
             ];
         })->values()->toArray();
 
-        $currentCamps = $allCamps->filter(function ($camp) use ($today) {
+        $liveCamps = $allCamps->filter(function ($camp) use ($today) {
             return $camp->Start_Date <= $today && $camp->End_Date >= $today;
         })->map(function ($camp) {
             return [
@@ -782,11 +782,11 @@ class CoachController extends Controller
 
         $campStatusOptions = [
             'past' => 'Past Camps',
-            'current' => 'Current Camps',
+            'live' => 'Live Camps',
             'upcoming' => 'Upcoming Camps'
         ];
 
-        return view('admin.mass-emails', compact('pastCamps', 'currentCamps', 'upcomingCamps', 'campStatusOptions'));
+        return view('admin.mass-emails', compact('pastCamps', 'liveCamps', 'upcomingCamps', 'campStatusOptions'));
     }
 
     public function sendMassEmails(Request $request)
@@ -794,7 +794,7 @@ class CoachController extends Controller
         $validated = $request->validate([
             'camp_id' => 'required|array|min:1',
             'camp_id.*' => 'integer|exists:Camps,Camp_ID',
-            'camp_status' => 'required|string|in:past,current,upcoming',
+            'camp_status' => 'required|string|in:past,live,upcoming',
             'subject' => 'required|string|max:255',
             'message' => 'required|string',
         ]);
@@ -830,7 +830,7 @@ class CoachController extends Controller
             // Filter by camp status
             if ($validated['camp_status'] === 'past') {
                 $query->where('Camps.End_Date', '<', $now);
-            } elseif ($validated['camp_status'] === 'current') {
+            } elseif ($validated['camp_status'] === 'live') {
                 $query->where('Camps.Start_Date', '<=', $now)
                     ->where('Camps.End_Date', '>=', $now);
             } elseif ($validated['camp_status'] === 'upcoming') {
