@@ -60,10 +60,19 @@
                     </div>
 
                     <div class="form-group" id="camp_selection_group" style="display: none;">
-                        <label for="camp_id" class="form-label">Select Camp</label>
-                        <select id="camp_id" name="camp_id" class="form-select" required>
-                            <option value="">-- Choose a Camp --</option>
-                        </select>
+                        <label class="form-label">Select Camp(s)</label>
+                        <div id="camp_checkboxes"
+                            style="
+                            border: 2px solid #e5e7eb;
+                            border-radius: 8px;
+                            padding: 12px;
+                            background: #f9fafb;
+                            max-height: 300px;
+                            overflow-y: auto;
+                        ">
+                            <!-- Checkboxes will be populated by JavaScript -->
+                        </div>
+                        <small style="color: #6b7280; margin-top: 6px; display: block;">Select one or more camps</small>
                         @error('camp_id')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
@@ -97,22 +106,22 @@
                     // Camp data organized by status
                     const campData = {
                         past: {!! json_encode($pastCamps) !!},
-                        current: {!! json_encode($currentCamps) !!},
+                        live: {!! json_encode($liveCamps) !!},
                         upcoming: {!! json_encode($upcomingCamps) !!}
                     };
 
                     const campStatusSelect = document.getElementById('camp_status');
-                    const campIdSelect = document.getElementById('camp_id');
+                    const campCheckboxesContainer = document.getElementById('camp_checkboxes');
                     const campSelectionGroup = document.getElementById('camp_selection_group');
                     const emailFieldsGroup = document.getElementById('email_fields_group');
                     const submitBtn = document.getElementById('submit_btn');
 
                     function updateFormVisibility() {
                         const statusSelected = campStatusSelect.value !== '';
-                        const campSelected = campIdSelect.value !== '';
+                        const selectedCamps = document.querySelectorAll('input[name="camp_id[]"]:checked').length > 0;
 
-                        // Show email fields only when both status and camp are selected
-                        if (statusSelected && campSelected) {
+                        // Show email fields only when both status and at least one camp are selected
+                        if (statusSelected && selectedCamps) {
                             emailFieldsGroup.style.display = 'block';
                             submitBtn.disabled = false;
                         } else {
@@ -124,35 +133,73 @@
                     campStatusSelect.addEventListener('change', function() {
                         const selectedStatus = this.value;
 
-                        // Clear previous options and camp selection
-                        campIdSelect.innerHTML = '<option value="">-- Choose a Camp --</option>';
-                        campIdSelect.value = '';
+                        // Clear previous checkboxes and selections
+                        campCheckboxesContainer.innerHTML = '';
 
                         if (selectedStatus && campData[selectedStatus]) {
-                            // Populate camps for selected status
+                            // Populate checkboxes for selected status
                             campData[selectedStatus].forEach(camp => {
-                                const option = document.createElement('option');
-                                option.value = camp.id;
-                                option.textContent = camp.name + " - " + "(Date: " + camp.start_date + " - " + camp
-                                    .end_date + ")";
-                                campIdSelect.appendChild(option);
+                                const checkboxWrapper = document.createElement('div');
+                                checkboxWrapper.style.cssText = `
+                                    display: flex;
+                                    align-items: center;
+                                    padding: 8px;
+                                    margin-bottom: 4px;
+                                    border-radius: 6px;
+                                    transition: background-color 0.2s ease;
+                                `;
+
+                                const checkbox = document.createElement('input');
+                                checkbox.type = 'checkbox';
+                                checkbox.name = 'camp_id[]';
+                                checkbox.value = camp.id;
+                                checkbox.style.cssText = `
+                                    width: 18px;
+                                    height: 18px;
+                                    cursor: pointer;
+                                    margin-right: 12px;
+                                    border: 2px solid #d1d5db;
+                                    border-radius: 4px;
+                                    accent-color: #0a3f94;
+                                `;
+
+                                const label = document.createElement('label');
+                                label.style.cssText = `
+                                    flex: 1;
+                                    cursor: pointer;
+                                    display: flex;
+                                    flex-direction: column;
+                                `;
+                                label.innerHTML = `
+                                    <span style="font-weight: 600; color: #1f2937;">${camp.name}</span>
+                                    <span style="font-size: 0.875rem; color: #6b7280;">${camp.start_date} - ${camp.end_date}</span>
+                                `;
+
+                                checkbox.addEventListener('change', function() {
+                                    if (this.checked) {
+                                        checkboxWrapper.style.backgroundColor = '#dbeafe';
+                                    } else {
+                                        checkboxWrapper.style.backgroundColor = 'transparent';
+                                    }
+                                    updateFormVisibility();
+                                });
+
+                                checkboxWrapper.appendChild(checkbox);
+                                checkboxWrapper.appendChild(label);
+                                campCheckboxesContainer.appendChild(checkboxWrapper);
                             });
 
-                            // Show camp selection dropdown
+                            // Show camp selection group
                             campSelectionGroup.style.display = 'block';
                         } else {
-                            // Hide camp selection dropdown
+                            // Hide camp selection group
                             campSelectionGroup.style.display = 'none';
                         }
 
                         // Update overall form visibility
                         updateFormVisibility();
                     });
-
-                    campIdSelect.addEventListener('change', function() {
-                        // Update overall form visibility
-                        updateFormVisibility();
-                    });
+                </script>
                 </script>
             </div>
         </div>
