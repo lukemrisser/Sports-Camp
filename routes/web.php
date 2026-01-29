@@ -93,6 +93,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/invite-coach', [App\Http\Controllers\AdminController::class, 'inviteCoach'])
         ->name('admin.invite-coach');
 
+    Route::post('/invite-coach', [App\Http\Controllers\AdminController::class, 'sendInviteCoach'])
+        ->name('admin.send-invite-coach');
+
     Route::get('/manage-coaches', [App\Http\Controllers\AdminController::class, 'manageCoaches'])
         ->name('admin.manage-coaches');
 
