@@ -40,6 +40,7 @@ class Order extends Model
         'Item_Description',
         'Payment_Intent_ID',
         'Charge_ID',
+        'Refund_Amount',
     ];
 
     /**
@@ -49,6 +50,7 @@ class Order extends Model
         'Order_Date' => 'date',
         'Item_Amount' => 'decimal:2',
         'Item_Amount_Paid' => 'decimal:2',
+        'Refund_Amount' => 'decimal:2',
     ];
 
     /**

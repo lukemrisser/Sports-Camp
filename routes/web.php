@@ -77,6 +77,14 @@ Route::middleware(['auth', 'coach'])->group(function () {
 
     Route::post('/mass-emails/send', [CoachController::class, 'sendMassEmails'])
         ->name('send-mass-email');
+
+    // Refund routes
+    Route::get('/refunds', [App\Http\Controllers\RefundController::class, 'index'])
+        ->name('refunds.index');
+    Route::post('/refunds/search', [App\Http\Controllers\RefundController::class, 'searchOrders'])
+        ->name('refunds.search');
+    Route::post('/refunds/process', [App\Http\Controllers\RefundController::class, 'processRefund'])
+        ->name('refunds.process');
 });
 
 // Protected routes for admin users only
