@@ -136,13 +136,12 @@ class AdminController extends Controller
         $validated = $request->validate([
             'coaches' => 'required|array|min:1',
             'coaches.*.name' => 'required|string|max:255',
-            'coaches.*.email' => 'required|email|unique:users,email',
+            'coaches.*.email' => 'required|email',
         ], [
             'coaches.required' => 'Please add at least one coach to invite.',
             'coaches.*.name.required' => 'Coach name is required.',
             'coaches.*.email.required' => 'Coach email is required.',
             'coaches.*.email.email' => 'Please provide a valid email address.',
-            'coaches.*.email.unique' => 'The email address has already been invited or registered.',
         ]);
 
         try {
