@@ -38,6 +38,8 @@ class Order extends Model
         'Item_Amount',
         'Item_Amount_Paid',
         'Item_Description',
+        'Payment_Intent_ID',
+        'Charge_ID',
     ];
 
     /**

@@ -351,6 +351,13 @@ class PaymentController extends Controller
             $paymentAmountDollars = $paymentIntent->amount / 100; // Convert cents to dollars
             $order->addPayment($paymentAmountDollars);
 
+            // Store payment intent ID and charge ID
+            $chargeId = !empty($paymentIntent->charges->data) ? $paymentIntent->charges->data[0]->id : null;
+            $order->update([
+                'Payment_Intent_ID' => $paymentIntent->id,
+                'Charge_ID' => $chargeId,
+            ]);
+
             Log::info("Updated order {$order->Order_ID} with payment amount: $" . number_format($paymentAmountDollars, 2));
         }
 
@@ -392,6 +399,13 @@ class PaymentController extends Controller
                     // Add payment to the order
                     $paymentAmountDollars = $paymentIntent['amount'] / 100;
                     $order->addPayment($paymentAmountDollars);
+
+                    // Store payment intent ID and charge ID
+                    $chargeId = !empty($paymentIntent['charges']['data']) ? $paymentIntent['charges']['data'][0]['id'] : null;
+                    $order->update([
+                        'Payment_Intent_ID' => $paymentIntent['id'],
+                        'Charge_ID' => $chargeId,
+                    ]);
 
                     Log::info("Payment confirmed via webhook for player {$playerId}, camp {$campId}: {$paymentIntent['id']}, Order {$order->Order_ID} updated");
                 }
