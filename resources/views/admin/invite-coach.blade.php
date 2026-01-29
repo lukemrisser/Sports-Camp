@@ -144,10 +144,12 @@
                     </div>
                 </form>
 
-                @include('partials.footer')
+
             </div>
         </div>
     </div>
+
+    @include('partials.footer')
 
     <script>
         const coachesContainer = document.getElementById('coaches_container');
