@@ -162,7 +162,8 @@ class AdminController extends Controller
                     ]);
 
                     // Send invitation email
-                    $inviteUrl = route('coach.accept-invite', ['token' => $token, 'email' => $coach['email']]);
+                    // Build invite URL to coach-register with token and email as query params
+                    $inviteUrl = route('coach-register') . '?token=' . urlencode($token) . '&email=' . urlencode($coach['email']);
 
                     // derive admin's email domain (including @)
                     $adminUser = Auth::user();

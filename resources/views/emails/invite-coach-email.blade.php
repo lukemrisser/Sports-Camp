@@ -59,4 +59,9 @@
         <div style="margin: 20px 0;">
             <p> We want you to be a coach! </p>
             <p> Click the link below and sign up using your email ending in {{ $emailDomain }}</p>
+            <p style="margin-top: 12px;"><a href="{{ $inviteUrl }}"
+                    style="background:#0a3f94;color:#fff;padding:10px 14px;border-radius:6px;text-decoration:none;">Accept
+                    Invite / Register</a></p>
+            <p style="font-size:12px;color:#666;margin-top:8px;">Or copy/paste this link into your browser: <br><a
+                    href="{{ $inviteUrl }}">{{ $inviteUrl }}</a></p>
         </div>
