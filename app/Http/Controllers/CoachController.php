@@ -818,14 +818,14 @@ class CoachController extends Controller
 
             // Get all parents for the selected camps based on status
             $now = now();
+            // Build query using correct table/column names and join Parents via Players.Parent_ID
             $query = DB::table('Player_Camp')
                 ->join('Players', 'Player_Camp.Player_ID', '=', 'Players.Player_ID')
-                ->join('Parents', 'Players.Player_ID', '=', 'Parents.Player_ID')
-                ->join('Users', 'Parents.Parent_ID', '=', 'Users.User_ID')
-                ->join('Camps', 'Player_Camp.Camp_ID', '=', 'Camps.Camp_ID')
+                ->join('parents', 'Players.Parent_ID', '=', 'parents.Parent_ID')
+                ->join('camps', 'Player_Camp.Camp_ID', '=', 'camps.Camp_ID')
                 ->whereIn('Player_Camp.Camp_ID', $validated['camp_id'])
                 ->distinct()
-                ->select('Users.Email', 'Users.First_Name', 'Users.Last_Name', 'Camps.Camp_Name');
+                ->select('parents.Email as Email', 'parents.Parent_FirstName as First_Name', 'parents.Parent_LastName as Last_Name', 'camps.Camp_Name as Camp_Name');
 
             // Filter by camp status
             if ($validated['camp_status'] === 'past') {
@@ -837,10 +837,16 @@ class CoachController extends Controller
                 $query->where('Camps.Start_Date', '>', $now);
             }
 
-            $parents = $query->get();
+            try {
+                Log::debug('Mass email parent query SQL: ' . $query->toSql(), ['bindings' => $query->getBindings()]);
+                $parents = $query->get();
 
-            if ($parents->isEmpty()) {
-                return redirect()->back()->with('warning', 'No parents found for the selected camp and status.');
+                if ($parents->isEmpty()) {
+                    return redirect()->back()->with('warning', 'No parents found for the selected camp and status.');
+                }
+            } catch (\Exception $e) {
+                Log::error('Mass Email Query Error: ' . $e->getMessage(), ['sql' => $query->toSql(), 'bindings' => $query->getBindings(), 'exception' => $e]);
+                return redirect()->back()->withInput()->with('error', 'An error occurred while preparing emails. Please check logs.');
             }
 
             // Send emails to all parents
@@ -859,7 +865,7 @@ class CoachController extends Controller
                             ->from(config('mail.from.address'), config('mail.from.name'));
                     });
                 } catch (\Exception $e) {
-                    Log::error("Failed to send email to {$parent->Email}: " . $e->getMessage());
+                    Log::error("Failed to send email to {$parent->Email}: " . $e->getMessage(), ['exception' => $e]);
                     $failedEmails[] = $parent->Email;
                 }
             }
@@ -874,7 +880,7 @@ class CoachController extends Controller
 
             return redirect()->route('select-camp-for-email')->with('success', $message);
         } catch (\Exception $e) {
-            Log::error('Mass Email Send Error: ' . $e->getMessage());
+            Log::error('Mass Email Send Error: ' . $e->getMessage(), ['exception' => $e, 'trace' => $e->getTraceAsString()]);
             return redirect()->back()->withInput()->with('error', 'An error occurred while sending emails. Please try again.');
         }
     }
