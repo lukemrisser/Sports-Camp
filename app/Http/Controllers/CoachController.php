@@ -799,6 +799,14 @@ class CoachController extends Controller
             'message' => 'required|string',
         ]);
 
+        // Log inputs to help diagnose failures during preparation
+        Log::debug('Mass email inputs', [
+            'camp_id_count' => isset($validated['camp_id']) ? count($validated['camp_id']) : 0,
+            'camp_ids' => $validated['camp_id'] ?? [],
+            'camp_status' => $validated['camp_status'] ?? null,
+            'subject_length' => isset($validated['subject']) ? strlen($validated['subject']) : 0
+        ]);
+
         try {
             $user = Auth::user();
             $coach = $user->coach;
