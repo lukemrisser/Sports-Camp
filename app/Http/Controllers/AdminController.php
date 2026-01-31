@@ -153,12 +153,16 @@ class AdminController extends Controller
                     // Create a pending coach invitation
                     $token = \Str::random(60);
 
-                    \Illuminate\Support\Facades\DB::table('coach_invitations')->insert([
+                    $result = \Illuminate\Support\Facades\DB::table('coach_invitations')->insert([
                         'email' => $coach['email'],
                         'name' => $coach['name'],
                         'token' => \Illuminate\Support\Facades\Hash::make($token),
                         'created_at' => now(),
                     ]);
+
+                    if (!$result) {
+                        throw new \Exception('Failed to insert invitation into database');
+                    }
 
                     // Send invitation email
                     // Build invite URL to coach-register with token and email as query params
@@ -172,7 +176,8 @@ class AdminController extends Controller
                         $emailDomain = '@' . $parts[1];
                     }
 
-                    \Illuminate\Support\Facades\Mail::send('emails.invite-coach-email', [
+                    // Send the email and check result
+                    $mailResult = \Illuminate\Support\Facades\Mail::send('emails.invite-coach-email', [
                         'coachName' => $coach['name'],
                         'inviteUrl' => $inviteUrl,
                         'emailDomain' => $emailDomain,
@@ -182,10 +187,15 @@ class AdminController extends Controller
                             ->from(config('mail.from.address'), config('mail.from.name'));
                     });
 
+                    if ($mailResult === 0) {
+                        throw new \Exception('Mail::send returned 0 - no messages sent. Check SMTP configuration.');
+                    }
+
                     $successCount++;
                 } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::error("Failed to send coach invite to {$coach['email']}: " . $e->getMessage());
-                    $failedEmails[] = $coach['email'];
+                    $errorMsg = $e->getMessage() ?: 'Unknown error';
+                    \Illuminate\Support\Facades\Log::error("Failed to send coach invite to {$coach['email']}: " . $errorMsg, ['exception' => $e, 'trace' => $e->getTraceAsString()]);
+                    $failedEmails[] = $coach['email'] . ' - ' . $errorMsg;
                 }
             }
 
