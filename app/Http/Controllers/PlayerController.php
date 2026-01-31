@@ -32,8 +32,7 @@ class PlayerController extends Controller
             'Phone' => 'required|string|max:20',
             'Shirt_Size' => 'required|string',
             'Allergies' => 'nullable|string',
-            'Asthma' => 'required|boolean',
-            'medication_status_choice' => 'required|boolean',
+            'medication_status_choice' => 'required|string|in:yes,no',
             'Medication_Status' => 'nullable|string',
             'Injuries' => 'nullable|string',
             'Church_Name' => 'nullable|string|max:255',
@@ -42,6 +41,7 @@ class PlayerController extends Controller
             'teammate_last.*' => 'nullable|string|max:50',
               'promo_code' => 'nullable|string',
               'discount_amount' => 'nullable|numeric|min:0',
+              'Player_ID' => 'nullable|integer|exists:Players,Player_ID',
               'existing_player_id' => 'nullable|integer|exists:Players,Player_ID'
         ]);
 
@@ -71,24 +71,50 @@ class PlayerController extends Controller
 
             Log::info("Parent found/created with Parent_ID: {$parent->Parent_ID}");
 
-            // Then create the player record
-            Log::info("Creating player for Parent_ID: {$parent->Parent_ID}");
-
-            $playerId = DB::table('Players')->insertGetId([
+            // Check if updating existing player or creating new one
+            $playerId = $request->input('Player_ID');
+            
+            // Handle medication status: if medication_status_choice is "yes", use the textarea value; otherwise set to "no"
+            $medicationStatus = 'no';
+            if ($request->input('medication_status_choice') === 'yes' || $request->input('medication_status_choice') == 1) {
+                $medicationStatus = $validatedData['Medication_Status'] ?: 'yes';
+            }
+            
+            // Handle allergies: if allergies_choice is "yes", use the textarea value; otherwise set to "no"
+            $allergiesValue = 'no';
+            if ($request->input('allergies_choice') === 'yes' || $request->input('allergies_choice') == 1) {
+                $allergiesValue = $validatedData['Allergies'] ?: 'yes';
+            }
+            
+            // Handle injuries: if injuries_choice is "yes", use the textarea value; otherwise set to "no"
+            $injuriesValue = 'no';
+            if ($request->input('injuries_choice') === 'yes' || $request->input('injuries_choice') == 1) {
+                $injuriesValue = $validatedData['Injuries'] ?: 'yes';
+            }
+            
+            $playerData = [
                 'Parent_ID' => $parent->Parent_ID,
-                //'Division_Name' => $validatedData['Division_Name'],
                 'Camper_FirstName' => $validatedData['Camper_FirstName'],
                 'Camper_LastName' => $validatedData['Camper_LastName'],
                 'Gender' => $validatedData['Gender'],
                 'Birth_Date' => $validatedData['Birth_Date'],
                 'Shirt_Size' => $validatedData['Shirt_Size'],
-                'Allergies' => $validatedData['Allergies'],
-                'Asthma' => $validatedData['Asthma'],
-                'Medication_Status' => $validatedData['Medication_Status'],
-                'Injuries' => $validatedData['Injuries']
-            ]);
+                'Allergies' => $allergiesValue,
+                'Medication_Status' => $medicationStatus,
+                'Injuries' => $injuriesValue
+            ];
 
-            Log::info("Player created successfully with Player_ID: {$playerId}");
+            if ($playerId) {
+                // Update existing player
+                Log::info("Updating existing player with Player_ID: {$playerId}");
+                DB::table('Players')->where('Player_ID', $playerId)->update($playerData);
+                Log::info("Player updated successfully with Player_ID: {$playerId}");
+            } else {
+                // Create new player record
+                Log::info("Creating new player for Parent_ID: {$parent->Parent_ID}");
+                $playerId = DB::table('Players')->insertGetId($playerData);
+                Log::info("Player created successfully with Player_ID: {$playerId}");
+            }
 
             // Create the relationship between player and camp in Player_Camp table
             DB::table('Player_Camp')->insert([

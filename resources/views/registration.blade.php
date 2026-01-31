@@ -126,6 +126,8 @@
                             </div>
 
                         @endif
+                        <!-- Hidden field to track if updating existing player -->
+                        <input type="hidden" id="player_id_field" name="Player_ID" value="">
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label class="form-label">Camper First Name <span class="text-red-500">*</span></label>
@@ -231,32 +233,16 @@
                     <div class="form-section">
                         <h3 class="section-title">Medical Information</h3>
                         <div class="form-group">
-                            <label class="form-label">Does the camper have asthma? <span
-                                    class="text-red-500">*</span></label>
-                            <div class="radio-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="Asthma" value="1" class="radio-input"
-                                        required>
-                                    <span class="radio-text">Yes</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="Asthma" value="0" class="radio-input"
-                                        required>
-                                    <span class="radio-text">No</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="form-group">
                             <label class="form-label">Is the camper on any medications? <span
                                     class="text-red-500">*</span></label>
                             <div class="radio-group">
                                 <label class="radio-label">
-                                    <input type="radio" name="medication_status_choice" value="1"
+                                    <input type="radio" name="medication_status_choice" value="yes"
                                         class="radio-input" id="medication-yes" required>
                                     <span class="radio-text">Yes</span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="medication_status_choice" value="0"
+                                    <input type="radio" name="medication_status_choice" value="no"
                                         class="radio-input" id="medication-no" required>
                                     <span class="radio-text">No</span>
                                 </label>
@@ -268,12 +254,46 @@
                                 placeholder="List the medications and dosages"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Allergies</label>
-                            <textarea name="Allergies" class="form-input form-textarea" rows="3"></textarea>
+                            <label class="form-label">Does the camper have any allergies? <span
+                                    class="text-red-500">*</span></label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="allergies_choice" value="yes"
+                                        class="radio-input" id="allergies-yes" required>
+                                    <span class="radio-text">Yes</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="allergies_choice" value="no"
+                                        class="radio-input" id="allergies-no" required>
+                                    <span class="radio-text">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group" id="allergies-details-container" style="display: none;">
+                            <label class="form-label">Allergy Details</label>
+                            <textarea id="allergies_details" name="Allergies" class="form-input form-textarea" rows="3"
+                                placeholder="List the allergies"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Recent Injuries or Health Concerns</label>
-                            <textarea name="Injuries" class="form-input form-textarea" rows="3"></textarea>
+                            <label class="form-label">Does the camper have any other health concerns (ie. recent injuries, asthma)? <span
+                                    class="text-red-500">*</span></label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="injuries_choice" value="yes"
+                                        class="radio-input" id="injuries-yes" required>
+                                    <span class="radio-text">Yes</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="injuries_choice" value="no"
+                                        class="radio-input" id="injuries-no" required>
+                                    <span class="radio-text">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group" id="injuries-details-container" style="display: none;">
+                            <label class="form-label">Injury/Health Concern Details</label>
+                            <textarea id="injuries_details" name="Injuries" class="form-input form-textarea" rows="3"
+                                placeholder="Describe recent injuries or health concerns"></textarea>
                         </div>
                     </div>
 
@@ -381,6 +401,12 @@
                                     }
                                 }
                             });
+                            // Clear Player_ID hidden field
+                            document.getElementById('player_id_field').value = '';
+                            // Clear medication details
+                            document.getElementById('medication-details-container').style.display = 'none';
+                            // Clear allergies details
+                            document.getElementById('allergies-details-container').style.display = 'none';
                         }
 
                         if (!pid) {
@@ -407,15 +433,47 @@
 
                         // Populate form fields
                         const setIf = (name, value) => { const el = document.querySelector('[name="'+name+'"]'); if(el) el.value = value ?? ''; };
+                        
+                        // Set Player_ID hidden field
+                        document.getElementById('player_id_field').value = player.Player_ID;
+                        
                         setIf('Camper_FirstName', player.Camper_FirstName);
                         setIf('Camper_LastName', player.Camper_LastName);
                         setIf('Gender', player.Gender);
                         setIf('Birth_Date', player.Birth_Date);
                         setIf('Shirt_Size', player.Shirt_Size);
                         setIf('Allergies', player.Allergies);
-                        setIf('Asthma', player.Asthma);
-                        setIf('Medication_Status', player.Medication_Status);
                         setIf('Injuries', player.Injuries);
+                        
+                        // Handle Medication radio buttons and details
+                        if (player.Medication_Status !== null && player.Medication_Status !== undefined && player.Medication_Status !== '' && player.Medication_Status !== 'no') {
+                            document.getElementById('medication-yes').checked = true;
+                            document.getElementById('medication-details-container').style.display = 'block';
+                            document.getElementById('medication_status').value = player.Medication_Status;
+                        } else {
+                            document.getElementById('medication-no').checked = true;
+                            document.getElementById('medication-details-container').style.display = 'none';
+                        }
+                        
+                        // Handle Allergies radio buttons and details
+                        if (player.Allergies !== null && player.Allergies !== undefined && player.Allergies.trim() !== '' && player.Allergies !== 'no') {
+                            document.getElementById('allergies-yes').checked = true;
+                            document.getElementById('allergies-details-container').style.display = 'block';
+                            document.getElementById('allergies_details').value = player.Allergies;
+                        } else {
+                            document.getElementById('allergies-no').checked = true;
+                            document.getElementById('allergies-details-container').style.display = 'none';
+                        }
+                        
+                        // Handle Injuries radio buttons and details
+                        if (player.Injuries !== null && player.Injuries !== undefined && player.Injuries.trim() !== '' && player.Injuries !== 'no') {
+                            document.getElementById('injuries-yes').checked = true;
+                            document.getElementById('injuries-details-container').style.display = 'block';
+                            document.getElementById('injuries_details').value = player.Injuries;
+                        } else {
+                            document.getElementById('injuries-no').checked = true;
+                            document.getElementById('injuries-details-container').style.display = 'none';
+                        }
                     });
 
                     // Also re-validate if camp changes while an existing player is selected
@@ -651,6 +709,46 @@
 
             medicationYes.addEventListener('change', toggleMedicationDetails);
             medicationNo.addEventListener('change', toggleMedicationDetails);
+            
+            // Toggle allergies details field
+            const allergiesYes = document.getElementById('allergies-yes');
+            const allergiesNo = document.getElementById('allergies-no');
+            const allergiesDetailsContainer = document.getElementById('allergies-details-container');
+            const allergiesDetailsField = document.getElementById('allergies_details');
+
+            function toggleAllergiesDetails() {
+                if (allergiesYes.checked) {
+                    allergiesDetailsContainer.style.display = 'block';
+                    allergiesDetailsField.setAttribute('required', 'required');
+                } else {
+                    allergiesDetailsContainer.style.display = 'none';
+                    allergiesDetailsField.removeAttribute('required');
+                    allergiesDetailsField.value = '';
+                }
+            }
+
+            allergiesYes.addEventListener('change', toggleAllergiesDetails);
+            allergiesNo.addEventListener('change', toggleAllergiesDetails);
+            
+            // Toggle injuries details field
+            const injuriesYes = document.getElementById('injuries-yes');
+            const injuriesNo = document.getElementById('injuries-no');
+            const injuriesDetailsContainer = document.getElementById('injuries-details-container');
+            const injuriesDetailsField = document.getElementById('injuries_details');
+
+            function toggleInjuriesDetails() {
+                if (injuriesYes.checked) {
+                    injuriesDetailsContainer.style.display = 'block';
+                    injuriesDetailsField.setAttribute('required', 'required');
+                } else {
+                    injuriesDetailsContainer.style.display = 'none';
+                    injuriesDetailsField.removeAttribute('required');
+                    injuriesDetailsField.value = '';
+                }
+            }
+
+            injuriesYes.addEventListener('change', toggleInjuriesDetails);
+            injuriesNo.addEventListener('change', toggleInjuriesDetails);
             // Promo code handling on registration
             const regPromoInput = document.getElementById('reg_promo_code');
             const regPromoMessage = document.getElementById('reg-promo-message');
