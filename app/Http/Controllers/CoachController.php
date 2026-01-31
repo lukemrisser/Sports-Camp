@@ -869,14 +869,15 @@ class CoachController extends Controller
                         'message' => $validated['message'],
                         'parentName' => $parent->First_Name . ' ' . $parent->Last_Name,
                         'campName' => $parent->Camp_Name,
+                        'coachName' => $user->First_Name . ' ' . $user->Last_Name,
                     ], function ($mail) use ($parent, $validated) {
                         $mail->to($parent->Email)
                             ->subject($validated['subject'])
                             ->from(config('mail.from.address'), config('mail.from.name'));
                     });
                 } catch (\Exception $e) {
-                    Log::error("Failed to send email to {$parent->Email}: " . $e->getMessage(), ['exception' => $e]);
-                    $failedEmails[] = $parent->Email;
+                    Log::error("Failed to send email to {$parent->Email}: " . $e->getMessage());
+                    $failedEmails[] = $parent->Email . ' (' . $e->getMessage() . ')';
                 }
             }
 

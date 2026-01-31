@@ -66,7 +66,7 @@
             </div>
 
             <p>Best regards,<br>
-                {{ Auth::user()->First_Name ?? 'The Team' }}</p>
+                {{ $coachName }}</p>
         </div>
 
         <div class="footer">
