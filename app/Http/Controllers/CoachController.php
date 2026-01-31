@@ -827,19 +827,22 @@ class CoachController extends Controller
                 ->distinct()
                 ->select('parents.Email as Email', 'parents.Parent_FirstName as First_Name', 'parents.Parent_LastName as Last_Name', 'camps.Camp_Name as Camp_Name');
 
-            // Filter by camp status
+            // Filter by camp status using consistent table names and date strings
+            $nowDate = $now->toDateString();
+            Log::debug('Mass email status filter: ' . $validated['camp_status'] . ', now=' . $nowDate);
             if ($validated['camp_status'] === 'past') {
-                $query->where('Camps.End_Date', '<', $now);
+                $query->where('camps.End_Date', '<', $nowDate);
             } elseif ($validated['camp_status'] === 'live') {
-                $query->where('Camps.Start_Date', '<=', $now)
-                    ->where('Camps.End_Date', '>=', $now);
+                $query->where('camps.Start_Date', '<=', $nowDate)
+                    ->where('camps.End_Date', '>=', $nowDate);
             } elseif ($validated['camp_status'] === 'upcoming') {
-                $query->where('Camps.Start_Date', '>', $now);
+                $query->where('camps.Start_Date', '>', $nowDate);
             }
 
             try {
                 Log::debug('Mass email parent query SQL: ' . $query->toSql(), ['bindings' => $query->getBindings()]);
                 $parents = $query->get();
+                Log::debug('Mass email parent count: ' . $parents->count());
 
                 if ($parents->isEmpty()) {
                     return redirect()->back()->with('warning', 'No parents found for the selected camp and status.');
