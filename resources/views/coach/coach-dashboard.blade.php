@@ -71,6 +71,14 @@
                 <p>Send mass emails to parents</p>
                 <a href="{{ route('select-camp-for-email') }}" class="card-button">Send Emails</a>
             </div>
+
+            <!-- Process Refunds Card -->
+            <div class="registration-card blue">
+                <div class="card-icon">💰</div>
+                <h3>Process Refunds</h3>
+                <p>Issue refunds to parents for camp registrations</p>
+                <a href="{{ route('refunds.index') }}" class="card-button">Process Refunds</a>
+            </div>
         </div>
     </div>
     @include('partials.footer')
