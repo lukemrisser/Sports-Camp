@@ -829,22 +829,21 @@ class CoachController extends Controller
             // Build query using correct table/column names and join Parents via Players.Parent_ID
             $query = DB::table('Player_Camp')
                 ->join('Players', 'Player_Camp.Player_ID', '=', 'Players.Player_ID')
-                ->join('parents', 'Players.Parent_ID', '=', 'parents.Parent_ID')
-                ->join('camps', 'Player_Camp.Camp_ID', '=', 'camps.Camp_ID')
+                ->join('Parents', 'Players.Parent_ID', '=', 'Parents.Parent_ID')
+                ->join('Camps', 'Player_Camp.Camp_ID', '=', 'Camps.Camp_ID')
                 ->whereIn('Player_Camp.Camp_ID', $validated['camp_id'])
                 ->distinct()
-                ->select('parents.Email as Email', 'parents.Parent_FirstName as First_Name', 'parents.Parent_LastName as Last_Name', 'camps.Camp_Name as Camp_Name');
+                ->select('Parents.Email as Email', 'Parents.Parent_FirstName as First_Name', 'Parents.Parent_LastName as Last_Name', 'Camps.Camp_Name as Camp_Name');
 
-            // Filter by camp status using consistent table names and date strings
             $nowDate = $now->toDateString();
             Log::debug('Mass email status filter: ' . $validated['camp_status'] . ', now=' . $nowDate);
             if ($validated['camp_status'] === 'past') {
-                $query->where('camps.End_Date', '<', $nowDate);
+                $query->where('Camps.End_Date', '<', $nowDate);
             } elseif ($validated['camp_status'] === 'live') {
-                $query->where('camps.Start_Date', '<=', $nowDate)
-                    ->where('camps.End_Date', '>=', $nowDate);
+                $query->where('Camps.Start_Date', '<=', $nowDate)
+                    ->where('Camps.End_Date', '>=', $nowDate);
             } elseif ($validated['camp_status'] === 'upcoming') {
-                $query->where('camps.Start_Date', '>', $nowDate);
+                $query->where('Camps.Start_Date', '>', $nowDate);
             }
 
             try {
