@@ -59,19 +59,6 @@
                     <x-input-error :messages="$errors->get('sport')" class="form-error" />
                 </div>
 
-                <!-- Admin Checkbox -->
-                <div class="form-group">
-                    <div class="checkbox-container">
-                        <input id="admin" type="checkbox" name="admin" value="1"
-                            {{ old('admin') ? 'checked' : '' }} class="form-checkbox" />
-                        <label for="admin" class="checkbox-label">
-                            Register as Administrator
-                            <span class="checkbox-description">Check this box if you have administrative privileges for
-                                managing teams and camps</span>
-                        </label>
-                    </div>
-                    <x-input-error :messages="$errors->get('admin')" class="form-error" />
-                </div>
 
                 <!-- Password -->
                 <div class="form-group">
@@ -92,10 +79,6 @@
                 <div class="form-actions">
                     <a class="login-link" href="{{ route('login') }}">
                         Already registered?
-                    </a>
-
-                    <a class="login-link" href="{{ route('register') }}">
-                        Register as a parent
                     </a>
 
                     <button type="submit" class="register-button">
