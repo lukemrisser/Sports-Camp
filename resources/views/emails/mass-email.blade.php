@@ -62,7 +62,7 @@
             <p>Hello {{ $parentName }},</p>
 
             <div style="margin: 20px 0;">
-                {!! nl2br(e($message)) !!}
+                {!! nl2br(e($emailBody)) !!}
             </div>
 
             <p>Best regards,<br>

@@ -866,7 +866,7 @@ class CoachController extends Controller
                     // Use Laravel's Mail facade to send emails
                     \Illuminate\Support\Facades\Mail::send('emails.mass-email', [
                         'subject' => $validated['subject'],
-                        'message' => $validated['message'],
+                        'emailBody' => $validated['message'],
                         'parentName' => $parent->First_Name . ' ' . $parent->Last_Name,
                         'campName' => $parent->Camp_Name,
                         'coachName' => $user->First_Name . ' ' . $user->Last_Name,
