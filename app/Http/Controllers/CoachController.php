@@ -796,7 +796,9 @@ class CoachController extends Controller
             'camp_id.*' => 'integer|exists:Camps,Camp_ID',
             'camp_status' => 'required|string|in:past,live,upcoming',
             'subject' => 'required|string|max:255',
+            'greeting' => 'nullable|string|max:255',
             'message' => 'required|string',
+            'closing' => 'nullable|string|max:255',
         ]);
 
         // Log inputs to help diagnose failures during preparation
@@ -866,9 +868,9 @@ class CoachController extends Controller
                     // Use Laravel's Mail facade to send emails
                     \Illuminate\Support\Facades\Mail::send('emails.mass-email', [
                         'subject' => $validated['subject'],
-                        'greeting' => $validated['greeting'],
+                        'greeting' => $validated['greeting'] ?? 'Hello',
                         'emailBody' => $validated['message'],
-                        'closing' => $validated['closing'],
+                        'closing' => $validated['closing'] ?? 'Best regards,',
                         'parentName' => $parent->First_Name . ' ' . $parent->Last_Name,
                         'campName' => $parent->Camp_Name,
                         'coachName' => $user->name,

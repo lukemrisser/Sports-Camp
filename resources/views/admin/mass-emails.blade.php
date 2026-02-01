@@ -89,8 +89,8 @@
 
                         <div class="form-group">
                             <label for="greeting" class="form-label">Email Greeting</label>
-                            <input type="text" id="greeting" name="greeting" class="form-input" optional
-                                default="Hello" value="Hello (Parent's Name,)">
+                            <input type="text" id="greeting" name="greeting" class="form-input" default="Hello"
+                                placeholder="Hello (Parent's Name,)">
                             @error('greeting')
                                 <span class="form-error">{{ $message }}</span>
                             @enderror
@@ -107,8 +107,8 @@
 
                         <div class="form-group">
                             <label for="closing" class="form-label">Email Closing</label>
-                            <input type="text" id="closing" name="closing" class="form-input" optional
-                                default="Best regards," value="Best regards, (Your Name)">
+                            <input type="text" id="closing" name="closing" class="form-input"
+                                default="Best regards," placeholder="Best regards, (Your Name)">
                             @error('closing')
                                 <span class="form-error">{{ $message }}</span>
                             @enderror
