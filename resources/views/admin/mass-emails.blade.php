@@ -88,9 +88,28 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="greeting" class="form-label">Email Greeting</label>
+                            <input type="text" id="greeting" name="greeting" class="form-input" optional
+                                default="Hello" value="Hello (Parent's Name,)">
+                            @error('greeting')
+                                <span class="form-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+
+                        <div class="form-group">
                             <label for="message" class="form-label">Email Message</label>
                             <textarea id="message" name="message" class="form-textarea" rows="8" required></textarea>
                             @error('message')
+                                <span class="form-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="closing" class="form-label">Email Closing</label>
+                            <input type="text" id="closing" name="closing" class="form-input" optional
+                                default="Best regards," value="Best regards, (Your Name)">
+                            @error('closing')
                                 <span class="form-error">{{ $message }}</span>
                             @enderror
                         </div>

@@ -59,13 +59,13 @@
         </div>
 
         <div class="content">
-            <p>Hello {{ $parentName }},</p>
+            <p>{{ $greeting }} {{ $parentName }},</p>
 
             <div style="margin: 20px 0;">
                 {!! nl2br(e($emailBody)) !!}
             </div>
 
-            <p>Best regards,<br>
+            <p>{{ $closing }}<br>
                 {{ $coachName }}</p>
         </div>
 
