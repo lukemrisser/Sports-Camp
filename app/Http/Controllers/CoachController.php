@@ -869,7 +869,7 @@ class CoachController extends Controller
                         'emailBody' => $validated['message'],
                         'parentName' => $parent->First_Name . ' ' . $parent->Last_Name,
                         'campName' => $parent->Camp_Name,
-                        'coachName' => $user->First_Name . ' ' . $user->Last_Name,
+                        'coachName' => $user->name,
                     ], function ($mail) use ($parent, $validated) {
                         $mail->to($parent->Email)
                             ->subject($validated['subject'])
