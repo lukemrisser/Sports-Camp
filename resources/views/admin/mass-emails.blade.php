@@ -90,7 +90,8 @@
                         <div class="form-group">
                             <label for="greeting" class="form-label">Email Greeting</label>
                             <input type="text" id="greeting" name="greeting" class="form-input" default="Hello"
-                                placeholder="Hello (Parent's Name,)">
+                                placeholder="Hello">
+                            <span class="form-label"> Parent's Name will be appended automatically.</span>
                             @error('greeting')
                                 <span class="form-error">{{ $message }}</span>
                             @enderror
