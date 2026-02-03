@@ -119,15 +119,8 @@ class PaymentController extends Controller
                 ]);
             }
             
-            // Calculate add-ons total from selected add-ons
-            $addOnsTotal = 0;
-            $addOnsString = $request->input('selected_add_ons', '');
-            if ($addOnsString) {
-                $addOnIds = array_filter(explode(',', $addOnsString));
-                if (!empty($addOnIds)) {
-                    $addOnsTotal = ExtraFee::whereIn('Fee_ID', $addOnIds)->sum('Fee_Amount');
-                }
-            }
+            // Calculate add-ons total
+            $addOnsTotal = $this->calculateAddOnsTotal($request->input('selected_add_ons', ''));
             
             // Check if already paid using Order model
             $order = $this->findOrCreateOrder($player, $request->camp_id, 0, $addOnsTotal);
@@ -139,69 +132,10 @@ class PaymentController extends Controller
             }
 
             // Create payment intent with final amount
-            $paymentIntent = PaymentIntent::create([
-                'amount' => $request->amount,
-                'currency' => 'usd',
-                'payment_method' => $request->payment_method_id,
-                'confirmation_method' => 'manual',
-                'confirm' => true,
-                'description' => "Sports Camp Registration - {$player->Camper_FirstName} {$player->Camper_LastName}",
-                'metadata' => [
-                    'player_id' => $player->Player_ID,
-                    'camp_id' => $request->camp_id,
-                    'player_name' => $player->Camper_FirstName . ' ' . $player->Camper_LastName,
-                    'division_name' => $player->Division_Name,
-                ],
-                'receipt_email' => $request->receipt_email,
-                'return_url' => route('payment.success'),
-            ]);
+            $paymentIntent = $this->createPaymentIntent($player, $request);
 
             // Handle the payment result
-            if ($paymentIntent->status === 'requires_action') {
-                // 3D Secure authentication required
-                return response()->json([
-                    'success' => false,
-                    'requires_action' => true,
-                    'payment_intent' => [
-                        'id' => $paymentIntent->id,
-                        'client_secret' => $paymentIntent->client_secret,
-                    ]
-                ]);
-            } else if ($paymentIntent->status === 'succeeded') {
-                // Payment successful
-                $this->updatePlayerPaymentStatus($player, $paymentIntent, $request);
-                
-                // Save selected add-ons to OrderExtraFee
-                $addOnsString = $request->input('selected_add_ons', '');
-                if ($addOnsString) {
-                    $addOnIds = array_filter(explode(',', $addOnsString));
-                    if (!empty($addOnIds) && $order) {
-                        foreach ($addOnIds as $feeId) {
-                            OrderExtraFee::create([
-                                'Order_ID' => $order->Order_ID,
-                                'Fee_ID' => $feeId,
-                            ]);
-                        }
-                    }
-                }
-                
-                DB::commit();
-
-                Log::info("Payment successful for player {$player->Player_ID}: {$paymentIntent->id}");
-
-                return response()->json([
-                    'success' => true,
-                    'redirect_url' => route('payment.success')
-                ]);
-            } else {
-                // Payment failed
-                Log::warning("Payment failed for player {$player->Player_ID}. Status: {$paymentIntent->status}");
-                
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Payment was not successful. Please try again.'
-                ]);
-            }
+            return $this->handlePaymentIntentResponse($paymentIntent, $player, $order, $request, $addOnsTotal);
 
         } catch (CardException $e) {
             DB::rollBack();
@@ -231,6 +165,106 @@ class PaymentController extends Controller
             ]);
         }
     }
+
+    /**
+     * Calculate total add-ons amount from selected add-ons string
+     */
+    private function calculateAddOnsTotal($addOnsString): float
+    {
+        $addOnsTotal = 0;
+        if ($addOnsString) {
+            $addOnIds = array_filter(explode(',', $addOnsString));
+            if (!empty($addOnIds)) {
+                $addOnsTotal = ExtraFee::whereIn('Fee_ID', $addOnIds)->sum('Fee_Amount');
+            }
+        }
+        return $addOnsTotal;
+    }
+
+    /**
+     * Create a Stripe payment intent for the registration
+     */
+    private function createPaymentIntent($player, Request $request)
+    {
+        return PaymentIntent::create([
+            'amount' => $request->amount,
+            'currency' => 'usd',
+            'payment_method' => $request->payment_method_id,
+            'confirmation_method' => 'manual',
+            'confirm' => true,
+            'description' => "Sports Camp Registration - {$player->Camper_FirstName} {$player->Camper_LastName}",
+            'metadata' => [
+                'player_id' => $player->Player_ID,
+                'camp_id' => $request->camp_id,
+                'player_name' => $player->Camper_FirstName . ' ' . $player->Camper_LastName,
+                'division_name' => $player->Division_Name,
+            ],
+            'receipt_email' => $request->receipt_email,
+            'return_url' => route('payment.success'),
+        ]);
+    }
+
+    /**
+     * Handle payment intent response based on status
+     */
+    private function handlePaymentIntentResponse($paymentIntent, $player, $order, Request $request, $addOnsTotal)
+    {
+        if ($paymentIntent->status === 'requires_action') {
+            // 3D Secure authentication required
+            return response()->json([
+                'success' => false,
+                'requires_action' => true,
+                'payment_intent' => [
+                    'id' => $paymentIntent->id,
+                    'client_secret' => $paymentIntent->client_secret,
+                ]
+            ]);
+        } else if ($paymentIntent->status === 'succeeded') {
+            // Payment successful
+            $this->handlePaymentSucceeded($player, $paymentIntent, $request, $order);
+
+            DB::commit();
+
+            Log::info("Payment successful for player {$player->Player_ID}: {$paymentIntent->id}");
+
+            return response()->json([
+                'success' => true,
+                'redirect_url' => route('payment.success')
+            ]);
+        } else {
+            // Payment failed
+            Log::warning("Payment failed for player {$player->Player_ID}. Status: {$paymentIntent->status}");
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Payment was not successful. Please try again.'
+            ]);
+        }
+    }
+
+    /**
+     * Handle successful payment: update status and save add-ons
+     */
+    private function handlePaymentSucceeded($player, $paymentIntent, Request $request, $order)
+    {
+        // Update player payment status
+        $this->updatePlayerPaymentStatus($player, $paymentIntent, $request);
+
+        // Save selected add-ons to OrderExtraFee
+        $addOnsString = $request->input('selected_add_ons', '');
+        if ($addOnsString && $order) {
+            $addOnIds = array_filter(explode(',', $addOnsString));
+            if (!empty($addOnIds)) {
+                foreach ($addOnIds as $feeId) {
+                    OrderExtraFee::create([
+                        'Order_ID' => $order->Order_ID,
+                        'Fee_ID' => $feeId,
+                    ]);
+                }
+            }
+        }
+    }
+
     public function success()
     {
         return view('payment-success');
@@ -351,6 +385,13 @@ class PaymentController extends Controller
             $paymentAmountDollars = $paymentIntent->amount / 100; // Convert cents to dollars
             $order->addPayment($paymentAmountDollars);
 
+            // Store payment intent ID and charge ID
+            $chargeId = !empty($paymentIntent->charges->data) ? $paymentIntent->charges->data[0]->id : null;
+            $order->update([
+                'Payment_Intent_ID' => $paymentIntent->id,
+                'Charge_ID' => $chargeId,
+            ]);
+
             Log::info("Updated order {$order->Order_ID} with payment amount: $" . number_format($paymentAmountDollars, 2));
         }
 
@@ -392,6 +433,13 @@ class PaymentController extends Controller
                     // Add payment to the order
                     $paymentAmountDollars = $paymentIntent['amount'] / 100;
                     $order->addPayment($paymentAmountDollars);
+
+                    // Store payment intent ID and charge ID
+                    $chargeId = !empty($paymentIntent['charges']['data']) ? $paymentIntent['charges']['data'][0]['id'] : null;
+                    $order->update([
+                        'Payment_Intent_ID' => $paymentIntent['id'],
+                        'Charge_ID' => $chargeId,
+                    ]);
 
                     Log::info("Payment confirmed via webhook for player {$playerId}, camp {$campId}: {$paymentIntent['id']}, Order {$order->Order_ID} updated");
                 }

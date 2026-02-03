@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $subject }}</title>
+    <title>Coach Invite</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -43,11 +43,6 @@
             font-size: 12px;
             color: #666;
         }
-
-        .camp-name {
-            font-weight: bold;
-            color: #2c3e50;
-        }
     </style>
 </head>
 
@@ -55,24 +50,18 @@
     <div class="email-container">
         <div class="header">
             <h1>{{ config('app.name', 'Falcon Teams') }}</h1>
-            <p class="camp-name">{{ $campName }}</p>
         </div>
 
         <div class="content">
-            <p>{{ $greeting }} {{ $parentName }},</p>
-
-            <div style="margin: 20px 0;">
-                {!! nl2br(e($emailBody)) !!}
-            </div>
-
-            <p>{{ $closing }}<br>
-                {{ $coachName }}</p>
+            <p>Hello {{ $coachName }}</p>
         </div>
 
-        <div class="footer">
-            <p>&copy; {{ date('Y') }} {{ config('app.name', 'Falcon Teams') }}. All rights reserved.</p>
+        <div style="margin: 20px 0;">
+            <p> We want you to be a coach! </p>
+            <p> Click the link below and sign up using your email ending in {{ $emailDomain }}</p>
+            <p style="margin-top: 12px;"><a href="{{ $inviteUrl }}"
+                    style="background:#0a3f94;color:#fff;padding:10px 14px;border-radius:6px;text-decoration:none;">Accept
+                    Invite / Register</a></p>
+            <p style="font-size:12px;color:#666;margin-top:8px;">Or copy/paste this link into your browser: <br><a
+                    href="{{ $inviteUrl }}">{{ $inviteUrl }}</a></p>
         </div>
-    </div>
-</body>
-
-</html>

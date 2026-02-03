@@ -10,6 +10,7 @@ use App\Models\Player;
 use App\Models\Sport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\FinancesExport;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -57,9 +58,9 @@ class AdminController extends Controller
             } elseif ($paymentStatus === 'partial') {
                 $query->whereRaw('Item_Amount_Paid > 0 AND Item_Amount_Paid < Item_Amount');
             } elseif ($paymentStatus === 'pending') {
-                $query->where(function($q) {
+                $query->where(function ($q) {
                     $q->where('Item_Amount_Paid', '=', 0)
-                      ->orWhereNull('Item_Amount_Paid');
+                        ->orWhereNull('Item_Amount_Paid');
                 });
             }
         }
@@ -70,7 +71,7 @@ class AdminController extends Controller
 
         // Calculate financial statistics for all filtered orders (not just current page)
         $allFilteredQuery = \App\Models\Order::query();
-        
+
         // Apply the same filters for statistics calculation
         if ($sportId) {
             $allFilteredQuery->whereHas('camp', function ($q) use ($sportId) {
@@ -90,9 +91,9 @@ class AdminController extends Controller
             } elseif ($paymentStatus === 'partial') {
                 $allFilteredQuery->whereRaw('Item_Amount_Paid > 0 AND Item_Amount_Paid < Item_Amount');
             } elseif ($paymentStatus === 'pending') {
-                $allFilteredQuery->where(function($q) {
+                $allFilteredQuery->where(function ($q) {
                     $q->where('Item_Amount_Paid', '=', 0)
-                      ->orWhereNull('Item_Amount_Paid');
+                        ->orWhereNull('Item_Amount_Paid');
                 });
             }
         }
@@ -104,7 +105,7 @@ class AdminController extends Controller
         // Count orders by payment status
         $paidOrdersCount = (clone $allFilteredQuery)->whereRaw('Item_Amount_Paid >= Item_Amount AND Item_Amount > 0')->count();
         $partiallyPaidOrdersCount = (clone $allFilteredQuery)->whereRaw('Item_Amount_Paid > 0 AND Item_Amount_Paid < Item_Amount')->count();
-        $pendingOrdersCount = (clone $allFilteredQuery)->where(function($q) {
+        $pendingOrdersCount = (clone $allFilteredQuery)->where(function ($q) {
             $q->where('Item_Amount_Paid', '=', 0)->orWhereNull('Item_Amount_Paid');
         })->count();
 
@@ -128,6 +129,88 @@ class AdminController extends Controller
     public function inviteCoach()
     {
         return view('admin.invite-coach');
+    }
+
+    public function sendInviteCoach(Request $request)
+    {
+        $validated = $request->validate([
+            'coaches' => 'required|array|min:1',
+            'coaches.*.name' => 'required|string|max:255',
+            'coaches.*.email' => 'required|email',
+        ], [
+            'coaches.required' => 'Please add at least one coach to invite.',
+            'coaches.*.name.required' => 'Coach name is required.',
+            'coaches.*.email.required' => 'Coach email is required.',
+            'coaches.*.email.email' => 'Please provide a valid email address.',
+        ]);
+
+        try {
+            $successCount = 0;
+            $failedEmails = [];
+
+            foreach ($validated['coaches'] as $coach) {
+                try {
+                    // Create a pending coach invitation
+                    $token = \Str::random(60);
+
+                    $result = \Illuminate\Support\Facades\DB::table('coach_invitations')->insert([
+                        'email' => $coach['email'],
+                        'name' => $coach['name'],
+                        'token' => \Illuminate\Support\Facades\Hash::make($token),
+                        'created_at' => now(),
+                    ]);
+
+                    if (!$result) {
+                        throw new \Exception('Failed to insert invitation into database');
+                    }
+
+                    // Send invitation email
+                    // Build invite URL to coach-register with token and email as query params
+                    $inviteUrl = route('coach-register') . '?token=' . urlencode($token) . '&email=' . urlencode($coach['email']);
+
+                    // derive admin's email domain (including @)
+                    $adminUser = Auth::user();
+                    $emailDomain = '';
+                    if (!empty($adminUser) && !empty($adminUser->email) && strpos($adminUser->email, '@') !== false) {
+                        $parts = explode('@', $adminUser->email);
+                        $emailDomain = '@' . $parts[1];
+                    }
+
+                    // Send the email and check result
+                    $mailResult = \Illuminate\Support\Facades\Mail::send('emails.invite-coach-email', [
+                        'coachName' => $coach['name'],
+                        'inviteUrl' => $inviteUrl,
+                        'emailDomain' => $emailDomain,
+                    ], function ($mail) use ($coach) {
+                        $mail->to($coach['email'])
+                            ->subject('Coach Invitation - ' . config('app.name'))
+                            ->from(config('mail.from.address'), config('mail.from.name'));
+                    });
+
+                    if ($mailResult === 0) {
+                        throw new \Exception('Mail::send returned 0 - no messages sent. Check SMTP configuration.');
+                    }
+
+                    $successCount++;
+                } catch (\Exception $e) {
+                    $errorMsg = $e->getMessage() ?: 'Unknown error';
+                    \Illuminate\Support\Facades\Log::error("Failed to send coach invite to {$coach['email']}: " . $errorMsg, ['exception' => $e, 'trace' => $e->getTraceAsString()]);
+                    $failedEmails[] = $coach['email'] . ' - ' . $errorMsg;
+                }
+            }
+
+            // Prepare success message
+            $message = "Coach invitation(s) sent successfully to {$successCount} coach(es).";
+
+            if (!empty($failedEmails)) {
+                $message .= " Failed to send to: " . implode(', ', $failedEmails);
+            }
+
+            return redirect()->route('admin.invite-coach')->with('success', $message);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Coach Invite Send Error: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'An error occurred while sending invitations. Please try again.');
+        }
     }
 
     public function manageCoaches()

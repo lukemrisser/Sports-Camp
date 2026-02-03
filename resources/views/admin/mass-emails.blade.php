@@ -60,29 +60,61 @@
                     </div>
 
                     <div class="form-group" id="camp_selection_group" style="display: none;">
-                        <label for="camp_id" class="form-label">Select Camp</label>
-                        <select id="camp_id" name="camp_id" class="form-select">
-                            <option value="">-- Choose a Camp --</option>
-                        </select>
+                        <label class="form-label">Select Camp(s)</label>
+                        <div id="camp_checkboxes"
+                            style="
+                            border: 2px solid #e5e7eb;
+                            border-radius: 8px;
+                            padding: 12px;
+                            background: #f9fafb;
+                            max-height: 300px;
+                            overflow-y: auto;
+                        ">
+                            <!-- Checkboxes will be populated by JavaScript -->
+                        </div>
+                        <small style="color: #6b7280; margin-top: 6px; display: block;">Select one or more camps</small>
                         @error('camp_id')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
 
-                    <div class="form-group">
-                        <label for="subject" class="form-label">Email Subject</label>
-                        <input type="text" id="subject" name="subject" class="form-input" required>
-                        @error('subject')
-                            <span class="form-error">{{ $message }}</span>
-                        @enderror
-                    </div>
+                    <div id="email_fields_group" style="display: none;">
+                        <div class="form-group">
+                            <label for="subject" class="form-label">Email Subject</label>
+                            <input type="text" id="subject" name="subject" class="form-input" required>
+                            @error('subject')
+                                <span class="form-error">{{ $message }}</span>
+                            @enderror
+                        </div>
 
-                    <div class="form-group">
-                        <label for="message" class="form-label">Email Message</label>
-                        <textarea id="message" name="message" class="form-textarea" rows="8" required></textarea>
-                        @error('message')
-                            <span class="form-error">{{ $message }}</span>
-                        @enderror
+                        <div class="form-group">
+                            <label for="greeting" class="form-label">Email Greeting</label>
+                            <input type="text" id="greeting" name="greeting" class="form-input" default="Hello"
+                                placeholder="Default: Hello">
+                            <span class="form-label"> Parent's name will be appended automatically.</span>
+                            @error('greeting')
+                                <span class="form-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="message" class="form-label">Email Message</label>
+                            <textarea id="message" name="message" class="form-textarea" rows="8" required></textarea>
+                            @error('message')
+                                <span class="form-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="closing" class="form-label">Email Closing</label>
+                            <input type="text" id="closing" name="closing" class="form-input"
+                                default="Best regards," placeholder="Default: Best regards,">
+                            <span class="form-label"> Your name will be appended automatically.</span>
+                            @error('closing')
+                                <span class="form-error">{{ $message }}</span>
+                            @enderror
+                        </div>
                     </div>
 
                     <div class="form-actions">
@@ -94,67 +126,101 @@
                 <script>
                     // Camp data organized by status
                     const campData = {
-                        past: [
-                            @foreach ($pastCamps as $camp)
-                                {
-                                    id: {{ $camp->Camp_ID }},
-                                    name: '{{ $camp->Camp_Name }}'
-                                },
-                            @endforeach
-                        ],
-                        current: [
-                            @foreach ($currentCamps as $camp)
-                                {
-                                    id: {{ $camp->Camp_ID }},
-                                    name: '{{ $camp->Camp_Name }}'
-                                },
-                            @endforeach
-                        ],
-                        upcoming: [
-                            @foreach ($upcomingCamps as $camp)
-                                {
-                                    id: {{ $camp->Camp_ID }},
-                                    name: '{{ $camp->Camp_Name }}'
-                                },
-                            @endforeach
-                        ]
+                        past: {!! json_encode($pastCamps) !!},
+                        live: {!! json_encode($liveCamps) !!},
+                        upcoming: {!! json_encode($upcomingCamps) !!}
                     };
 
                     const campStatusSelect = document.getElementById('camp_status');
-                    const campIdSelect = document.getElementById('camp_id');
+                    const campCheckboxesContainer = document.getElementById('camp_checkboxes');
                     const campSelectionGroup = document.getElementById('camp_selection_group');
+                    const emailFieldsGroup = document.getElementById('email_fields_group');
                     const submitBtn = document.getElementById('submit_btn');
+
+                    function updateFormVisibility() {
+                        const statusSelected = campStatusSelect.value !== '';
+                        const selectedCamps = document.querySelectorAll('input[name="camp_id[]"]:checked').length > 0;
+
+                        // Show email fields only when both status and at least one camp are selected
+                        if (statusSelected && selectedCamps) {
+                            emailFieldsGroup.style.display = 'block';
+                            submitBtn.disabled = false;
+                        } else {
+                            emailFieldsGroup.style.display = 'none';
+                            submitBtn.disabled = true;
+                        }
+                    }
 
                     campStatusSelect.addEventListener('change', function() {
                         const selectedStatus = this.value;
 
-                        // Clear previous options
-                        campIdSelect.innerHTML = '<option value="">-- Choose a Camp --</option>';
+                        // Clear previous checkboxes and selections
+                        campCheckboxesContainer.innerHTML = '';
 
                         if (selectedStatus && campData[selectedStatus]) {
-                            // Populate camps for selected status
+                            // Populate checkboxes for selected status
                             campData[selectedStatus].forEach(camp => {
-                                const option = document.createElement('option');
-                                option.value = camp.id;
-                                option.textContent = camp.name;
-                                campIdSelect.appendChild(option);
+                                const checkboxWrapper = document.createElement('div');
+                                checkboxWrapper.style.cssText = `
+                                    display: flex;
+                                    align-items: center;
+                                    padding: 8px;
+                                    margin-bottom: 4px;
+                                    border-radius: 6px;
+                                    transition: background-color 0.2s ease;
+                                `;
+
+                                const checkbox = document.createElement('input');
+                                checkbox.type = 'checkbox';
+                                checkbox.name = 'camp_id[]';
+                                checkbox.value = camp.id;
+                                checkbox.style.cssText = `
+                                    width: 18px;
+                                    height: 18px;
+                                    cursor: pointer;
+                                    margin-right: 12px;
+                                    border: 2px solid #d1d5db;
+                                    border-radius: 4px;
+                                    accent-color: #0a3f94;
+                                `;
+
+                                const label = document.createElement('label');
+                                label.style.cssText = `
+                                    flex: 1;
+                                    cursor: pointer;
+                                    display: flex;
+                                    flex-direction: column;
+                                `;
+                                label.innerHTML = `
+                                    <span style="font-weight: 600; color: #1f2937;">${camp.name}</span>
+                                    <span style="font-size: 0.875rem; color: #6b7280;">${camp.start_date} - ${camp.end_date}</span>
+                                `;
+
+                                checkbox.addEventListener('change', function() {
+                                    if (this.checked) {
+                                        checkboxWrapper.style.backgroundColor = '#dbeafe';
+                                    } else {
+                                        checkboxWrapper.style.backgroundColor = 'transparent';
+                                    }
+                                    updateFormVisibility();
+                                });
+
+                                checkboxWrapper.appendChild(checkbox);
+                                checkboxWrapper.appendChild(label);
+                                campCheckboxesContainer.appendChild(checkboxWrapper);
                             });
 
-                            // Show camp selection dropdown
+                            // Show camp selection group
                             campSelectionGroup.style.display = 'block';
-                            submitBtn.disabled = false;
                         } else {
-                            // Hide camp selection dropdown
+                            // Hide camp selection group
                             campSelectionGroup.style.display = 'none';
-                            submitBtn.disabled = true;
-                            campIdSelect.value = '';
                         }
-                    });
 
-                    // Clear camp selection when camp status changes
-                    campStatusSelect.addEventListener('change', function() {
-                        campIdSelect.value = '';
+                        // Update overall form visibility
+                        updateFormVisibility();
                     });
+                </script>
                 </script>
             </div>
         </div>

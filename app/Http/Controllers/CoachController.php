@@ -746,35 +746,67 @@ class CoachController extends Controller
         $allCamps = Camp::where('Sport_ID', $coach->Sport_ID)->get();
         $today = now()->toDateString();
 
-        // Separate camps by date
+        // Separate camps by date and format with dates
         $pastCamps = $allCamps->filter(function ($camp) use ($today) {
             return $camp->End_Date < $today;
-        });
+        })->map(function ($camp) {
+            return [
+                'id' => $camp->Camp_ID,
+                'name' => $camp->Camp_Name,
+                'start_date' => $camp->Start_Date->format('m/d/Y'),
+                'end_date' => $camp->End_Date->format('m/d/Y')
+            ];
+        })->values()->toArray();
 
-        $currentCamps = $allCamps->filter(function ($camp) use ($today) {
+        $liveCamps = $allCamps->filter(function ($camp) use ($today) {
             return $camp->Start_Date <= $today && $camp->End_Date >= $today;
-        });
+        })->map(function ($camp) {
+            return [
+                'id' => $camp->Camp_ID,
+                'name' => $camp->Camp_Name,
+                'start_date' => $camp->Start_Date->format('m/d/Y'),
+                'end_date' => $camp->End_Date->format('m/d/Y')
+            ];
+        })->values()->toArray();
 
         $upcomingCamps = $allCamps->filter(function ($camp) use ($today) {
             return $camp->Start_Date > $today;
-        });
+        })->map(function ($camp) {
+            return [
+                'id' => $camp->Camp_ID,
+                'name' => $camp->Camp_Name,
+                'start_date' => $camp->Start_Date->format('m/d/Y'),
+                'end_date' => $camp->End_Date->format('m/d/Y')
+            ];
+        })->values()->toArray();
 
         $campStatusOptions = [
             'past' => 'Past Camps',
-            'current' => 'Current Camps',
+            'live' => 'Live Camps',
             'upcoming' => 'Upcoming Camps'
         ];
 
-        return view('admin.mass-emails', compact('pastCamps', 'currentCamps', 'upcomingCamps', 'campStatusOptions'));
+        return view('admin.mass-emails', compact('pastCamps', 'liveCamps', 'upcomingCamps', 'campStatusOptions'));
     }
 
     public function sendMassEmails(Request $request)
     {
         $validated = $request->validate([
-            'camp_id' => 'required|integer|exists:Camps,Camp_ID',
-            'camp_status' => 'required|string|in:past,current,upcoming',
+            'camp_id' => 'required|array|min:1',
+            'camp_id.*' => 'integer|exists:Camps,Camp_ID',
+            'camp_status' => 'required|string|in:past,live,upcoming',
             'subject' => 'required|string|max:255',
+            'greeting' => 'nullable|string|max:255',
             'message' => 'required|string',
+            'closing' => 'nullable|string|max:255',
+        ]);
+
+        // Log inputs to help diagnose failures during preparation
+        Log::debug('Mass email inputs', [
+            'camp_id_count' => isset($validated['camp_id']) ? count($validated['camp_id']) : 0,
+            'camp_ids' => $validated['camp_id'] ?? [],
+            'camp_status' => $validated['camp_status'] ?? null,
+            'subject_length' => isset($validated['subject']) ? strlen($validated['subject']) : 0
         ]);
 
         try {
@@ -785,39 +817,48 @@ class CoachController extends Controller
                 return redirect()->route('home')->with('error', 'You must be a coach to send mass emails.');
             }
 
-            $camp = Camp::findOrFail($validated['camp_id']);
+            // Get all selected camps and verify they belong to coach's sport
+            $camps = Camp::whereIn('Camp_ID', $validated['camp_id'])->get();
 
-            // Verify the camp belongs to the coach's sport
-            if ($camp->Sport_ID !== $coach->Sport_ID) {
-                return redirect()->back()->with('error', 'You do not have permission to send emails for this camp.');
+            foreach ($camps as $camp) {
+                if ($camp->Sport_ID !== $coach->Sport_ID) {
+                    return redirect()->back()->with('error', 'You do not have permission to send emails for one or more selected camps.');
+                }
             }
 
-            // Get all parents for the selected camp based on status
+            // Get all parents for the selected camps based on status
             $now = now();
+            // Build query using correct table/column names and join Parents via Players.Parent_ID
             $query = DB::table('Player_Camp')
                 ->join('Players', 'Player_Camp.Player_ID', '=', 'Players.Player_ID')
-                ->join('Parents', 'Players.Player_ID', '=', 'Parents.Player_ID')
-                ->join('Users', 'Parents.Parent_ID', '=', 'Users.User_ID')
-                ->where('Player_Camp.Camp_ID', $camp->Camp_ID)
+                ->join('Parents', 'Players.Parent_ID', '=', 'Parents.Parent_ID')
+                ->join('Camps', 'Player_Camp.Camp_ID', '=', 'Camps.Camp_ID')
+                ->whereIn('Player_Camp.Camp_ID', $validated['camp_id'])
                 ->distinct()
-                ->select('Users.Email', 'Users.First_Name', 'Users.Last_Name');
+                ->select('Parents.Email as Email', 'Parents.Parent_FirstName as First_Name', 'Parents.Parent_LastName as Last_Name', 'Camps.Camp_Name as Camp_Name');
 
-            // Filter by camp status
+            $nowDate = $now->toDateString();
+            Log::debug('Mass email status filter: ' . $validated['camp_status'] . ', now=' . $nowDate);
             if ($validated['camp_status'] === 'past') {
-                $query->where('Camps.End_Date', '<', $now);
-            } elseif ($validated['camp_status'] === 'current') {
-                $query->where('Camps.Start_Date', '<=', $now)
-                    ->where('Camps.End_Date', '>=', $now);
+                $query->where('Camps.End_Date', '<', $nowDate);
+            } elseif ($validated['camp_status'] === 'live') {
+                $query->where('Camps.Start_Date', '<=', $nowDate)
+                    ->where('Camps.End_Date', '>=', $nowDate);
             } elseif ($validated['camp_status'] === 'upcoming') {
-                $query->where('Camps.Start_Date', '>', $now);
+                $query->where('Camps.Start_Date', '>', $nowDate);
             }
 
-            $query->join('Camps', 'Player_Camp.Camp_ID', '=', 'Camps.Camp_ID');
+            try {
+                Log::debug('Mass email parent query SQL: ' . $query->toSql(), ['bindings' => $query->getBindings()]);
+                $parents = $query->get();
+                Log::debug('Mass email parent count: ' . $parents->count());
 
-            $parents = $query->get();
-
-            if ($parents->isEmpty()) {
-                return redirect()->back()->with('warning', 'No parents found for the selected camp and status.');
+                if ($parents->isEmpty()) {
+                    return redirect()->back()->with('warning', 'No parents found for the selected camp and status.');
+                }
+            } catch (\Exception $e) {
+                Log::error('Mass Email Query Error: ' . $e->getMessage(), ['sql' => $query->toSql(), 'bindings' => $query->getBindings(), 'exception' => $e]);
+                return redirect()->back()->withInput()->with('error', 'An error occurred while preparing emails. Please check logs.');
             }
 
             // Send emails to all parents
@@ -827,17 +868,20 @@ class CoachController extends Controller
                     // Use Laravel's Mail facade to send emails
                     \Illuminate\Support\Facades\Mail::send('emails.mass-email', [
                         'subject' => $validated['subject'],
-                        'message' => $validated['message'],
+                        'greeting' => $validated['greeting'] ?? 'Hello',
+                        'emailBody' => $validated['message'],
+                        'closing' => $validated['closing'] ?? 'Best regards,',
                         'parentName' => $parent->First_Name . ' ' . $parent->Last_Name,
-                        'campName' => $camp->Camp_Name,
-                    ], function ($mail) use ($parent, $validated, $camp) {
+                        'campName' => $parent->Camp_Name,
+                        'coachName' => $user->name,
+                    ], function ($mail) use ($parent, $validated) {
                         $mail->to($parent->Email)
                             ->subject($validated['subject'])
                             ->from(config('mail.from.address'), config('mail.from.name'));
                     });
                 } catch (\Exception $e) {
                     Log::error("Failed to send email to {$parent->Email}: " . $e->getMessage());
-                    $failedEmails[] = $parent->Email;
+                    $failedEmails[] = $parent->Email . ' (' . $e->getMessage() . ')';
                 }
             }
 
@@ -851,7 +895,7 @@ class CoachController extends Controller
 
             return redirect()->route('select-camp-for-email')->with('success', $message);
         } catch (\Exception $e) {
-            Log::error('Mass Email Send Error: ' . $e->getMessage());
+            Log::error('Mass Email Send Error: ' . $e->getMessage(), ['exception' => $e, 'trace' => $e->getTraceAsString()]);
             return redirect()->back()->withInput()->with('error', 'An error occurred while sending emails. Please try again.');
         }
     }
