@@ -39,8 +39,8 @@ class CampFactory extends Factory
            // Matches Price decimal (10, 2)
            'Price' => $this->faker->randomFloat(2, 50, 500),
 
-           // Matches Camp_Gender enum('girls', 'boys', 'coed')
-           'Camp_Gender' => $this->faker->randomElement(['boys', 'girls', 'coed']),
+           // Matches Camp_Gender enum('girls', 'boys', 'mixed')
+           'Camp_Gender' => $this->faker->randomElement(['boys', 'girls', 'mixed']),
 
            // Matches Age_Min tinyint(4)
            'Age_Min' => $this->faker->numberBetween(6, 10),
