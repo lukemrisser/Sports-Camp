@@ -91,7 +91,7 @@
                             <label for="greeting" class="form-label">Email Greeting</label>
                             <input type="text" id="greeting" name="greeting" class="form-input" default="Hello"
                                 placeholder="Hello">
-                            <span class="form-label"> Parent's Name will be appended automatically.</span>
+                            <span class="form-label"> Parent's name will be appended automatically.</span>
                             @error('greeting')
                                 <span class="form-error">{{ $message }}</span>
                             @enderror
@@ -110,6 +110,7 @@
                             <label for="closing" class="form-label">Email Closing</label>
                             <input type="text" id="closing" name="closing" class="form-input"
                                 default="Best regards," placeholder="Best regards, (Your Name)">
+                            <span class="form-label"> Your name will be appended automatically.</span>
                             @error('closing')
                                 <span class="form-error">{{ $message }}</span>
                             @enderror
