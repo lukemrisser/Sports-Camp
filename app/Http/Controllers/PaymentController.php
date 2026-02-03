@@ -183,6 +183,7 @@ class PaymentController extends Controller
 
     /**
      * Create a Stripe payment intent for the registration
+     * Ignore the internal limitation warning for method complexity
      */
     private function createPaymentIntent($player, Request $request)
     {
