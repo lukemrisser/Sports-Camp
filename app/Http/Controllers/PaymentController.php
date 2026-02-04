@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Player;
 use App\Models\Camp;
 use App\Models\CampDiscount;
+use App\Models\PromoCode;
 use App\Models\Order;
 use App\Models\ExtraFee;
 use App\Models\OrderExtraFee;
@@ -328,17 +329,14 @@ class PaymentController extends Controller
         }
 
         $addOnsAmount = $addOnsTotal * 100; // Convert add-ons to cents
-        
-        if ($discount > 0) {
-            // Manual discount provided (in dollars), convert to cents
-            $baseAmount = $camp->Price * 100;
-            $discountedAmount = ($baseAmount + $addOnsAmount) - ($discount * 100);
-        } else {
-            // Use camp's automatic discount (method expects and returns dollars)
-            $discountedPrice = $camp->getDiscountedPrice($camp->Price);
-            $discountedAmount = ($discountedPrice * 100) + $addOnsAmount; // Convert to cents
-        }
-        return $discountedAmount;
+
+        $baseAmount = $camp->Price * 100;
+        $bestDiscount = $camp->getBestDiscount();
+        $earlyDiscount = $bestDiscount ? (float) $bestDiscount->Discount_Amount : 0;
+        $promoDiscount = (float) $discount;
+
+        $discountedAmount = ($baseAmount + $addOnsAmount) - (($earlyDiscount + $promoDiscount) * 100);
+        return max(0, $discountedAmount);
     }
 
     /**
@@ -491,9 +489,9 @@ class PaymentController extends Controller
 
         try {
             // Find the promo code
-            $discount = CampDiscount::findPromoCodeForCamp($campId, $code);
+            $promoCode = PromoCode::findValidPromoCodeForCamp($campId, $code);
 
-            if (!$discount) {
+            if (!$promoCode) {
                 return response()->json([
                     'valid' => false,
                     'message' => 'Promo code not found for this camp.'
@@ -501,7 +499,7 @@ class PaymentController extends Controller
             }
 
             // Check if the promo code is valid (not expired)
-            if (!$discount->isPromoCodeValid($discount)) {
+            if (!$promoCode->isValid()) {
                 return response()->json([
                     'valid' => false,
                     'message' => 'This promo code has expired.'
@@ -510,13 +508,13 @@ class PaymentController extends Controller
 
             return response()->json([
                 'valid' => true,
-                'discount_amount' => $discount->Discount_Amount
+                'discount_amount' => $promoCode->Discount_Amount
             ]);
         } catch (\Exception $e) {
             Log::error('Promo code validation error: ' . $e->getMessage());
             return response()->json([
                 'valid' => false,
-                'message' => 'An error occurred while validating the promo code.'. $e->getMessage()
+                'message' => 'An error occurred while validating the promo code.'
             ], 500);
         }
     }

@@ -395,15 +395,27 @@
                     clearDiscounts();
                     clearPromos();
                     clearExtraFees();
-                    if (data.discounts && data.discounts.length) {
-                        data.discounts.forEach(d => {
-                            if (d.Promo_Code) {
-                                // This is a promo code
-                                addPromoRow(d.Promo_Code, d.Discount_Amount, d.Discount_Date ? d.Discount_Date.split('T')[0] : '');
-                            } else {
-                                // This is an early discount
-                                addDiscountRow(d.Discount_Amount, d.Discount_Date ? d.Discount_Date.split('T')[0] : '');
-                            }
+                    const discounts = data.discounts || data.camp_discounts || [];
+                    if (discounts.length) {
+                        discounts.forEach(d => {
+                            // Early discounts only
+                            const amount = d.Discount_Amount ?? d.discount_amount ?? '';
+                            const dateValue = d.Discount_Date ?? d.discount_date ?? '';
+                            addDiscountRow(amount, dateValue ? dateValue.split('T')[0] : '');
+                        });
+                    }
+
+                    const promoCodes = data.promo_codes || data.promoCodes || [];
+                    if (promoCodes.length) {
+                        promoCodes.forEach(promo => {
+                            const code = promo.Promo_Code ?? promo.promo_code ?? '';
+                            const amount = promo.Discount_Amount ?? promo.discount_amount ?? '';
+                            const expDate = promo.Expiration_Date ?? promo.expiration_date ?? '';
+                            addPromoRow(
+                                code,
+                                amount,
+                                expDate ? expDate.split('T')[0] : ''
+                            );
                         });
                     }
 

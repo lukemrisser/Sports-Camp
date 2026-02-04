@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Camp;
+use App\Models\PromoCode;
 
 class CampDiscount extends Model
 {
@@ -20,8 +21,7 @@ class CampDiscount extends Model
     protected $fillable = [
         'Camp_ID',
         'Discount_Amount',
-        'Discount_Date',
-        'Promo_Code'
+        'Discount_Date'
     ];
 
     // Cast Discount_Amount as decimal and Discount_Date as date
@@ -96,16 +96,14 @@ class CampDiscount extends Model
      */
     public static function findPromoCodeForCamp($campId, $promoCode)
     {
-        return self::where('Camp_ID', $campId)
-                   ->where('Promo_Code', $promoCode)
-                   ->first();
+        return PromoCode::findValidPromoCodeForCamp($campId, $promoCode);
     }
 
     public static function isPromoCodeValid($discount)
     {
-        if($discount->Discount_Date === null) {
+        if($discount->Expiration_Date === null) {
             return true;
         }
-        return $discount->Discount_Date >= now();
+        return $discount->Expiration_Date >= now();
     }
 }

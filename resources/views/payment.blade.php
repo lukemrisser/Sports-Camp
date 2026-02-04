@@ -103,6 +103,7 @@
                                 // Get the current active discount from the database
                                 $bestDiscount = $camp ? $camp->getBestDiscount() : null;
                                 $discountAmt = $bestDiscount ? (float)$bestDiscount->Discount_Amount : 0;
+                                $promoDiscountAmt = isset($discountAmount) ? (float) $discountAmount : 0;
                             @endphp
 
                             <div class="summary-item">
@@ -125,8 +126,15 @@
 
                             @if ($discountAmt > 0)
                                 <div class="summary-item discount">
-                                    <span class="label">Discount:</span>
+                                    <span class="label">Early Registration Discount:</span>
                                     <span class="value">-${{ number_format($discountAmt, 2) }}</span>
+                                </div>
+                            @endif
+
+                            @if ($promoDiscountAmt > 0)
+                                <div class="summary-item discount">
+                                    <span class="label">Promo Code Discount:</span>
+                                    <span class="value">-${{ number_format($promoDiscountAmt, 2) }}</span>
                                 </div>
                             @endif
 

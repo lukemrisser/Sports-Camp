@@ -9,6 +9,7 @@ use App\Models\Sport;
 use App\Models\User;
 use App\Models\Player;
 use App\Models\ExtraFee;
+use App\Models\PromoCode;
 use App\Imports\PlayersImport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +44,7 @@ class CoachController extends Controller
     {
         try {
             Log::info("Fetching camp data for ID: {$id}");
-            $camp = Camp::with(['discounts', 'extraFees'])->findOrFail($id);
+            $camp = Camp::with(['discounts', 'promoCodes', 'extraFees'])->findOrFail($id);
             Log::info("Successfully retrieved camp: {$camp->Camp_Name}");
             return response()->json($camp);
         } catch (\Exception $e) {
@@ -133,14 +134,22 @@ class CoachController extends Controller
                     'Camp_ID' => $camp->Camp_ID,
                     'Discount_Date' => $date,
                     'Discount_Amount' => $amount,
-                    'Promo_Code' => null,
                 ];
+            }
+
+            if (!empty($toInsert)) {
+                DB::table('Camp_Discount')->insert($toInsert);
             }
 
             // Promo codes (code + amount required, date optional)
             $promoCodes = $request->input('promo_code', []);
             $promoAmounts = $request->input('promo_amount', []);
             $promoDates = $request->input('promo_date', []);
+            
+            // Delete existing promo codes for this camp
+            PromoCode::where('Camp_ID', $camp->Camp_ID)->delete();
+            
+            $promoRowsToInsert = [];
             foreach ($promoCodes as $i => $promoCode) {
                 $promoCode = trim($promoCode);
                 $promoAmount = $promoAmounts[$i] ?? null;
@@ -157,17 +166,17 @@ class CoachController extends Controller
                         ]);
                     }
 
-                    $toInsert[] = [
+                    $promoRowsToInsert[] = [
                         'Camp_ID' => $camp->Camp_ID,
                         'Promo_Code' => $promoCode,
                         'Discount_Amount' => $promoAmount,
-                        'Discount_Date' => $promoDate ?: null,
+                        'Expiration_Date' => $promoDate ?: null,
                     ];
                 }
             }
 
-            if (!empty($toInsert)) {
-                DB::table('Camp_Discount')->insert($toInsert);
+            if (!empty($promoRowsToInsert)) {
+                PromoCode::insert($promoRowsToInsert);
             }
 
             // Replace extra fees: delete existing and insert provided
@@ -315,8 +324,7 @@ class CoachController extends Controller
                 $requestsToInsert[] = [
                     'Camp_ID' => $camp->Camp_ID,
                     'Discount_Date' => $date,
-                    'Discount_Amount' => $amount,
-                    'Promo_Code' => null
+                    'Discount_Amount' => $amount
                 ];
             }
 
@@ -325,6 +333,7 @@ class CoachController extends Controller
             $promoAmounts = $request->input('promo_amount', []);
             $promoDates = $request->input('promo_date', []);
 
+            $promoRowsToInsert = [];
             foreach ($promoCodes as $i => $promoCode) {
                 $promoCode = trim($promoCode);
                 $promoAmount = $promoAmounts[$i] ?? null;
@@ -341,17 +350,17 @@ class CoachController extends Controller
                         ]);
                     }
 
-                    $requestsToInsert[] = [
+                    $promoRowsToInsert[] = [
                         'Camp_ID' => $camp->Camp_ID,
                         'Promo_Code' => $promoCode,
                         'Discount_Amount' => $promoAmount,
-                        'Discount_Date' => $promoDate ?: null
+                        'Expiration_Date' => $promoDate ?: null
                     ];
                 }
             }
 
-            if (!empty($requestsToInsert)) {
-                DB::table('Camp_Discount')->insert($requestsToInsert);
+            if (!empty($promoRowsToInsert)) {
+                PromoCode::insert($promoRowsToInsert);
             }
 
             // Handle extra fees
