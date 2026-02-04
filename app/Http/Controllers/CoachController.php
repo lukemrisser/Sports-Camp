@@ -171,6 +171,13 @@ class CoachController extends Controller
             }
 
             // Replace extra fees: delete existing and insert provided
+            // First, get all fee IDs for this camp
+            $feeIds = ExtraFee::where('Camp_ID', $camp->Camp_ID)->pluck('Fee_ID')->toArray();
+            // Delete related order_extra_fees records first (foreign key constraint)
+            if (!empty($feeIds)) {
+                DB::table('Order_Extra_Fees')->whereIn('Fee_ID', $feeIds)->delete();
+            }
+            // Now delete the extra fees
             ExtraFee::where('Camp_ID', $camp->Camp_ID)->delete();
 
             $extraNames = $request->input('extra_fee_name', []);
@@ -222,11 +229,11 @@ class CoachController extends Controller
             } else {
                 $errorMessage .= 'Unknown validation error';
             }
-            return redirect()->route('organize-teams')->with('error', $errorMessage);
+            return redirect()->route('edit-camp')->with('error', $errorMessage);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Camp Update Error: ' . $e->getMessage());
-            return redirect()->route('organize-teams')
+            return redirect()->route('edit-camp')
                 ->with('error', 'Failed to update camp: ' . $e->getMessage());
         }
     }

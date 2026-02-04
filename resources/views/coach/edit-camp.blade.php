@@ -44,6 +44,29 @@
                     </div>
                 </div>
 
+                @if ($errors->any())
+                    <div id="error-display" style="background-color: #fee; border: 1px solid #fcc; color: #c33; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                        <strong>Error:</strong>
+                        <ul style="margin: 10px 0 0 20px;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if (session('success'))
+                    <div style="background-color: #efe; border: 1px solid #cfc; color: #3c3; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                        <strong>Success:</strong> {{ session('success') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div id="error-display" style="background-color: #fee; border: 1px solid #fcc; color: #c33; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                        <strong>Error:</strong> {{ session('error') }}
+                    </div>
+                @endif
+
                 <form id="edit-camp-form" method="POST" action="" class="registration-form" style="display:none;">
                     @csrf
                     @method('PUT')
