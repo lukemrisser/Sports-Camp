@@ -97,8 +97,12 @@
                             </div>
 
                             @php
-                                $campPrice = \App\Models\Camp::find($campId)->Price ?? 0;
-                                $discountAmt = (float)($discountAmount ?? 0);
+                                $camp = \App\Models\Camp::find($campId);
+                                $campPrice = $camp->Price ?? 0;
+                                
+                                // Get the current active discount from the database
+                                $bestDiscount = $camp ? $camp->getBestDiscount() : null;
+                                $discountAmt = $bestDiscount ? (float)$bestDiscount->Discount_Amount : 0;
                             @endphp
 
                             <div class="summary-item">

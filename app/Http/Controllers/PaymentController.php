@@ -318,6 +318,7 @@ class PaymentController extends Controller
      */
     private function calculateRegistrationAmount($player, $campId, $discount = 0, $addOnsTotal = 0)
     {
+        /** @var Camp|null $camp */
         $camp = Camp::find($campId);
 
         if (!$camp) {
@@ -326,13 +327,16 @@ class PaymentController extends Controller
             );
         }
 
-        $baseAmount = $camp->Price * 100; // Convert dollars to cents
         $addOnsAmount = $addOnsTotal * 100; // Convert add-ons to cents
         
         if ($discount > 0) {
-            $discountedAmount = ($baseAmount + $addOnsAmount) - ($discount * 100); // Apply discount in cents
+            // Manual discount provided (in dollars), convert to cents
+            $baseAmount = $camp->Price * 100;
+            $discountedAmount = ($baseAmount + $addOnsAmount) - ($discount * 100);
         } else {
-            $discountedAmount = $camp->getDiscountedPrice($baseAmount) + $addOnsAmount;
+            // Use camp's automatic discount (method expects and returns dollars)
+            $discountedPrice = $camp->getDiscountedPrice($camp->Price);
+            $discountedAmount = ($discountedPrice * 100) + $addOnsAmount; // Convert to cents
         }
         return $discountedAmount;
     }

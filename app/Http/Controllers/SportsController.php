@@ -25,11 +25,9 @@ class SportsController extends Controller
         $sport = Sport::findOrFail($sportId);
         
         // Get all camps for this sport that are accepting registrations
-        $camps = Camp::where('Sport_ID', $sportId)
-                    ->acceptingRegistrations()
-                    ->get();
+        $camps = Camp::where('Sport_ID', $sportId)->acceptingRegistrations()->get();
 
-        $campCards = $camps->map(function ($camp) {
+        $campCards = $camps->map(function (Camp $camp) {
             if ($camp->Camp_Gender == 'boys')
                 $gender = 'Boys ';
             else if ($camp->Camp_Gender == 'girls')
