@@ -84,7 +84,10 @@ class Camp extends Model
 	public function activeDiscounts()
 	{
 		return $this->discounts()
-					->where('Discount_Date', '>=', now() || null);
+					->where(function($query) {
+						$query->whereNull('Discount_Date')
+							  ->orWhere('Discount_Date', '>=', now());
+					});
 	}
 
 	// Get the best available discount for this camp
@@ -106,7 +109,7 @@ class Camp extends Model
 			return $originalPrice;
 		}
 
-		return $originalPrice - ($discount->Discount_Amount * 100);
+		return $originalPrice - $discount->Discount_Amount;
 	}
 
 	// Scope to get camps that are currently accepting registrations
