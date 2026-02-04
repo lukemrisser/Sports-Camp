@@ -328,6 +328,10 @@ class CoachController extends Controller
                 ];
             }
 
+            if (!empty($requestsToInsert)) {
+                DB::table('Camp_Discount')->insert($requestsToInsert);
+            }
+
             // Handle promo codes (code + amount required, date optional)
             $promoCodes = $request->input('promo_code', []);
             $promoAmounts = $request->input('promo_amount', []);
