@@ -63,7 +63,7 @@ class CoachController extends Controller
             'registration_open' => 'required|date',
             'registration_close' => 'required|date',
             'price' => 'required|numeric',
-            'gender' => 'required|string',
+            'gender' => 'required|string|in:coed,boys,girls',
             'min_age' => 'required|numeric',
             'max_age' => 'required|numeric',
             'max_capacity' => 'required|integer|min:1|max:1000',
@@ -87,8 +87,8 @@ class CoachController extends Controller
             $camp = Camp::findOrFail($id);
 
 
-            // Normalize legacy value 'mixed' -> 'coed'
-            $normalizedGender = ($validated['gender'] === 'mixed') ? 'coed' : $validated['gender'];
+            // Normalize gender to lowercase
+            $normalizedGender = strtolower($validated['gender']);
 
             $camp->update([
                 'Sport_ID' => $validated['sport_id'],
@@ -242,7 +242,7 @@ class CoachController extends Controller
             'registration_open' => 'required|date',
             'registration_close' => 'required|date',
             'price' => 'required|numeric',
-            'gender' => 'required|string',
+            'gender' => 'required|string|in:coed,boys,girls',
             'min_age' => 'required|numeric',
             'max_age' => 'required|numeric',
             'max_capacity' => 'required|integer|min:1|max:1000',
@@ -265,8 +265,8 @@ class CoachController extends Controller
         DB::beginTransaction();
 
         try {
-            // Normalize legacy value 'mixed' -> 'coed'
-            $normalizedGender = ($validated['gender'] === 'mixed') ? 'coed' : $validated['gender'];
+            // Normalize gender to lowercase
+            $normalizedGender = strtolower($validated['gender']);
 
             $camp = Camp::create([
                 'Sport_ID' => $validated['sport_id'],

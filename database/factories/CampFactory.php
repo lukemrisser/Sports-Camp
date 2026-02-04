@@ -40,7 +40,7 @@ class CampFactory extends Factory
            'Price' => $this->faker->randomFloat(2, 50, 500),
 
            // Matches Camp_Gender enum('girls', 'boys', 'mixed')
-           'Camp_Gender' => $this->faker->randomElement(['boys', 'girls', 'mixed']),
+           'Camp_Gender' => $this->faker->randomElement(['boys', 'girls', 'coed']),
 
            // Matches Age_Min tinyint(4)
            'Age_Min' => $this->faker->numberBetween(6, 10),
