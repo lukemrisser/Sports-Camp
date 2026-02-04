@@ -52,16 +52,21 @@
                      data-reg-date="{{ $camp['registration_due'] }}"
                      data-discount-amount="{{ $discount_amount }}"
                      data-discount-expires="{{ $discount_expires }}">
-                    <button type="button" class="accordion-header" aria-expanded="false">
-                        <span class="accordion-title">{{ $camp['title'] }}</span>
-                        <span class="accordion-meta">
-                            ${{ number_format($camp['price'], 2) }} · {{ $camp['start_date'] }} – {{ $camp['end_date'] }}
-                        </span>
-                        @if ($camp['has_discount'])
-                            <span class="accordion-discount">Save ${{ number_format($camp['discount_amount'], 2) }} - Register by {{ $camp['discount_expires'] }}</span>
-                        @endif
-                        <span class="accordion-icon">▾</span>
-                    </button>
+                    <div class="accordion-item-wrapper">
+                        <button type="button" class="accordion-header" aria-expanded="false">
+                            <span class="accordion-title">{{ $camp['title'] }}</span>
+                            <span class="accordion-meta">
+                                ${{ number_format($camp['price'], 2) }} · {{ $camp['start_date'] }} – {{ $camp['end_date'] }}
+                            </span>
+                            @if ($camp['has_discount'])
+                                <span class="accordion-discount">Save ${{ number_format($camp['discount_amount'], 2) }} - Register by {{ $camp['discount_expires'] }}</span>
+                            @endif
+                            <span class="accordion-icon">▾</span>
+                        </button>
+                        <a href="{{ route('registration.form', ['camp' => $camp['id']]) }}" class="register-btn-header" onclick="event.stopPropagation()">
+                            Register
+                        </a>
+                    </div>
                     <div class="accordion-body is-collapsed">
                         <div class="accordion-details">
                             <p class="camp-dates">
@@ -256,9 +261,15 @@
         border: 1px solid #e5e7eb;
     }
 
-    .accordion-header {
-        width: 100%;
+    .accordion-item-wrapper {
+        display: flex;
+        align-items: center;
         background: #f8fafc;
+    }
+
+    .accordion-header {
+        flex: 1;
+        background: transparent;
         border: none;
         padding: 12px 16px;
         display: grid;
@@ -272,6 +283,25 @@
         cursor: pointer;
         font-weight: 600;
         color: #1f2937;
+    }
+
+    .register-btn-header {
+        padding: 8px 16px;
+        background: #3b82f6;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-right: 12px;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        align-self: center;
+    }
+
+    .register-btn-header:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
     }
 
     .accordion-title {
@@ -450,7 +480,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         // Accordion functionality
         document.querySelectorAll('.accordion-header').forEach((button) => {
-            button.addEventListener('click', () => {
+            button.addEventListener('click', (e) => {
                 const item = button.closest('.accordion-item');
                 const body = item ? item.querySelector('.accordion-body') : null;
                 if (!body) return;
