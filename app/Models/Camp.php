@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\CampDiscount;
+use App\Models\PromoCode;
 use App\Models\Player;
 use App\Models\Coach;
 use App\Models\Sport;
@@ -78,6 +79,12 @@ class Camp extends Model
 	public function discounts()
 	{
 		return $this->hasMany(CampDiscount::class, 'Camp_ID', 'Camp_ID');
+	}
+
+	// A camp can have many promo codes
+	public function promoCodes()
+	{
+		return $this->hasMany(PromoCode::class, 'Camp_ID', 'Camp_ID');
 	}
 
 	// Get active discounts for this camp
