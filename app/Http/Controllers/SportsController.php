@@ -29,14 +29,13 @@ class SportsController extends Controller
 
         $campCards = $camps->map(function (Camp $camp) {
             if ($camp->Camp_Gender == 'boys')
-                $gender = 'Boys ';
+                $gender = 'Boys';
             else if ($camp->Camp_Gender == 'girls')
-                $gender = 'Girls ';
+                $gender = 'Girls';
             else
-                $gender = 'Coed ';
+                $gender = 'Coed';
 
-            $ageRange = ": Ages {$camp->Age_Min}-{$camp->Age_Max}";
-            $fullTitle = $gender . $camp->Camp_Name . $ageRange;
+            $ageRange = "{$camp->Age_Min}-{$camp->Age_Max}";
 
             // Get the best available discount for this camp
             $bestDiscount = $camp->getBestDiscount();
@@ -44,7 +43,9 @@ class SportsController extends Controller
 
             return [
                 'id' => $camp->Camp_ID,
-                'title' => $fullTitle,
+                'title' => $camp->Camp_Name,
+                'gender' => $gender,
+                'age_range' => $ageRange,
                 'description' => $camp->Description,
                 'start_date' => \Carbon\Carbon::parse($camp->Start_Date)->format('M j, Y'),
                 'end_date' => \Carbon\Carbon::parse($camp->End_Date)->format('M j, Y'),
