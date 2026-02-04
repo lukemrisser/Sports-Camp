@@ -355,11 +355,9 @@
                     document.getElementById('registration_close').value = data.Registration_Close ? data
                         .Registration_Close.split('T')[0] : '';
                     document.getElementById('price').value = data.Price || '';
-                    if(data.Camp_Gender == 'coed') {
-                        document.getElementById('gender').value = 'coed';
-                    } else {
-                        document.getElementById('gender').value = data.Camp_Gender || '';
-                    }
+                    // Normalize gender value to lowercase for consistent comparison
+                    const genderValue = (data.Camp_Gender || '').toLowerCase();
+                    document.getElementById('gender').value = genderValue;
                              
                     document.getElementById('min_age').value = data.Age_Min || '';
                     document.getElementById('max_age').value = data.Age_Max || '';

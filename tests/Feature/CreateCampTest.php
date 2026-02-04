@@ -35,7 +35,7 @@ class CreateCampTest extends TestCase
             'registration_open'  => '2026-01-01',
             'registration_close' => '2026-05-01',
             'price'              => 150.00,
-            'gender'             => 'mixed',
+            'gender'             => 'coed',
             'min_age'            => 8,
             'max_age'            => 12,
             'max_capacity'       => 50,
