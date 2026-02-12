@@ -548,7 +548,7 @@ class PaymentController extends Controller
             }
 
             // Send payment confirmation email
-            $mailResult = Mail::send('emails.payment-confirmation', [
+            $mailResult = Mail::send('emails.payment-confirm-email', [
                 'parentName' => $order->player->parent->Parent_FirstName . ' ' . $order->player->parent->Parent_LastName,
                 'playerName' => $order->player->Camper_FirstName . ' ' . $order->player->Camper_LastName,
                 'campName' => $order->camp->Camp_Name,
