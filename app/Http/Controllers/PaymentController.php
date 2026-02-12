@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Player;
 use App\Models\Camp;
 use App\Models\CampDiscount;
@@ -525,6 +526,12 @@ class PaymentController extends Controller
     {
         $request->validate([
             'order_id' => 'required|exists:Orders,Order_ID',
+        ]);
+
+        // Debug: log entry so we can confirm this method is reached
+        Log::debug('sendPaymentConfirmationEmail entered', [
+            'order_id' => $request->input('order_id'),
+            'user_id' => optional(Auth::user())->id,
         ]);
 
         try {
