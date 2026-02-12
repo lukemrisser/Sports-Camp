@@ -664,6 +664,7 @@
                     validationMessage.textContent =
                         `Camper age (${age}) must be between ${camp.age_min} and ${camp.age_max} for this camp.`;
                     validationError.style.display = 'block';
+                    validationError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     validation = false;
                 }
 
@@ -704,7 +705,7 @@
                 } else {
                     medicationDetailsContainer.style.display = 'none';
                     medicationStatusField.removeAttribute('required');
-                    medicationStatusField.value = ''; // Clear the field if "No" is selected
+                    medicationStatusField.value = '';
                 }
             }
 
