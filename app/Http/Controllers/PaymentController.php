@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Player;
 use App\Models\Camp;
 use App\Models\CampDiscount;
@@ -43,7 +44,7 @@ class PaymentController extends Controller
                 $addOnsTotal = $selectedAddOns->sum('Fee_Amount');
             }
         }
-                
+
         // Check if there's already a paid order for this player
         $existingOrder = $this->findOrCreateOrder($player, $campId, $discountAmount, $addOnsTotal);
         if ($existingOrder && $existingOrder->isFullyPaid()) {
@@ -69,7 +70,7 @@ class PaymentController extends Controller
 
         // Calculate amount (in cents for Stripe)
         $amount = $this->calculateRegistrationAmount($player, $campId, $discountAmount, $addOnsTotal);
-        
+
         // Get or create order for tracking
         $order = $existingOrder ?: $this->findOrCreateOrder($player, $campId, $discountAmount, $addOnsTotal);
 
@@ -112,17 +113,17 @@ class PaymentController extends Controller
 
         try {
             $player = Player::where('Player_ID', $request->player_id)->first();
-            
+
             if (!$player) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Player registration not found.'
                 ]);
             }
-            
+
             // Calculate add-ons total
             $addOnsTotal = $this->calculateAddOnsTotal($request->input('selected_add_ons', ''));
-            
+
             // Check if already paid using Order model
             $order = $this->findOrCreateOrder($player, $request->camp_id, 0, $addOnsTotal);
             if ($order && $order->isFullyPaid()) {
@@ -137,29 +138,26 @@ class PaymentController extends Controller
 
             // Handle the payment result
             return $this->handlePaymentIntentResponse($paymentIntent, $player, $order, $request, $addOnsTotal);
-
         } catch (CardException $e) {
             DB::rollBack();
             Log::error('Stripe Card Exception: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'error' => $e->getError()->message
             ]);
-
         } catch (InvalidRequestException $e) {
             DB::rollBack();
             Log::error('Stripe Invalid Request: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'error' => 'Invalid payment request. Please check your information and try again.'
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Payment processing error: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'error' => 'An error occurred processing your payment. Please try again.'
@@ -269,6 +267,7 @@ class PaymentController extends Controller
 
     public function success()
     {
+
         return view('payment-success');
     }
     public function cancelled()
@@ -345,13 +344,13 @@ class PaymentController extends Controller
     private function findOrCreateOrder(Player $player, $campId, $discount = 0, $addOnsTotal = 0): ?Order
     {
         $order = Order::where('Player_ID', $player->Player_ID)
-                     ->where('Camp_ID', $campId)
-                     ->first();
+            ->where('Camp_ID', $campId)
+            ->first();
 
         if (!$order) {
             // Create new order for this specific player
             $amount = $this->calculateRegistrationAmount($player, $campId, $discount, $addOnsTotal) / 100; // Convert cents to dollars
-            
+
             $order = Order::create([
                 'Player_ID' => $player->Player_ID,
                 'Parent_ID' => $player->Parent_ID,
@@ -379,10 +378,10 @@ class PaymentController extends Controller
                 $addOnsTotal = ExtraFee::whereIn('Fee_ID', $addOnIds)->sum('Fee_Amount');
             }
         }
-        
+
         // Update the Order record with payment
         $order = $this->findOrCreateOrder($player, $request->camp_id, 0, $addOnsTotal);
-        
+
         if ($order) {
             // Add payment to the order
             $paymentAmountDollars = $paymentIntent->amount / 100; // Convert cents to dollars
@@ -425,13 +424,13 @@ class PaymentController extends Controller
             $playerId = $paymentIntent['metadata']['player_id'];
             $campId = $paymentIntent['metadata']['camp_id'];
             $player = Player::where('Player_ID', $playerId)->first();
-            
+
             if ($player) {
                 // Note: Webhook doesn't have add-ons info, so we find existing order only
                 $order = Order::where('Player_ID', $playerId)
-                             ->where('Camp_ID', $campId)
-                             ->first();
-                
+                    ->where('Camp_ID', $campId)
+                    ->first();
+
                 if ($order && !$order->isFullyPaid()) {
                     // Add payment to the order
                     $paymentAmountDollars = $paymentIntent['amount'] / 100;
@@ -460,7 +459,7 @@ class PaymentController extends Controller
         if (isset($paymentIntent['metadata']['player_id'])) {
             $playerId = $paymentIntent['metadata']['player_id'];
             $player = Player::where('Player_ID', $playerId)->first();
-            
+
             if ($player) {
                 // Order remains with Item_Amount_Paid = 0 for failed payments
                 // The order was already created in findOrCreateOrder, so no changes needed
@@ -515,6 +514,68 @@ class PaymentController extends Controller
             return response()->json([
                 'valid' => false,
                 'message' => 'An error occurred while validating the promo code.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Send payment confirmation email to parent/player
+     */
+    public function sendPaymentConfirmationEmail(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:Orders,Order_ID',
+        ]);
+
+        try {
+            $order = Order::with(['player.parent', 'camp'])->find($request->order_id);
+
+            if (!$order) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Order not found.'
+                ], 404);
+            }
+
+            // Get parent email
+            $parentEmail = $order->player->parent->Email ?? null;
+
+            if (!$parentEmail) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No email address found for this parent.'
+                ], 400);
+            }
+
+            // Send payment confirmation email
+            $mailResult = Mail::send('emails.payment-confirmation', [
+                'parentName' => $order->player->parent->Parent_FirstName . ' ' . $order->player->parent->Parent_LastName,
+                'playerName' => $order->player->Camper_FirstName . ' ' . $order->player->Camper_LastName,
+                'campName' => $order->camp->Camp_Name,
+                'amount' => number_format((float) $order->Item_Amount, 2),
+                'orderDate' => \Carbon\Carbon::parse($order->Order_Date)->format('m/d/Y'),
+                'orderId' => $order->Order_ID,
+            ], function ($mail) use ($parentEmail, $order) {
+                $mail->to($parentEmail)
+                    ->subject('Payment Confirmation - ' . config('app.name'))
+                    ->from(config('mail.from.address'), config('mail.from.name'));
+            });
+
+            if ($mailResult === 0) {
+                throw new \Exception('Mail::send returned 0 - no messages sent. Check SMTP configuration.');
+            }
+
+            Log::info("Payment confirmation email sent for Order {$order->Order_ID} to {$parentEmail}");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment confirmation email sent successfully.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Payment confirmation email error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while sending the email.'
             ], 500);
         }
     }

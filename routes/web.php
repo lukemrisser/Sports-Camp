@@ -78,6 +78,9 @@ Route::middleware(['auth', 'coach'])->group(function () {
     Route::post('/mass-emails/send', [CoachController::class, 'sendMassEmails'])
         ->name('send-mass-email');
 
+    Route::post('/payment-confirm-email/send', [PaymentController::class, 'sendPaymentConfirmationEmail'])
+        ->name('send-payment-confirmation-email');
+
     // Refund routes
     Route::get('/refunds', [App\Http\Controllers\RefundController::class, 'index'])
         ->name('refunds.index');
