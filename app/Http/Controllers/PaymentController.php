@@ -288,11 +288,23 @@ class PaymentController extends Controller
 
         try {
             $subject = 'Payment Confirmation - ' . config('app.name');
+            $campLocation = implode(', ', array_filter([
+                $order->camp->Location_Name,
+                $order->camp->City,
+                $order->camp->State,
+            ]));
+
+            $campDates = \Carbon\Carbon::parse($order->camp->Start_Date)->format('F j, Y')
+                . ' – '
+                . \Carbon\Carbon::parse($order->camp->End_Date)->format('F j, Y');
+
             Mail::send('emails.payment-confirm-email', [
                 'subject' => $subject,
                 'parentName' => $order->player->parent->Parent_FirstName . ' ' . $order->player->parent->Parent_LastName,
                 'camperName' => $order->player->Camper_FirstName . ' ' . $order->player->Camper_LastName,
                 'campName' => $order->camp->Camp_Name,
+                'campLocation' => $campLocation,
+                'campDates' => $campDates,
                 'paymentAmount' => number_format((float) $order->Item_Amount, 2),
                 'paymentDate' => \Carbon\Carbon::parse($order->Order_Date)->format('m/d/Y'),
                 'orderId' => $order->Order_ID,

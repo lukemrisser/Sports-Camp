@@ -67,6 +67,10 @@
                 <ul>
                     <li><strong>Camper Name:</strong> {{ $camperName }}</li>
                     <li><strong>Camp Name:</strong> {{ $campName }}</li>
+                    @if($campLocation)
+                    <li><strong>Camp Location:</strong> {{ $campLocation }}</li>
+                    @endif
+                    <li><strong>Camp Dates:</strong> {{ $campDates }}</li>
                     <li><strong>Payment Amount:</strong> ${{ number_format($paymentAmount, 2) }}</li>
                     <li><strong>Payment Date:</strong> {{ \Carbon\Carbon::parse($paymentDate)->format('F j, Y') }}</li>
                 </ul>
