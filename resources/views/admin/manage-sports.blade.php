@@ -958,7 +958,7 @@
                                         accept="image/*">
                                     ${sponsor.Image_Path ? 
                                         `<div class="current-image">
-                                            <small>Current: <a href="/storage/${sponsor.Image_Path}" target="_blank">View Image</a></small>
+                                            <small>Current: <a href="${sponsor.image_url || '#'}" target="_blank">View Image</a></small>
                                             <input type="hidden" name="sponsors[${editSponsorCounter}][current_image]" value="${sponsor.Image_Path}">
                                         </div>` : 
                                         '<small class="form-help">No image currently uploaded</small>'
@@ -991,7 +991,7 @@
                                         accept="image/*">
                                     ${galleryImage.Image_path ? 
                                         `<div class="current-image">
-                                            <small>Current: <a href="/storage/${galleryImage.Image_path}" target="_blank">View Image</a></small>
+                                            <small>Current: <a href="${galleryImage.image_url || '#'}" target="_blank">View Image</a></small>
                                             <input type="hidden" name="gallery_images[${editGalleryImageCounter}][current_image]" value="${galleryImage.Image_path}">
                                         </div>` : 
                                         '<small class="form-help">No image currently uploaded</small>'
