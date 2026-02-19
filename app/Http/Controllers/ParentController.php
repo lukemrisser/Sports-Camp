@@ -38,7 +38,7 @@ class ParentController extends Controller
             'Church_Attendance' => $request->Church_Attendance ?? null,
         ]);
 
-        return redirect()->route('dashboard')
+        return redirect()->route('home')
             ->with('success', 'Contact information saved successfully!');
     }
 }

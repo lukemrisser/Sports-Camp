@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Models\Camp;
 use App\Models\Coach;
 use App\Models\Player;
@@ -64,8 +65,8 @@ class CoachDashboardController extends Controller
 
         // Get all camps - add debugging
         $camps = Camp::all();
-        \Log::info('Camps found: ' . $camps->count());
-        \Log::info('Camps data: ' . $camps->toJson());
+        Log::info('Camps found: ' . $camps->count());
+        Log::info('Camps data: ' . $camps->toJson());
 
         // Get selected camp ID from request
         $selectedCampId = $request->input('camp_id');

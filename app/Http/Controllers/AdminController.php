@@ -11,6 +11,7 @@ use App\Models\Sport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\FinancesExport;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -151,7 +152,7 @@ class AdminController extends Controller
             foreach ($validated['coaches'] as $coach) {
                 try {
                     // Create a pending coach invitation
-                    $token = \Str::random(60);
+                    $token = Str::random(60);
 
                     $result = \Illuminate\Support\Facades\DB::table('coach_invitations')->insert([
                         'email' => $coach['email'],
