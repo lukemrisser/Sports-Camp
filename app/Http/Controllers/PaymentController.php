@@ -287,16 +287,18 @@ class PaymentController extends Controller
         }
 
         try {
+            $subject = 'Payment Confirmation - ' . config('app.name');
             Mail::send('emails.payment-confirm-email', [
+                'subject' => $subject,
                 'parentName' => $order->player->parent->Parent_FirstName . ' ' . $order->player->parent->Parent_LastName,
-                'playerName' => $order->player->Camper_FirstName . ' ' . $order->player->Camper_LastName,
+                'camperName' => $order->player->Camper_FirstName . ' ' . $order->player->Camper_LastName,
                 'campName' => $order->camp->Camp_Name,
-                'amount' => number_format((float) $order->Item_Amount, 2),
-                'orderDate' => \Carbon\Carbon::parse($order->Order_Date)->format('m/d/Y'),
+                'paymentAmount' => number_format((float) $order->Item_Amount, 2),
+                'paymentDate' => \Carbon\Carbon::parse($order->Order_Date)->format('m/d/Y'),
                 'orderId' => $order->Order_ID,
-            ], function ($mail) use ($parentEmail) {
+            ], function ($mail) use ($parentEmail, $subject) {
                 $mail->to($parentEmail)
-                    ->subject('Payment Confirmation - ' . config('app.name'))
+                    ->subject($subject)
                     ->from(config('mail.from.address'), config('mail.from.name'));
             });
 
