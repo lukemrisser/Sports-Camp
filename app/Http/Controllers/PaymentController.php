@@ -264,6 +264,46 @@ class PaymentController extends Controller
                 }
             }
         }
+
+        // Send payment confirmation email
+        if ($order) {
+            $orderWithRelations = Order::with(['player.parent', 'camp'])->find($order->Order_ID);
+            if ($orderWithRelations) {
+                $this->sendConfirmationEmailForOrder($orderWithRelations);
+            }
+        }
+    }
+
+    /**
+     * Send payment confirmation email for a given order
+     */
+    private function sendConfirmationEmailForOrder(Order $order): void
+    {
+        $parentEmail = $order->player->parent->Email ?? null;
+
+        if (!$parentEmail) {
+            Log::warning("No parent email found for Order {$order->Order_ID}, skipping confirmation email.");
+            return;
+        }
+
+        try {
+            Mail::send('emails.payment-confirm-email', [
+                'parentName' => $order->player->parent->Parent_FirstName . ' ' . $order->player->parent->Parent_LastName,
+                'playerName' => $order->player->Camper_FirstName . ' ' . $order->player->Camper_LastName,
+                'campName' => $order->camp->Camp_Name,
+                'amount' => number_format((float) $order->Item_Amount, 2),
+                'orderDate' => \Carbon\Carbon::parse($order->Order_Date)->format('m/d/Y'),
+                'orderId' => $order->Order_ID,
+            ], function ($mail) use ($parentEmail) {
+                $mail->to($parentEmail)
+                    ->subject('Payment Confirmation - ' . config('app.name'))
+                    ->from(config('mail.from.address'), config('mail.from.name'));
+            });
+
+            Log::info("Payment confirmation email sent for Order {$order->Order_ID} to {$parentEmail}");
+        } catch (\Exception $e) {
+            Log::error("Failed to send payment confirmation email for Order {$order->Order_ID}: " . $e->getMessage());
+        }
     }
 
     public function success()
@@ -531,7 +571,7 @@ class PaymentController extends Controller
         // Debug: log entry so we can confirm this method is reached
         Log::debug('sendPaymentConfirmationEmail entered', [
             'order_id' => $request->input('order_id'),
-            'user_id' => auth()->id(),
+            'user_id' => optional(Auth::user())->id,
         ]);
 
         try {
@@ -544,7 +584,6 @@ class PaymentController extends Controller
                 ], 404);
             }
 
-            // Get parent email
             $parentEmail = $order->player->parent->Email ?? null;
 
             if (!$parentEmail) {
@@ -554,25 +593,7 @@ class PaymentController extends Controller
                 ], 400);
             }
 
-            // Send payment confirmation email
-            $mailResult = Mail::send('emails.payment-confirm-email', [
-                'parentName' => $order->player->parent->Parent_FirstName . ' ' . $order->player->parent->Parent_LastName,
-                'playerName' => $order->player->Camper_FirstName . ' ' . $order->player->Camper_LastName,
-                'campName' => $order->camp->Camp_Name,
-                'amount' => number_format((float) $order->Item_Amount, 2),
-                'orderDate' => \Carbon\Carbon::parse($order->Order_Date)->format('m/d/Y'),
-                'orderId' => $order->Order_ID,
-            ], function ($mail) use ($parentEmail, $order) {
-                $mail->to($parentEmail)
-                    ->subject('Payment Confirmation - ' . config('app.name'))
-                    ->from(config('mail.from.address'), config('mail.from.name'));
-            });
-
-            if ($mailResult === 0) {
-                throw new \Exception('Mail::send returned 0 - no messages sent. Check SMTP configuration.');
-            }
-
-            Log::info("Payment confirmation email sent for Order {$order->Order_ID} to {$parentEmail}");
+            $this->sendConfirmationEmailForOrder($order);
 
             return response()->json([
                 'success' => true,
