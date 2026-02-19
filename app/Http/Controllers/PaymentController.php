@@ -531,7 +531,7 @@ class PaymentController extends Controller
         // Debug: log entry so we can confirm this method is reached
         Log::debug('sendPaymentConfirmationEmail entered', [
             'order_id' => $request->input('order_id'),
-            'user_id' => optional(Auth::user())->id,
+            'user_id' => auth()->id(),
         ]);
 
         try {
