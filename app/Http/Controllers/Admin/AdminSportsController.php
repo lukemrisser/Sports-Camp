@@ -9,10 +9,13 @@ use App\Models\Sponsor;
 use App\Models\GalleryImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AdminSportsController extends Controller
 {
+    private const IMAGE_DISK = 'cloudinary';
+
     public function index()
     {
         $sports = Sport::with(['faqs', 'sponsors', 'galleryImages'])->orderBy('Sport_Name')->get();
@@ -22,6 +25,17 @@ class AdminSportsController extends Controller
     public function show($id)
     {
         $sport = Sport::with(['faqs', 'sponsors', 'galleryImages'])->findOrFail($id);
+
+        $sport->sponsors->transform(function ($sponsor) {
+            $sponsor->image_url = $this->imageUrl($sponsor->Image_Path);
+            return $sponsor;
+        });
+
+        $sport->galleryImages->transform(function ($galleryImage) {
+            $galleryImage->image_url = $this->imageUrl($galleryImage->Image_path);
+            return $galleryImage;
+        });
+
         return response()->json($sport);
     }
 
@@ -110,7 +124,7 @@ class AdminSportsController extends Controller
                         // Handle image upload
                         if ($request->hasFile("sponsors.{$index}.image")) {
                             $imagePath = $request->file("sponsors.{$index}.image")
-                                ->store('sponsor-logos', 'public');
+                                ->store('sponsor-logos', self::IMAGE_DISK);
                         }
                         
                         $sport->sponsors()->create([
@@ -127,7 +141,7 @@ class AdminSportsController extends Controller
                 foreach ($request->gallery_images as $index => $galleryImage) {
                     if (!empty($galleryImage['title']) && $request->hasFile("gallery_images.{$index}.image")) {
                         $imagePath = $request->file("gallery_images.{$index}.image")
-                            ->store('gallery-images', 'public');
+                            ->store('gallery-images', self::IMAGE_DISK);
                         
                         $sport->galleryImages()->create([
                             'Image_Title' => $galleryImage['title'],
@@ -203,7 +217,7 @@ class AdminSportsController extends Controller
                         // Handle image upload
                         if ($request->hasFile("sponsors.{$index}.image")) {
                             $imagePath = $request->file("sponsors.{$index}.image")
-                                ->store('sponsor-logos', 'public');
+                                ->store('sponsor-logos', self::IMAGE_DISK);
                         } elseif (!empty($sponsor['current_image'])) {
                             // Keep existing image if no new one uploaded
                             $imagePath = $sponsor['current_image'];
@@ -222,7 +236,7 @@ class AdminSportsController extends Controller
             
             // Delete unused old images
             foreach ($oldImages as $oldImage) {
-                Storage::disk('public')->delete($oldImage);
+                $this->deleteImage($oldImage);
             }
 
             // Update gallery images - remove existing and add new ones
@@ -238,7 +252,7 @@ class AdminSportsController extends Controller
                         // Handle image upload
                         if ($request->hasFile("gallery_images.{$index}.image")) {
                             $imagePath = $request->file("gallery_images.{$index}.image")
-                                ->store('gallery-images', 'public');
+                                ->store('gallery-images', self::IMAGE_DISK);
                         } elseif (!empty($galleryImage['current_image'])) {
                             // Keep existing image if no new one uploaded
                             $imagePath = $galleryImage['current_image'];
@@ -260,7 +274,7 @@ class AdminSportsController extends Controller
             
             // Delete unused old gallery images
             foreach ($oldGalleryImages as $oldGalleryImage) {
-                Storage::disk('public')->delete($oldGalleryImage);
+                $this->deleteImage($oldGalleryImage);
             }
 
             DB::commit();
@@ -292,13 +306,13 @@ class AdminSportsController extends Controller
             // Delete sponsor images first
             $sponsorImages = $sport->sponsors()->whereNotNull('Image_Path')->pluck('Image_Path')->toArray();
             foreach ($sponsorImages as $imagePath) {
-                Storage::disk('public')->delete($imagePath);
+                $this->deleteImage($imagePath);
             }
             
             // Delete gallery images
             $galleryImages = $sport->galleryImages()->whereNotNull('Image_path')->pluck('Image_path')->toArray();
             foreach ($galleryImages as $imagePath) {
-                Storage::disk('public')->delete($imagePath);
+                $this->deleteImage($imagePath);
             }
             
             // Delete related FAQs, sponsors, and gallery images
@@ -316,6 +330,39 @@ class AdminSportsController extends Controller
             DB::rollback();
             return redirect()->route('admin.manage-sports')
                 ->with('error', 'Error deleting sport: ' . $e->getMessage());
+        }
+    }
+
+    private function imageUrl(?string $imagePath): ?string
+    {
+        if (empty($imagePath)) {
+            return null;
+        }
+
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk(self::IMAGE_DISK);
+
+        return $disk->url($imagePath);
+    }
+
+    private function deleteImage(?string $imagePath): void
+    {
+        if (empty($imagePath)) {
+            return;
+        }
+
+        try {
+            Storage::disk(self::IMAGE_DISK)->delete($imagePath);
+        } catch (\Throwable $e) {
+            if (app()->environment('local') && str_contains($e->getMessage(), 'cURL error 60')) {
+                Log::warning('Cloudinary delete skipped in local due SSL certificate trust issue.', [
+                    'image_path' => $imagePath,
+                    'message' => $e->getMessage(),
+                ]);
+                return;
+            }
+
+            throw $e;
         }
     }
 }
