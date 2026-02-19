@@ -39,7 +39,7 @@
                             <div class="gallery-slide {{ $index === 0 ? 'active' : '' }}"
                                 data-slide="{{ $index }}">
                                 <div class="gallery-image-wrapper">
-                                    <img src="{{ asset('storage/' . $image->Image_path) }}"
+                                    <img src="{{ Storage::disk('cloudinary')->url($image->Image_path) }}"
                                         alt="{{ $image->Image_Title }}" class="gallery-image">
                                     <div class="gallery-overlay">
                                         <div class="gallery-overlay-content">
@@ -90,7 +90,7 @@
                                         class="sponsor-link">
                                 @endif
                                 @if ($sponsor->Image_Path)
-                                    <img src="{{ asset('storage/' . $sponsor->Image_Path) }}"
+                                    <img src="{{ Storage::disk('cloudinary')->url($sponsor->Image_Path) }}"
                                         alt="{{ $sponsor->Sponsor_Name }}" class="sponsor-logo">
                                 @else
                                     <div class="sponsor-placeholder">
