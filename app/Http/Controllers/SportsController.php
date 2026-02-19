@@ -5,12 +5,25 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Sport;
 use App\Models\Camp;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SportsController extends Controller
 {
     public function show($sportId)
     {
         $sport = Sport::with(['sponsors', 'galleryImages'])->findOrFail($sportId);
+
+        $sport->sponsors->transform(function ($sponsor) {
+            $sponsor->image_url = $this->imageUrl($sponsor->Image_Path);
+            return $sponsor;
+        });
+
+        $sport->galleryImages->transform(function ($galleryImage) {
+            $galleryImage->image_url = $this->imageUrl($galleryImage->Image_path);
+            return $galleryImage;
+        });
+
         return view('sport', compact('sport'));
     }
 
@@ -71,5 +84,28 @@ class SportsController extends Controller
     {
         $sport = Sport::with(['faqs'])->findOrFail($sportId);
         return view('sport-faqs', compact('sport'));
+    }
+
+    private function imageUrl(?string $imagePath): ?string
+    {
+        if (empty($imagePath)) {
+            return null;
+        }
+
+        try {
+            /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+            $disk = Storage::disk('cloudinary');
+            return $disk->url($imagePath);
+        } catch (\Throwable $e) {
+            if (str_contains($e->getMessage(), 'Resource not found')) {
+                Log::info('Cloudinary image missing while rendering sport page.', [
+                    'image_path' => $imagePath,
+                    'message' => $e->getMessage(),
+                ]);
+                return null;
+            }
+
+            throw $e;
+        }
     }
 }

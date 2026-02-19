@@ -354,7 +354,15 @@ class AdminSportsController extends Controller
         try {
             Storage::disk(self::IMAGE_DISK)->delete($imagePath);
         } catch (\Throwable $e) {
-            if (app()->environment('local') && str_contains($e->getMessage(), 'cURL error 60')) {
+            if (str_contains($e->getMessage(), 'Resource not found')) {
+                Log::info('Cloudinary image already missing during delete; skipping.', [
+                    'image_path' => $imagePath,
+                    'message' => $e->getMessage(),
+                ]);
+                return;
+            }
+
+            if (!app()->environment('production') && str_contains($e->getMessage(), 'cURL error 60')) {
                 Log::warning('Cloudinary delete skipped in local due SSL certificate trust issue.', [
                     'image_path' => $imagePath,
                     'message' => $e->getMessage(),
