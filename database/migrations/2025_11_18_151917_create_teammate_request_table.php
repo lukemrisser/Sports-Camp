@@ -25,7 +25,7 @@ return new class extends Migration
             $table->unsignedBigInteger('Camp_ID')->nullable();
 
             // Foreign Key Constraints
-            $table->foreign('Player_ID')->references('Player_ID')->on('players')->onDelete('cascade');
+            $table->foreign('Player_ID')->references('Player_ID')->on('Players')->onDelete('cascade');
             $table->foreign('Camp_ID')->references('Camp_ID')->on('camps')->onDelete('cascade');
         });
     }

@@ -23,13 +23,15 @@ return new class extends Migration
             $table->enum('Camp_Gender', ['girls', 'boys', 'coed']);
             $table->tinyInteger('Age_Min')->nullable();
             $table->tinyInteger('Age_Max')->nullable();
-            $table->integer('Sport_ID')->nullable();
+            $table->unsignedBigInteger('Sport_ID')->nullable();
             $table->integer('Max_Capacity')->nullable();
             $table->string('Location_Name', 255)->nullable();
             $table->string('Street_Address', 255)->nullable();
             $table->string('City', 100)->nullable();
             $table->string('State', 50)->nullable();
             $table->string('Zip_Code', 20)->nullable();
+
+            $table->foreign('Sport_ID')->references('Sport_ID')->on('sports');
             
         });
     }

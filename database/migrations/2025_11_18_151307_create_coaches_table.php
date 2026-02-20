@@ -19,7 +19,7 @@ return new class extends Migration
             // Adjusted FK definition
             $table->unsignedBigInteger('user_id')->unique()->nullable();
             $table->boolean('admin')->nullable();
-            $table->string('sport', 255)->nullable();
+            $table->unsignedBigInteger('Sport_ID')->nullable();
 
             // Foreign Key constraint based on SQL dump
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
