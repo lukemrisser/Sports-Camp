@@ -7,12 +7,14 @@ use App\Models\Sport;
 use App\Models\FAQ;
 use App\Models\Sponsor;
 use App\Models\GalleryImage;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Cloudinary\Cloudinary;
 
 class AdminSportsController extends Controller
 {
@@ -53,43 +55,12 @@ class AdminSportsController extends Controller
 
     public function store(Request $request)
     {
-        // Check for upload errors
-        if ($request->hasFile('sponsors')) {
-            foreach ($request->file('sponsors') as $index => $sponsor) {
-                if (isset($sponsor['image']) && $sponsor['image']->getError() !== UPLOAD_ERR_OK) {
-                    $errorMessages = [
-                        UPLOAD_ERR_INI_SIZE => 'File size exceeds PHP upload_max_filesize limit.',
-                        UPLOAD_ERR_FORM_SIZE => 'File size exceeds form MAX_FILE_SIZE limit.',
-                        UPLOAD_ERR_PARTIAL => 'File was only partially uploaded.',
-                        UPLOAD_ERR_NO_FILE => 'No file was uploaded.',
-                        UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary upload directory.',
-                        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
-                        UPLOAD_ERR_EXTENSION => 'File upload stopped by extension.',
-                    ];
-                    return redirect()->back()
-                        ->withInput()
-                        ->with('error', 'Sponsor image upload error: ' . ($errorMessages[$sponsor['image']->getError()] ?? 'Unknown error'));
-                }
-            }
+        if ($sponsorUploadError = $this->imageUploadErrorResponse($request, 'sponsors', 'Sponsor')) {
+            return $sponsorUploadError;
         }
 
-        if ($request->hasFile('gallery_images')) {
-            foreach ($request->file('gallery_images') as $index => $galleryImage) {
-                if (isset($galleryImage['image']) && $galleryImage['image']->getError() !== UPLOAD_ERR_OK) {
-                    $errorMessages = [
-                        UPLOAD_ERR_INI_SIZE => 'File size exceeds PHP upload_max_filesize limit.',
-                        UPLOAD_ERR_FORM_SIZE => 'File size exceeds form MAX_FILE_SIZE limit.',
-                        UPLOAD_ERR_PARTIAL => 'File was only partially uploaded.',
-                        UPLOAD_ERR_NO_FILE => 'No file was uploaded.',
-                        UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary upload directory.',
-                        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
-                        UPLOAD_ERR_EXTENSION => 'File upload stopped by extension.',
-                    ];
-                    return redirect()->back()
-                        ->withInput()
-                        ->with('error', 'Gallery image upload error: ' . ($errorMessages[$galleryImage['image']->getError()] ?? 'Unknown error'));
-                }
-            }
+        if ($galleryUploadError = $this->imageUploadErrorResponse($request, 'gallery_images', 'Gallery')) {
+            return $galleryUploadError;
         }
 
         $validated = $request->validate([
@@ -183,6 +154,14 @@ class AdminSportsController extends Controller
 
     public function update(Request $request, $id)
     {
+        if ($sponsorUploadError = $this->imageUploadErrorResponse($request, 'sponsors', 'Sponsor')) {
+            return $sponsorUploadError;
+        }
+
+        if ($galleryUploadError = $this->imageUploadErrorResponse($request, 'gallery_images', 'Gallery')) {
+            return $galleryUploadError;
+        }
+
         $validated = $request->validate([
             'sport_name' => 'required|string|max:100|unique:Sports,Sport_Name,' . $id . ',Sport_ID',
             'sport_description' => 'nullable|string|max:1000',
@@ -410,10 +389,7 @@ class AdminSportsController extends Controller
 
             if ($optimizedImage !== null) {
                 [$optimizedBytes, $extension] = $optimizedImage;
-                $path = $directory . '/' . Str::uuid() . '.' . $extension;
-                Storage::disk(self::IMAGE_DISK)->put($path, $optimizedBytes);
-
-                return $path;
+                return $this->uploadOptimizedBytesToCloudinary($optimizedBytes, $directory, $extension);
             }
 
             if ($currentSize > $targetBytes) {
@@ -422,7 +398,91 @@ class AdminSportsController extends Controller
             }
         }
 
-        return $file->store($directory, self::IMAGE_DISK);
+        return $this->storeRawImageBytes($file, $directory);
+    }
+
+    private function storeRawImageBytes(UploadedFile $file, string $directory): string
+    {
+        $sourcePath = $file->getRealPath();
+        if (empty($sourcePath)) {
+            throw new \RuntimeException('Failed to resolve uploaded image path.');
+        }
+
+        $extension = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension() ?: $this->extensionForMime($file->getMimeType()));
+        if ($extension === 'jpeg') {
+            $extension = 'jpg';
+        }
+
+        return $this->uploadLocalFileToCloudinary($sourcePath, $directory, $extension);
+    }
+
+    private function uploadOptimizedBytesToCloudinary(string $bytes, string $directory, string $extension): string
+    {
+        $tempPath = tempnam(sys_get_temp_dir(), 'sport_img_');
+        if ($tempPath === false) {
+            throw new \RuntimeException('Failed to create temporary file for optimized image upload.');
+        }
+
+        $finalTempPath = $tempPath . '.' . $extension;
+        @rename($tempPath, $finalTempPath);
+
+        try {
+            if (@file_put_contents($finalTempPath, $bytes) === false) {
+                throw new \RuntimeException('Failed to write optimized image to temporary file.');
+            }
+
+            return $this->uploadLocalFileToCloudinary($finalTempPath, $directory, $extension);
+        } finally {
+            if (is_file($finalTempPath)) {
+                @unlink($finalTempPath);
+            }
+        }
+    }
+
+    private function uploadLocalFileToCloudinary(string $localPath, string $directory, string $extension): string
+    {
+        $publicId = trim($directory, '/') . '/' . Str::uuid();
+        if (!is_file($localPath) || !is_readable($localPath)) {
+            throw new \RuntimeException('Failed to open local image for Cloudinary upload.');
+        }
+
+        /** @var Cloudinary $cloudinary */
+        $cloudinary = app(Cloudinary::class);
+        $cloudinary->uploadApi()->upload($localPath, [
+            'public_id' => $publicId,
+            'resource_type' => 'image',
+        ]);
+
+        return $publicId . '.' . $extension;
+    }
+
+    private function imageUploadErrorResponse(Request $request, string $field, string $label): ?RedirectResponse
+    {
+        $items = $request->file($field, []);
+        if (!is_array($items)) {
+            return null;
+        }
+
+        $errorMessages = [
+            UPLOAD_ERR_INI_SIZE => 'File size exceeds PHP upload_max_filesize limit.',
+            UPLOAD_ERR_FORM_SIZE => 'File size exceeds form MAX_FILE_SIZE limit.',
+            UPLOAD_ERR_PARTIAL => 'File was only partially uploaded.',
+            UPLOAD_ERR_NO_FILE => 'No file was uploaded.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary upload directory.',
+            UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
+            UPLOAD_ERR_EXTENSION => 'File upload stopped by extension.',
+        ];
+
+        foreach ($items as $item) {
+            $file = is_array($item) ? ($item['image'] ?? null) : null;
+            if ($file instanceof UploadedFile && $file->getError() !== UPLOAD_ERR_OK) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', $label . ' image upload error: ' . ($errorMessages[$file->getError()] ?? 'Unknown error'));
+            }
+        }
+
+        return null;
     }
 
     private function optimizeImageToTarget(UploadedFile $file, int $targetBytes): ?array
