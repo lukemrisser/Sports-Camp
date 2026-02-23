@@ -18,7 +18,7 @@
         <div class="cards-grid">
             @foreach ($registrationCards as $card)
                 <div class="registration-card {{ $card['color'] }}">
-                    <div class="card-icon {{ !empty($card['image_url']) ? 'has-image' : '' }}">
+                    <div class="sport-card-icon {{ !empty($card['image_url']) ? 'has-image' : '' }}">
                         @if (!empty($card['image_url']))
                             <img src="{{ $card['image_url'] }}" alt="{{ $card['title'] }}" class="sport-card-image">
                         @else
