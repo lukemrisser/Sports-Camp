@@ -99,6 +99,7 @@
                                                     @method('DELETE')
                                                     <button type="submit" class="action-btn delete-btn">Delete</button>
                                                 </form>
+                                                <button class="action-btn preview-btn" onclick="window.open('{{ route('sport.show', $sport->Sport_ID) }}', '_blank')">Preview</button>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -393,6 +394,16 @@
 
         .delete-btn:hover {
             background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .preview-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .preview-btn:hover {
+            background: #059669;
             transform: translateY(-1px);
         }
 
@@ -769,7 +780,7 @@
                         <label class="form-label">Logo Image</label>
                         <input type="file" name="sponsors[${sponsorCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: 300x160px (16:9 ratio) or similar landscape format | Target size: 20MB (larger files auto-compress)</small>
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio)</small>
                     </div>
                 </div>
                 <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
@@ -798,7 +809,7 @@
                         <label class="form-label">Image</label>
                         <input type="file" name="gallery_images[${galleryImageCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: High quality images for gallery display | Target size: 30MB (larger files auto-compress)</small>
+                        <small class="form-help">Recommended: 1200x800px (3:2 ratio)</small>
                     </div>
                 </div>
                 <div class="form-group">
@@ -858,7 +869,7 @@
                         <label class="form-label">Logo Image</label>
                         <input type="file" name="sponsors[${editSponsorCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: 300x160px (16:9 ratio) | Target size: 20MB (larger files auto-compress) | Leave empty to keep current image</small>
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio) | Leave empty to keep current image</small>
                     </div>
                 </div>
                 <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
@@ -882,7 +893,7 @@
                         <label class="form-label">Image</label>
                         <input type="file" name="gallery_images[${editGalleryImageCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">High quality images for gallery display | Leave empty to keep current image</small>
+                        <small class="form-help">Recommended: 1200x800px (3:2 ratio) | Leave empty to keep current image</small>
                     </div>
                 </div>
                 <div class="form-group">
