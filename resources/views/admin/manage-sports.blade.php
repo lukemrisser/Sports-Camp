@@ -10,6 +10,13 @@
 
 @php
     use Illuminate\Support\Str;
+
+    $shouldHydrateAddForm = old('_method') !== 'PUT';
+    $oldSportName = $shouldHydrateAddForm ? old('sport_name') : null;
+    $oldSportDescription = $shouldHydrateAddForm ? old('sport_description') : null;
+    $oldFaqs = $shouldHydrateAddForm ? old('faqs', []) : [];
+    $oldSponsors = $shouldHydrateAddForm ? old('sponsors', []) : [];
+    $oldGalleryImages = $shouldHydrateAddForm ? old('gallery_images', []) : [];
 @endphp
 
 <body>
@@ -122,12 +129,12 @@
                                         class="text-red-500">*</span></label>
                                 <input type="text" name="sport_name" id="sport_name" class="form-input"
                                     placeholder="e.g., Soccer, Basketball, etc." required
-                                    value="{{ old('sport_name') }}">
+                                    value="{{ $oldSportName }}">
                             </div>
                             <div class="form-group">
                                 <label for="sport_description" class="form-label">Description</label>
                                 <textarea name="sport_description" id="sport_description" class="form-input"
-                                    placeholder="Description for the Sport's About Us page..." rows="3">{{ old('sport_description') }}</textarea>
+                                    placeholder="Description for the Sport's About Us page..." rows="3">{{ $oldSportDescription }}</textarea>
                             </div>
                         </div>
 
@@ -135,8 +142,8 @@
                         <div class="subsection">
                             <h4 class="subsection-title">Frequently Asked Questions</h4>
                             <div id="faqs-container">
-                                @if(old('faqs'))
-                                    @foreach(old('faqs') as $index => $faq)
+                                @if(!empty($oldFaqs))
+                                    @foreach($oldFaqs as $index => $faq)
                                         <div class="faq-item">
                                             <div class="form-group">
                                                 <label class="form-label">Question</label>
@@ -160,8 +167,8 @@
                         <div class="subsection">
                             <h4 class="subsection-title">Sponsors</h4>
                             <div id="sponsors-container">
-                                @if(old('sponsors'))
-                                    @foreach(old('sponsors') as $index => $sponsor)
+                                @if(!empty($oldSponsors))
+                                    @foreach($oldSponsors as $index => $sponsor)
                                         <div class="sponsor-item">
                                             <div class="form-grid-3">
                                                 <div class="form-group">
@@ -178,6 +185,7 @@
                                                     <label class="form-label">Logo Image</label>
                                                     <input type="file" name="sponsors[{{ $index }}][image]" class="form-input"
                                                         accept="image/*">
+                                                    <small class="form-help">Recommended: 300x160px (16:9 ratio) or similar landscape format | Target size: 20MB (larger files auto-compress)</small>
                                                 </div>
                                             </div>
                                             <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
@@ -192,8 +200,8 @@
                         <div class="subsection">
                             <h4 class="subsection-title">Gallery Images</h4>
                             <div id="gallery-images-container">
-                                @if(old('gallery_images'))
-                                    @foreach(old('gallery_images') as $index => $galleryImage)
+                                @if(!empty($oldGalleryImages))
+                                    @foreach($oldGalleryImages as $index => $galleryImage)
                                         <div class="gallery-image-item">
                                             <div class="form-grid-2">
                                                 <div class="form-group">
@@ -205,7 +213,7 @@
                                                     <label class="form-label">Image</label>
                                                     <input type="file" name="gallery_images[{{ $index }}][image]" class="form-input"
                                                         accept="image/*">
-                                                    <small class="form-help">Recommended: High quality images for gallery display</small>
+                                                    <small class="form-help">Recommended: High quality images for gallery display | Target size: 30MB (larger files auto-compress)</small>
                                                 </div>
                                             </div>
                                             <div class="form-group">
@@ -707,9 +715,9 @@
 
 
     <script>
-        let faqCounter = {{ old('faqs') ? count(old('faqs')) : 0 }};
-        let sponsorCounter = {{ old('sponsors') ? count(old('sponsors')) : 0 }};
-        let galleryImageCounter = {{ old('gallery_images') ? count(old('gallery_images')) : 0 }};
+        let faqCounter = {{ count($oldFaqs) }};
+        let sponsorCounter = {{ count($oldSponsors) }};
+        let galleryImageCounter = {{ count($oldGalleryImages) }};
         let editFaqCounter = 0;
         let editSponsorCounter = 0;
         let editGalleryImageCounter = 0;
@@ -761,7 +769,7 @@
                         <label class="form-label">Logo Image</label>
                         <input type="file" name="sponsors[${sponsorCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: 300x160px (16:9 ratio) or similar landscape format | Max size: 10MB</small>
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio) or similar landscape format | Target size: 20MB (larger files auto-compress)</small>
                     </div>
                 </div>
                 <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
@@ -790,7 +798,7 @@
                         <label class="form-label">Image</label>
                         <input type="file" name="gallery_images[${galleryImageCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: High quality images for gallery display | Max size: 15MB</small>
+                        <small class="form-help">Recommended: High quality images for gallery display | Target size: 30MB (larger files auto-compress)</small>
                     </div>
                 </div>
                 <div class="form-group">
@@ -850,7 +858,7 @@
                         <label class="form-label">Logo Image</label>
                         <input type="file" name="sponsors[${editSponsorCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: 300x160px (16:9 ratio) | Max size: 10MB | Leave empty to keep current image</small>
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio) | Target size: 20MB (larger files auto-compress) | Leave empty to keep current image</small>
                     </div>
                 </div>
                 <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
@@ -1055,7 +1063,7 @@
 
         // Auto-expand add sport section if there are validation errors
         document.addEventListener('DOMContentLoaded', function() {
-            @if($errors->any() || old('sport_name'))
+            @if($shouldHydrateAddForm && ($errors->any() || !empty($oldSportName)))
                 toggleAddSportSection();
             @endif
         });
