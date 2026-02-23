@@ -19,6 +19,7 @@ use Cloudinary\Cloudinary;
 class AdminSportsController extends Controller
 {
     private const IMAGE_DISK = 'cloudinary';
+    private const MAX_SPORT_IMAGE_KB = 20480;
     private const MAX_SPONSOR_IMAGE_KB = 20480;
     private const MAX_GALLERY_IMAGE_KB = 30720;
     private const MAX_UPLOAD_INPUT_KB = 51200;
@@ -39,6 +40,8 @@ class AdminSportsController extends Controller
     public function show($id)
     {
         $sport = Sport::with(['faqs', 'sponsors', 'galleryImages'])->findOrFail($id);
+
+        $sport->sport_image_url = $this->imageUrl($sport->Sport_Image);
 
         $sport->sponsors->transform(function ($sponsor) {
             $sponsor->image_url = $this->imageUrl($sponsor->Image_Path);
@@ -66,6 +69,7 @@ class AdminSportsController extends Controller
         $validated = $request->validate([
             'sport_name' => 'required|string|max:100|unique:Sports,Sport_Name',
             'sport_description' => 'nullable|string|max:1000',
+            'sport_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:' . self::MAX_UPLOAD_INPUT_KB,
             'faqs' => 'nullable|array',
             'faqs.*.question' => 'required_with:faqs.*|string|max:500',
             'faqs.*.answer' => 'required_with:faqs.*|string|max:2000',
@@ -84,6 +88,9 @@ class AdminSportsController extends Controller
             $sport = Sport::create([
                 'Sport_Name' => $validated['sport_name'],
                 'Sport_Description' => $validated['sport_description'] ?? null,
+                'Sport_Image' => $request->hasFile('sport_image')
+                    ? $this->storeOptimizedImage($request->file('sport_image'), 'sport-images', self::MAX_SPORT_IMAGE_KB)
+                    : null,
             ]);
 
             // Add FAQs if provided
@@ -165,6 +172,8 @@ class AdminSportsController extends Controller
         $validated = $request->validate([
             'sport_name' => 'required|string|max:100|unique:Sports,Sport_Name,' . $id . ',Sport_ID',
             'sport_description' => 'nullable|string|max:1000',
+            'sport_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:' . self::MAX_UPLOAD_INPUT_KB,
+            'sport_image_current' => 'nullable|string|max:255',
             'faqs' => 'nullable|array',
             'faqs.*.question' => 'required_with:faqs.*|string|max:500',
             'faqs.*.answer' => 'required_with:faqs.*|string|max:2000',
@@ -183,9 +192,28 @@ class AdminSportsController extends Controller
         DB::beginTransaction();
         try {
             $sport = Sport::findOrFail($id);
+
+            $sportImagePath = $sport->Sport_Image;
+            if ($request->hasFile('sport_image')) {
+                $newSportImagePath = $this->storeOptimizedImage(
+                    $request->file('sport_image'),
+                    'sport-images',
+                    self::MAX_SPORT_IMAGE_KB
+                );
+
+                if (!empty($sportImagePath) && $sportImagePath !== $newSportImagePath) {
+                    $this->deleteImage($sportImagePath);
+                }
+
+                $sportImagePath = $newSportImagePath;
+            } elseif (!empty($validated['sport_image_current'])) {
+                $sportImagePath = $validated['sport_image_current'];
+            }
+
             $sport->update([
                 'Sport_Name' => $validated['sport_name'],
                 'Sport_Description' => $validated['sport_description'] ?? null,
+                'Sport_Image' => $sportImagePath,
             ]);
 
             // Update FAQs - remove existing and add new ones
@@ -317,6 +345,9 @@ class AdminSportsController extends Controller
             foreach ($galleryImages as $imagePath) {
                 $this->deleteImage($imagePath);
             }
+
+            // Delete sport image
+            $this->deleteImage($sport->Sport_Image);
             
             // Delete related FAQs, sponsors, and gallery images
             $sport->faqs()->delete();

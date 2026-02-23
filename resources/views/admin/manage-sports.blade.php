@@ -137,6 +137,11 @@
                                 <textarea name="sport_description" id="sport_description" class="form-input"
                                     placeholder="Description for the Sport's About Us page..." rows="3">{{ $oldSportDescription }}</textarea>
                             </div>
+                            <div class="form-group">
+                                <label for="sport_image" class="form-label">Sport Card Image</label>
+                                <input type="file" name="sport_image" id="sport_image" class="form-input" accept="image/*">
+                                <small class="form-help">Shown on the home sport card. Leave blank to use the ⭐️ fallback icon.</small>
+                            </div>
                         </div>
 
                         <!-- FAQs Section -->
@@ -263,6 +268,12 @@
                         <label for="edit_sport_description" class="form-label">Description</label>
                         <textarea name="sport_description" id="edit_sport_description" class="form-input"
                             placeholder="Brief description of the sport..." rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_sport_image" class="form-label">Sport Card Image</label>
+                        <input type="file" name="sport_image" id="edit_sport_image" class="form-input" accept="image/*">
+                        <div id="edit-sport-image-current" class="current-image" style="display: none;"></div>
+                        <small class="form-help">Leave empty to keep current image (or icon fallback if none exists).</small>
                     </div>
                 </div>
 
@@ -920,6 +931,19 @@
                 // Populate basic fields
                 document.getElementById('edit_sport_name').value = sport.Sport_Name;
                 document.getElementById('edit_sport_description').value = sport.Sport_Description || '';
+                const currentSportImageContainer = document.getElementById('edit-sport-image-current');
+                const editSportImageInput = document.getElementById('edit_sport_image');
+                editSportImageInput.value = '';
+                if (sport.Sport_Image) {
+                    currentSportImageContainer.style.display = 'block';
+                    currentSportImageContainer.innerHTML = `
+                        <small>Current: <a href="${sport.sport_image_url || '#'}" target="_blank">View Image</a></small>
+                        <input type="hidden" name="sport_image_current" value="${sport.Sport_Image}">
+                    `;
+                } else {
+                    currentSportImageContainer.style.display = 'none';
+                    currentSportImageContainer.innerHTML = '';
+                }
                 
                 // Clear existing FAQs, sponsors, and gallery images
                 document.getElementById('edit-faqs-container').innerHTML = '';
