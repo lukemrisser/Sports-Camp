@@ -72,11 +72,11 @@
                 <a href="{{ route('select-camp-for-email') }}" class="card-button">Send Emails</a>
             </div>
 
-            <!-- Process Refunds Card -->
+            <!-- Issue Refunds Card -->
             <div class="registration-card blue">
                 <div class="card-icon">💰</div>
-                <h3>Process Refunds</h3>
-                <p>Issue refunds to parents for camp registrations</p>
+                <h3>Issue Refunds</h3>
+                <p>Issue full or partial refunds to parents for camp registrations</p>
                 <a href="{{ route('refunds.index') }}" class="card-button">Process Refunds</a>
             </div>
         </div>

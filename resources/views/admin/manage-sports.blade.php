@@ -99,6 +99,7 @@
                                                     @method('DELETE')
                                                     <button type="submit" class="action-btn delete-btn">Delete</button>
                                                 </form>
+                                                <button class="action-btn preview-btn" onclick="window.open('{{ route('sport.show', $sport->Sport_ID) }}', '_blank')">Preview</button>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -135,6 +136,11 @@
                                 <label for="sport_description" class="form-label">Description</label>
                                 <textarea name="sport_description" id="sport_description" class="form-input"
                                     placeholder="Description for the Sport's About Us page..." rows="3">{{ $oldSportDescription }}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="sport_image" class="form-label">Sport Card Image</label>
+                                <input type="file" name="sport_image" id="sport_image" class="form-input" accept="image/*">
+                                <small class="form-help">Shown on the home sport card. Leave blank to use the ⭐️ fallback icon.</small>
                             </div>
                         </div>
 
@@ -262,6 +268,12 @@
                         <label for="edit_sport_description" class="form-label">Description</label>
                         <textarea name="sport_description" id="edit_sport_description" class="form-input"
                             placeholder="Brief description of the sport..." rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_sport_image" class="form-label">Sport Card Image</label>
+                        <input type="file" name="sport_image" id="edit_sport_image" class="form-input" accept="image/*">
+                        <div id="edit-sport-image-current" class="current-image" style="display: none;"></div>
+                        <small class="form-help">Leave empty to keep current image (or icon fallback if none exists).</small>
                     </div>
                 </div>
 
@@ -393,6 +405,16 @@
 
         .delete-btn:hover {
             background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .preview-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .preview-btn:hover {
+            background: #059669;
             transform: translateY(-1px);
         }
 
@@ -769,7 +791,7 @@
                         <label class="form-label">Logo Image</label>
                         <input type="file" name="sponsors[${sponsorCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: 300x160px (16:9 ratio) or similar landscape format | Target size: 20MB (larger files auto-compress)</small>
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio)</small>
                     </div>
                 </div>
                 <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
@@ -798,7 +820,7 @@
                         <label class="form-label">Image</label>
                         <input type="file" name="gallery_images[${galleryImageCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: High quality images for gallery display | Target size: 30MB (larger files auto-compress)</small>
+                        <small class="form-help">Recommended: 1200x800px (3:2 ratio)</small>
                     </div>
                 </div>
                 <div class="form-group">
@@ -858,7 +880,7 @@
                         <label class="form-label">Logo Image</label>
                         <input type="file" name="sponsors[${editSponsorCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">Recommended: 300x160px (16:9 ratio) | Target size: 20MB (larger files auto-compress) | Leave empty to keep current image</small>
+                        <small class="form-help">Recommended: 300x160px (16:9 ratio) | Leave empty to keep current image</small>
                     </div>
                 </div>
                 <button type="button" class="remove-btn" onclick="removeSponsor(this)">Remove Sponsor</button>
@@ -882,7 +904,7 @@
                         <label class="form-label">Image</label>
                         <input type="file" name="gallery_images[${editGalleryImageCounter}][image]" class="form-input"
                             accept="image/*">
-                        <small class="form-help">High quality images for gallery display | Leave empty to keep current image</small>
+                        <small class="form-help">Recommended: 1200x800px (3:2 ratio) | Leave empty to keep current image</small>
                     </div>
                 </div>
                 <div class="form-group">
@@ -909,6 +931,19 @@
                 // Populate basic fields
                 document.getElementById('edit_sport_name').value = sport.Sport_Name;
                 document.getElementById('edit_sport_description').value = sport.Sport_Description || '';
+                const currentSportImageContainer = document.getElementById('edit-sport-image-current');
+                const editSportImageInput = document.getElementById('edit_sport_image');
+                editSportImageInput.value = '';
+                if (sport.Sport_Image) {
+                    currentSportImageContainer.style.display = 'block';
+                    currentSportImageContainer.innerHTML = `
+                        <small>Current: <a href="${sport.sport_image_url || '#'}" target="_blank">View Image</a></small>
+                        <input type="hidden" name="sport_image_current" value="${sport.Sport_Image}">
+                    `;
+                } else {
+                    currentSportImageContainer.style.display = 'none';
+                    currentSportImageContainer.innerHTML = '';
+                }
                 
                 // Clear existing FAQs, sponsors, and gallery images
                 document.getElementById('edit-faqs-container').innerHTML = '';
