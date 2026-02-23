@@ -8,13 +8,19 @@ use App\Models\FAQ;
 use App\Models\Sponsor;
 use App\Models\GalleryImage;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AdminSportsController extends Controller
 {
     private const IMAGE_DISK = 'cloudinary';
+    private const MAX_SPONSOR_IMAGE_KB = 20480;
+    private const MAX_GALLERY_IMAGE_KB = 30720;
+    private const MAX_UPLOAD_INPUT_KB = 51200;
+    private const MIN_OPTIMIZE_QUALITY = 40;
 
     public function index()
     {
@@ -89,11 +95,11 @@ class AdminSportsController extends Controller
             'sponsors' => 'nullable|array',
             'sponsors.*.name' => 'required_with:sponsors.*|string|max:100',
             'sponsors.*.link' => 'nullable|url|max:255',
-            'sponsors.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
+            'sponsors.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:' . self::MAX_UPLOAD_INPUT_KB,
             'gallery_images' => 'nullable|array',
             'gallery_images.*.title' => 'required_with:gallery_images.*|string|max:255',
             'gallery_images.*.text' => 'nullable|string|max:1000',
-            'gallery_images.*.image' => 'required_with:gallery_images.*|image|mimes:jpeg,png,jpg,gif,svg|max:15360',
+            'gallery_images.*.image' => 'required_with:gallery_images.*|image|mimes:jpeg,png,jpg,gif,svg,webp|max:' . self::MAX_UPLOAD_INPUT_KB,
         ]);
 
         DB::beginTransaction();
@@ -123,8 +129,11 @@ class AdminSportsController extends Controller
                         
                         // Handle image upload
                         if ($request->hasFile("sponsors.{$index}.image")) {
-                            $imagePath = $request->file("sponsors.{$index}.image")
-                                ->store('sponsor-logos', self::IMAGE_DISK);
+                            $imagePath = $this->storeOptimizedImage(
+                                $request->file("sponsors.{$index}.image"),
+                                'sponsor-logos',
+                                self::MAX_SPONSOR_IMAGE_KB
+                            );
                         }
                         
                         $sport->sponsors()->create([
@@ -140,8 +149,11 @@ class AdminSportsController extends Controller
             if (!empty($validated['gallery_images'])) {
                 foreach ($request->gallery_images as $index => $galleryImage) {
                     if (!empty($galleryImage['title']) && $request->hasFile("gallery_images.{$index}.image")) {
-                        $imagePath = $request->file("gallery_images.{$index}.image")
-                            ->store('gallery-images', self::IMAGE_DISK);
+                        $imagePath = $this->storeOptimizedImage(
+                            $request->file("gallery_images.{$index}.image"),
+                            'gallery-images',
+                            self::MAX_GALLERY_IMAGE_KB
+                        );
                         
                         $sport->galleryImages()->create([
                             'Image_Title' => $galleryImage['title'],
@@ -174,12 +186,12 @@ class AdminSportsController extends Controller
             'sponsors' => 'nullable|array',
             'sponsors.*.name' => 'required_with:sponsors.*|string|max:100',
             'sponsors.*.link' => 'nullable|url|max:255',
-            'sponsors.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
+            'sponsors.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:' . self::MAX_UPLOAD_INPUT_KB,
             'sponsors.*.current_image' => 'nullable|string|max:255',
             'gallery_images' => 'nullable|array',
             'gallery_images.*.title' => 'required_with:gallery_images.*|string|max:255',
             'gallery_images.*.text' => 'nullable|string|max:1000',
-            'gallery_images.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:15360',
+            'gallery_images.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:' . self::MAX_UPLOAD_INPUT_KB,
             'gallery_images.*.current_image' => 'nullable|string|max:255',
         ]);
 
@@ -216,8 +228,11 @@ class AdminSportsController extends Controller
                         
                         // Handle image upload
                         if ($request->hasFile("sponsors.{$index}.image")) {
-                            $imagePath = $request->file("sponsors.{$index}.image")
-                                ->store('sponsor-logos', self::IMAGE_DISK);
+                            $imagePath = $this->storeOptimizedImage(
+                                $request->file("sponsors.{$index}.image"),
+                                'sponsor-logos',
+                                self::MAX_SPONSOR_IMAGE_KB
+                            );
                         } elseif (!empty($sponsor['current_image'])) {
                             // Keep existing image if no new one uploaded
                             $imagePath = $sponsor['current_image'];
@@ -251,8 +266,11 @@ class AdminSportsController extends Controller
                         
                         // Handle image upload
                         if ($request->hasFile("gallery_images.{$index}.image")) {
-                            $imagePath = $request->file("gallery_images.{$index}.image")
-                                ->store('gallery-images', self::IMAGE_DISK);
+                            $imagePath = $this->storeOptimizedImage(
+                                $request->file("gallery_images.{$index}.image"),
+                                'gallery-images',
+                                self::MAX_GALLERY_IMAGE_KB
+                            );
                         } elseif (!empty($galleryImage['current_image'])) {
                             // Keep existing image if no new one uploaded
                             $imagePath = $galleryImage['current_image'];
@@ -372,5 +390,130 @@ class AdminSportsController extends Controller
 
             throw $e;
         }
+    }
+
+    private function storeOptimizedImage(UploadedFile $file, string $directory, int $targetMaxKb): string
+    {
+        $targetBytes = $targetMaxKb * 1024;
+        $currentSize = $file->getSize() ?: 0;
+
+        if ($currentSize <= $targetBytes) {
+            return $file->store($directory, self::IMAGE_DISK);
+        }
+
+        $optimizedImage = $this->optimizeImageToTarget($file, $targetBytes);
+
+        if ($optimizedImage === null) {
+            $maxMb = (int) round($targetMaxKb / 1024);
+            throw new \RuntimeException("Image is too large and could not be optimized below {$maxMb}MB.");
+        }
+
+        [$optimizedBytes, $extension] = $optimizedImage;
+        $path = $directory . '/' . Str::uuid() . '.' . $extension;
+        Storage::disk(self::IMAGE_DISK)->put($path, $optimizedBytes);
+
+        return $path;
+    }
+
+    private function optimizeImageToTarget(UploadedFile $file, int $targetBytes): ?array
+    {
+        $mime = $file->getMimeType();
+        $sourceData = @file_get_contents($file->getRealPath());
+
+        if ($sourceData === false) {
+            return null;
+        }
+
+        $source = @imagecreatefromstring($sourceData);
+        if ($source === false) {
+            return null;
+        }
+
+        $width = imagesx($source);
+        $height = imagesy($source);
+
+        if ($width <= 0 || $height <= 0) {
+            return null;
+        }
+
+        $scaleSteps = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5];
+        $qualitySteps = [90, 82, 75, 68, 60, 52, 45, self::MIN_OPTIMIZE_QUALITY];
+        $bestCandidate = null;
+
+        foreach ($scaleSteps as $scale) {
+            $targetWidth = max(1, (int) floor($width * $scale));
+            $targetHeight = max(1, (int) floor($height * $scale));
+
+            $canvas = imagecreatetruecolor($targetWidth, $targetHeight);
+            if ($canvas === false) {
+                continue;
+            }
+
+            if (in_array($mime, ['image/png', 'image/webp'], true)) {
+                imagealphablending($canvas, false);
+                imagesavealpha($canvas, true);
+                $transparent = imagecolorallocatealpha($canvas, 0, 0, 0, 127);
+                imagefill($canvas, 0, 0, $transparent);
+            }
+
+            imagecopyresampled($canvas, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
+
+            foreach ($qualitySteps as $quality) {
+                $encoded = $this->encodeImage($canvas, $mime, $quality);
+                if ($encoded === null) {
+                    continue;
+                }
+
+                $encodedSize = strlen($encoded);
+                if ($encodedSize <= $targetBytes) {
+                    return [$encoded, $this->extensionForMime($mime)];
+                }
+
+                if ($bestCandidate === null || $encodedSize < strlen($bestCandidate[0])) {
+                    $bestCandidate = [$encoded, $this->extensionForMime($mime)];
+                }
+            }
+
+        }
+
+        if ($bestCandidate !== null && strlen($bestCandidate[0]) <= $targetBytes) {
+            return $bestCandidate;
+        }
+
+        return null;
+    }
+
+    private function encodeImage(\GdImage $image, ?string $mime, int $quality): ?string
+    {
+        ob_start();
+
+        $success = match ($mime) {
+            'image/png' => imagepng($image, null, $this->pngCompressionFromQuality($quality)),
+            'image/webp' => function_exists('imagewebp') ? imagewebp($image, null, $quality) : imagejpeg($image, null, $quality),
+            'image/jpeg', 'image/jpg' => imagejpeg($image, null, $quality),
+            default => imagejpeg($image, null, $quality),
+        };
+
+        if ($success === false) {
+            ob_end_clean();
+            return null;
+        }
+
+        return ob_get_clean() ?: null;
+    }
+
+    private function pngCompressionFromQuality(int $quality): int
+    {
+        $quality = max(self::MIN_OPTIMIZE_QUALITY, min(100, $quality));
+        return (int) round((100 - $quality) * 9 / 100);
+    }
+
+    private function extensionForMime(?string $mime): string
+    {
+        return match ($mime) {
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            default => 'jpg',
+        };
     }
 }
