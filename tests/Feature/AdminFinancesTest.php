@@ -64,7 +64,7 @@ class AdminFinancesTest extends TestCase
     }
     
     /** Ensure unauthorized users cannot access the Admin Finances Page */
-    public function test_non_coach_or_admin_can_access_adminFinancesPage() {
+    public function test_non_coach_or_admin_cannot_access_adminFinancesPage() {
         // Create a user (non-coach, non-admin)
         $user = User::factory()->create();
 
