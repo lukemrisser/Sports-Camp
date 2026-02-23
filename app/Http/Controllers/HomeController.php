@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Sport;
-use App\Models\Camp;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
@@ -13,39 +13,32 @@ class HomeController extends Controller
         // Get all sports
         $sports = Sport::all();
 
-        //Use images eventually
-        $sportMetadata = [
-            'soccer' => ['icon' => '⚽'],
-            'volleyball' => ['icon' => '🏐'],
-            'tennis' => ['icon' => '🎾'],
-            'basketball' => ['icon' => '🏀'],
-            'baseball' => ['icon' => '⚾'],
-            'football' => ['icon' => '🏈'],
-        ];
-
-
-        $registrationCards = $sports->map(function ($sport) use ($sportMetadata) {
-            $sportName = strtolower($sport->Sport_Name);
-            $metadata = ['icon' => '⭐️'];
-
-            // Match sport name to get appropriate icon and color
-            foreach ($sportMetadata as $keyword => $data) {
-                if (str_contains($sportName, $keyword)) {
-                    $metadata = $data;
-                    break;
-                }
-            }
+        $registrationCards = $sports->map(function ($sport) {
+            $sportImageUrl = $this->imageUrl($sport->Sport_Image);
 
             return [
                 'id' => $sport->Sport_ID,
                 'title' => $sport->Sport_Name.' Camp',
-                'icon' => $metadata['icon'],
+                'icon' => '⭐️',
+                'image_url' => $sportImageUrl,
                 'route' => 'sport.show',
                 'color' => 'blue',
             ];
         })->toArray();
 
         return view('home', compact('registrationCards'));
+    }
+
+    private function imageUrl(?string $imagePath): ?string
+    {
+        if (empty($imagePath)) {
+            return null;
+        }
+
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk('cloudinary');
+
+        return $disk->url($imagePath);
     }
 
     public function help()

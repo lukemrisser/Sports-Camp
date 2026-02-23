@@ -18,7 +18,13 @@
         <div class="cards-grid">
             @foreach ($registrationCards as $card)
                 <div class="registration-card {{ $card['color'] }}">
-                    <div class="card-icon">{{ $card['icon'] }}</div>
+                    <div class="card-icon {{ !empty($card['image_url']) ? 'has-image' : '' }}">
+                        @if (!empty($card['image_url']))
+                            <img src="{{ $card['image_url'] }}" alt="{{ $card['title'] }}" class="sport-card-image">
+                        @else
+                            {{ $card['icon'] }}
+                        @endif
+                    </div>
                     <h3>{{ $card['title'] }}</h3>
                     <a href="{{ route($card['route'], ['sport' => $card['id']]) }}" class="card-button">
                         Learn More
