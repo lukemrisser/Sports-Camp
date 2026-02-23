@@ -21,6 +21,12 @@ class AdminSportsController extends Controller
     private const MAX_GALLERY_IMAGE_KB = 30720;
     private const MAX_UPLOAD_INPUT_KB = 51200;
     private const MIN_OPTIMIZE_QUALITY = 40;
+    private const ALWAYS_NORMALIZE_MIMES = [
+        'image/jpeg',
+        'image/jpg',
+        'image/pjpeg',
+        'image/webp',
+    ];
 
     public function index()
     {
@@ -396,23 +402,27 @@ class AdminSportsController extends Controller
     {
         $targetBytes = $targetMaxKb * 1024;
         $currentSize = $file->getSize() ?: 0;
+        $mime = strtolower((string) $file->getMimeType());
+        $shouldNormalize = $currentSize > $targetBytes || in_array($mime, self::ALWAYS_NORMALIZE_MIMES, true);
 
-        if ($currentSize <= $targetBytes) {
-            return $file->store($directory, self::IMAGE_DISK);
+        if ($shouldNormalize) {
+            $optimizedImage = $this->optimizeImageToTarget($file, $targetBytes);
+
+            if ($optimizedImage !== null) {
+                [$optimizedBytes, $extension] = $optimizedImage;
+                $path = $directory . '/' . Str::uuid() . '.' . $extension;
+                Storage::disk(self::IMAGE_DISK)->put($path, $optimizedBytes);
+
+                return $path;
+            }
+
+            if ($currentSize > $targetBytes) {
+                $maxMb = (int) round($targetMaxKb / 1024);
+                throw new \RuntimeException("Image is too large and could not be optimized below {$maxMb}MB.");
+            }
         }
 
-        $optimizedImage = $this->optimizeImageToTarget($file, $targetBytes);
-
-        if ($optimizedImage === null) {
-            $maxMb = (int) round($targetMaxKb / 1024);
-            throw new \RuntimeException("Image is too large and could not be optimized below {$maxMb}MB.");
-        }
-
-        [$optimizedBytes, $extension] = $optimizedImage;
-        $path = $directory . '/' . Str::uuid() . '.' . $extension;
-        Storage::disk(self::IMAGE_DISK)->put($path, $optimizedBytes);
-
-        return $path;
+        return $file->store($directory, self::IMAGE_DISK);
     }
 
     private function optimizeImageToTarget(UploadedFile $file, int $targetBytes): ?array
@@ -459,18 +469,20 @@ class AdminSportsController extends Controller
             imagecopyresampled($canvas, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
 
             foreach ($qualitySteps as $quality) {
-                $encoded = $this->encodeImage($canvas, $mime, $quality);
-                if ($encoded === null) {
+                $encodedResult = $this->encodeImage($canvas, $mime, $quality);
+                if ($encodedResult === null) {
                     continue;
                 }
 
+                [$encoded, $encodedExtension] = $encodedResult;
+
                 $encodedSize = strlen($encoded);
                 if ($encodedSize <= $targetBytes) {
-                    return [$encoded, $this->extensionForMime($mime)];
+                    return [$encoded, $encodedExtension];
                 }
 
                 if ($bestCandidate === null || $encodedSize < strlen($bestCandidate[0])) {
-                    $bestCandidate = [$encoded, $this->extensionForMime($mime)];
+                    $bestCandidate = [$encoded, $encodedExtension];
                 }
             }
 
@@ -483,23 +495,36 @@ class AdminSportsController extends Controller
         return null;
     }
 
-    private function encodeImage(\GdImage $image, ?string $mime, int $quality): ?string
+    private function encodeImage(\GdImage $image, ?string $mime, int $quality): ?array
     {
-        ob_start();
-
-        $success = match ($mime) {
-            'image/png' => imagepng($image, null, $this->pngCompressionFromQuality($quality)),
-            'image/webp' => function_exists('imagewebp') ? imagewebp($image, null, $quality) : imagejpeg($image, null, $quality),
-            'image/jpeg', 'image/jpg' => imagejpeg($image, null, $quality),
-            default => imagejpeg($image, null, $quality),
+        $mimeCandidates = match ($mime) {
+            'image/png' => ['image/png'],
+            'image/webp' => ['image/webp', 'image/jpeg', 'image/png'],
+            'image/jpeg', 'image/jpg' => ['image/jpeg', 'image/webp', 'image/png'],
+            default => ['image/jpeg', 'image/png'],
         };
 
-        if ($success === false) {
-            ob_end_clean();
-            return null;
+        foreach ($mimeCandidates as $candidateMime) {
+            ob_start();
+
+            $success = match ($candidateMime) {
+                'image/png' => imagepng($image, null, $this->pngCompressionFromQuality($quality)),
+                'image/webp' => function_exists('imagewebp') ? imagewebp($image, null, $quality) : false,
+                default => imagejpeg($image, null, $quality),
+            };
+
+            if ($success === false) {
+                ob_end_clean();
+                continue;
+            }
+
+            $bytes = ob_get_clean();
+            if ($bytes !== false && $bytes !== '') {
+                return [$bytes, $this->extensionForMime($candidateMime)];
+            }
         }
 
-        return ob_get_clean() ?: null;
+        return null;
     }
 
     private function pngCompressionFromQuality(int $quality): int
