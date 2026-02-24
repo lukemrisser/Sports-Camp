@@ -547,9 +547,12 @@
                                                                     {{ \Carbon\Carbon::parse($camp->End_Date)->format('M d, Y') }}
                                                                 </div>
                                                             @endif
-                                                            @if ($camp->Location)
-                                                                <div class="camp-location">📍 {{ $camp->Location }}
-                                                                </div>
+                                                            @php
+                                                                $locationParts = array_filter([$camp->Location_Name, $camp->City, $camp->State]);
+                                                                $locationString = implode(', ', $locationParts);
+                                                            @endphp
+                                                            @if ($locationString)
+                                                                <div class="camp-location">📍 {{ $locationString }}</div>
                                                             @endif
                                                         </li>
                                                     @endforeach
