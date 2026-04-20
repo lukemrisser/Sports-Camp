@@ -419,7 +419,7 @@
                         </div>
 
                     <div class="submit-section">
-                        <button type="submit" class="submit-button">
+                        <button type="submit" class="submit-button" style="margin-bottom: 20px;">
                             Create Camp
                         </button>
                     </div>
