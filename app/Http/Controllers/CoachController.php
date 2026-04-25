@@ -436,6 +436,14 @@ class CoachController extends Controller
 
         $createdPlayers = collect();
         foreach ($importedRows as $row) {
+            $rawGender = trim((string) (
+                $row['player_gender']
+                ?? $row['gender']
+                ?? $row['player gender']
+                ?? ''
+            ));
+            $gender = $this->normalizeGenderForStorage($rawGender);
+
             $birthDate = null;
             if (!empty($row['player_birth_date'])) {
                 try {
@@ -454,6 +462,7 @@ class CoachController extends Controller
             $player = Player::create([
                 'Camper_FirstName' => $row['player_first_name'] ?? '',
                 'Camper_LastName' => $row['player_last_name'] ?? '',
+                'Gender' => $gender,
                 'Birth_Date' => $birthDate,
             ]);
 
@@ -668,6 +677,43 @@ class CoachController extends Controller
         return $cluster;
     }
 
+    protected function normalizeGenderForStorage($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = strtolower(trim((string) $value));
+        if ($normalized === '') {
+            return null;
+        }
+
+        if (in_array($normalized, ['m', 'male', 'boy', 'boys', 'man', 'masculine'], true)) {
+            return 'M';
+        }
+
+        if (in_array($normalized, ['f', 'female', 'girl', 'girls', 'woman', 'feminine'], true)) {
+            return 'F';
+        }
+
+        return null;
+    }
+
+    protected function formatGenderForDisplay($value): string
+    {
+        $normalized = $this->normalizeGenderForStorage($value);
+
+        if ($normalized === 'M') {
+            return 'Male';
+        }
+
+        if ($normalized === 'F') {
+            return 'Female';
+        }
+
+        return '';
+    }
+
     public function getCampsForCoach()
     {
         $user = Auth::user();
@@ -695,6 +741,7 @@ class CoachController extends Controller
                     'Team' => 'Team ' . ($teamIndex + 1),
                     'Player Name' => $player ? ($player->Camper_FirstName . ' ' . $player->Camper_LastName) : 'Unknown',
                     'Age' => $player ? $player->Age : '',
+                    'Gender' => $player ? $this->formatGenderForDisplay($player->Gender ?? null) : '',
                     'Teammate Requests' => $teammateRequests
                 ];
             }
@@ -749,7 +796,7 @@ class CoachController extends Controller
             }
             public function headings(): array
             {
-                return ['Team', 'Player Name', 'Age', 'Teammate Requests'];
+                return ['Team', 'Player Name', 'Age', 'Gender', 'Teammate Requests'];
             }
         }, $filename);
     }

@@ -26,6 +26,7 @@
                         <th>Team</th>
                         <th>Player Name</th>
                         <th>Age</th>
+                        <th>Gender</th>
                         <th>Teammate Requests</th>
                     </tr>
                 </thead>
@@ -35,6 +36,7 @@
                             <td class="team-name">{{ $row['Team'] }}</td>
                             <td class="player-name">{{ $row['Player Name'] }}</td>
                             <td class="age">{{ $row['Age'] ?: 'N/A' }}</td>
+                            <td class="gender">{{ $row['Gender'] ?: 'N/A' }}</td>
                             <td class="teammate-requests">{{ $row['Teammate Requests'] ?: 'None' }}</td>
                         </tr>
                     @endforeach
@@ -184,7 +186,7 @@
         .player-name {
             font-weight: 500;
             color: #333;
-            width: 30%;
+            width: 25%;
         }
 
         .age {
@@ -194,9 +196,16 @@
             text-align: center;
         }
 
+        .gender {
+            font-weight: 500;
+            color: #333;
+            width: 10%;
+            text-align: center;
+        }
+
         .teammate-requests {
             color: #666;
-            width: 45%;
+            width: 40%;
             font-size: 14px;
         }
 
